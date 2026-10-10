@@ -1,13 +1,22 @@
 TICKET RUSH - The Office IT
 ===========================
+Jugar en linea: https://juego.66.94.101.47.sslip.io
+
 ticket_rush.html        El juego terminado. Doble clic y se abre en el navegador.
 src/game_template.html  El codigo del juego en formato legible (CSS + JavaScript).
-sprites/                Los personajes en pixel art (avatar y jefe).
+sprites/                Los personajes en pixel art (avatar, jefe y companero).
 scripts/                Scripts de Python (necesitan: pip install pillow)
   crear_avatar.py       Dibuja el avatar pixel por pixel.
   crear_jefe.py         Dibuja al jefe pixel por pixel.
+  crear_companero.py    Dibuja al companero pixel por pixel (todavia no sale en el juego).
   construir_juego.py    Mete los sprites dentro del juego y genera ticket_rush.html.
 
 Flujo para cambiar algo: edita un script o el template, ejecuta los scripts
 desde la carpeta scripts (python crear_jefe.py, luego python construir_juego.py)
 y abre ticket_rush.html.
+
+OJO: ticket_rush.html se genera solo. No lo edites a mano, porque
+construir_juego.py lo vuelve a escribir y se pierde el cambio.
+
+Publicar: subir ticket_rush.html a la VPS como /var/www/juego/index.html.
+No hay que reiniciar nada; si se ve la version vieja, recargar la pagina.
