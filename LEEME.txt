@@ -1,0 +1,13 @@
+TICKET RUSH - The Office IT
+===========================
+ticket_rush.html        El juego terminado. Doble clic y se abre en el navegador.
+src/game_template.html  El codigo del juego en formato legible (CSS + JavaScript).
+sprites/                Los personajes en pixel art (avatar y jefe).
+scripts/                Scripts de Python (necesitan: pip install pillow)
+  crear_avatar.py       Dibuja el avatar pixel por pixel.
+  crear_jefe.py         Dibuja al jefe pixel por pixel.
+  construir_juego.py    Mete los sprites dentro del juego y genera ticket_rush.html.
+
+Flujo para cambiar algo: edita un script o el template, ejecuta los scripts
+desde la carpeta scripts (python crear_jefe.py, luego python construir_juego.py)
+y abre ticket_rush.html.

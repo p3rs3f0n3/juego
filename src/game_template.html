@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ticket Rush</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<style>
+/* Concepto: una sola pantalla de arcade oscuro, violeta de interfaz de TI, el juego es lo único brillante. */
+:root {
+  color-scheme: dark;
+  --bg: #0d0c14;
+  --panel: #171525;
+  --line: #2c2840;
+  --fg: #ece8f7;
+  --muted: #9d96b8;
+  --accent: #a285f5;
+  --warn: #f2b441;
+  --bad: #ef5b6b;
+  --good: #5fd6a1;
+  --display: "Press Start 2P", ui-monospace, "Courier New", monospace;
+  --body: "VT323", ui-monospace, "Courier New", monospace;
+}
+[hidden] { display: none !important; }
+*, *::before, *::after { box-sizing: border-box; }
+html, body { background: var(--bg); }
+body {
+  margin: 0;
+  color: var(--fg);
+  font-family: var(--body);
+  font-size: 20px;
+  line-height: 1.25;
+  padding-inline: 16px;
+  padding-block: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  min-height: 100%;
+}
+header {
+  width: 100%;
+  max-width: 768px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.brand { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(14px, 3.6vw, 22px);
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  text-wrap: balance;
+}
+.sub { color: var(--muted); font-size: 20px; }
+.chip {
+  font-family: var(--display);
+  font-size: 10px;
+  color: var(--fg);
+  background: var(--panel);
+  border: 2px solid var(--line);
+  padding: 9px 11px;
+  cursor: pointer;
+}
+.chip:hover { border-color: var(--accent); }
+.chip:focus-visible, .btn:focus-visible, .pad button:focus-visible { outline: 3px solid var(--warn); outline-offset: 2px; }
+.stage {
+  position: relative;
+  width: 100%;
+  max-width: 768px;
+  aspect-ratio: 768 / 480;
+  border: 2px solid var(--line);
+  background: #000;
+}
+canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; touch-action: none; }
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 2vw, 16px);
+  padding: 16px;
+  text-align: center;
+  background: rgba(11, 10, 18, 0.9);
+}
+.screen h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(14px, 3.4vw, 26px);
+  color: var(--warn);
+  text-wrap: balance;
+}
+.screen p { margin: 0; max-width: 44ch; font-size: clamp(16px, 2.6vw, 24px); color: var(--fg); text-wrap: pretty; }
+.screen .stats { color: var(--muted); }
+.btn {
+  font-family: var(--display);
+  font-size: clamp(10px, 2.2vw, 14px);
+  color: #0d0c14;
+  background: var(--accent);
+  border: 0;
+  padding: 14px 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #5b43b0;
+}
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #5b43b0; }
+.hint { width: 100%; max-width: 768px; color: var(--muted); font-size: 20px; text-align: center; }
+.pad {
+  display: none;
+  width: 100%;
+  max-width: 768px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+@media (pointer: coarse) {
+  .pad { display: flex; }
+  .hint { display: none; }
+}
+.dpad { display: grid; grid-template-columns: repeat(3, 56px); grid-template-rows: repeat(3, 56px); gap: 4px; }
+.pad button {
+  font-family: var(--display);
+  color: var(--fg);
+  background: var(--panel);
+  border: 2px solid var(--line);
+  touch-action: none;
+  font-size: 16px;
+}
+.pad button.on, .pad button:active { background: var(--accent); color: #0d0c14; border-color: var(--accent); }
+.dpad [data-k="up"] { grid-column: 2; grid-row: 1; }
+.dpad [data-k="left"] { grid-column: 1; grid-row: 2; }
+.dpad [data-k="right"] { grid-column: 3; grid-row: 2; }
+.dpad [data-k="down"] { grid-column: 2; grid-row: 3; }
+.actbtn { width: 104px; height: 104px; border-radius: 50%; font-size: 10px !important; background: #3a2a6e !important; border-color: var(--accent) !important; }
+.rotate { display: none; color: var(--warn); }
+/* Celular vertical: aprovechar todo el ancho y sugerir girar */
+@media (pointer: coarse) and (orientation: portrait) {
+  body { padding-inline: 6px; }
+  .rotate { display: block; }
+}
+/* Celular horizontal: flechas a la izquierda, juego al centro lo más grande posible, ARREGLAR a la derecha */
+@media (pointer: coarse) and (orientation: landscape) {
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: 100%;
+    align-items: center;
+    gap: 12px;
+    padding: 6px max(10px, env(safe-area-inset-right)) 6px max(10px, env(safe-area-inset-left));
+    height: 100dvh;
+  }
+  header { position: fixed; top: 6px; right: max(10px, env(safe-area-inset-right)); width: auto; z-index: 2; }
+  header .brand { display: none; }
+  .stage { grid-column: 2; grid-row: 1; justify-self: center; width: min(100%, calc((100dvh - 12px) * 1.6)); }
+  .pad { display: contents; }
+  .dpad { grid-column: 1; grid-row: 1; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 50px); }
+  .actbtn { grid-column: 3; grid-row: 1; width: 92px; height: 92px; }
+}
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+
+<header>
+  <div class="brand">
+    <h1>TICKET RUSH</h1>
+    <span class="sub">The Office IT</span>
+  </div>
+  <button class="chip" id="mute" type="button" aria-pressed="false">SONIDO: SI</button>
+</header>
+
+<div class="stage">
+  <canvas id="game" width="768" height="480" aria-label="Juego Ticket Rush: corre por la oficina resolviendo tickets de TI y esquiva al jefe"></canvas>
+  <div class="screen" id="menu">
+    <h2>TICKET RUSH</h2>
+    <p>Eres la nueva de TI. Corre a cada <b style="color:var(--warn)">!</b>, mantén ESPACIO para arreglar el ticket antes de que venza el SLA y esquiva al jefe.</p>
+    <button class="btn" id="start" type="button">EMPEZAR TURNO</button>
+    <p class="rotate">Gira el celular para verlo más grande ↻</p>
+  </div>
+  <div class="screen" id="over" hidden>
+    <h2 id="overTitle">TURNO TERMINADO</h2>
+    <p id="overWhy"></p>
+    <p class="stats" id="overStats"></p>
+    <button class="btn" id="again" type="button">OTRA VEZ</button>
+  </div>
+</div>
+
+<p class="hint">Flechas o WASD para moverte · mantén ESPACIO o E para arreglar · la cafetera da turbo</p>
+
+<div class="pad" aria-label="Controles táctiles">
+  <div class="dpad">
+    <button type="button" data-k="up" aria-label="Arriba">&#9650;</button>
+    <button type="button" data-k="left" aria-label="Izquierda">&#9664;</button>
+    <button type="button" data-k="right" aria-label="Derecha">&#9654;</button>
+    <button type="button" data-k="down" aria-label="Abajo">&#9660;</button>
+  </div>
+  <button type="button" class="actbtn" data-k="act">ARREGLAR</button>
+</div>
+<p class="sr" id="live" aria-live="polite"></p>
+
+<script>
+(function () {
+  "use strict";
+  var W = 768, H = 480, T = 48;
+  var cv = document.getElementById("game");
+  var ctx = cv.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+
+  var imgP = new Image(); imgP.src = "__PLAYER__";
+  var imgB = new Image(); imgB.src = "__BOSS__";
+
+  var F_D = '"Press Start 2P", ui-monospace, monospace';
+  var F_B = 'VT323, ui-monospace, monospace';
+
+  /* ---------- entrada ---------- */
+  var keys = {}, vk = {};
+  var KEYMAP = { ArrowLeft: "left", a: "left", A: "left", ArrowRight: "right", d: "right", D: "right",
+    ArrowUp: "up", w: "up", W: "up", ArrowDown: "down", s: "down", S: "down", " ": "act", e: "act", E: "act" };
+  var state = "menu";
+  window.addEventListener("keydown", function (e) {
+    var k = KEYMAP[e.key]; if (!k) return;
+    if (state === "play") e.preventDefault();
+    keys[k] = true;
+  });
+  window.addEventListener("keyup", function (e) { var k = KEYMAP[e.key]; if (k) keys[k] = false; });
+  window.addEventListener("blur", function () { keys = {}; vk = {}; });
+  function inp(k) { return !!(keys[k] || vk[k]); }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".pad button"), function (b) {
+    var k = b.getAttribute("data-k");
+    function on(e) { e.preventDefault(); vk[k] = true; b.classList.add("on"); try { b.setPointerCapture(e.pointerId); } catch (x) {} }
+    function off() { vk[k] = false; b.classList.remove("on"); }
+    b.addEventListener("pointerdown", on);
+    b.addEventListener("pointerup", off);
+    b.addEventListener("pointercancel", off);
+    b.addEventListener("lostpointercapture", off);
+    b.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+  });
+
+  /* ---------- sonido ---------- */
+  var ac = null, muted = false;
+  function beep(f, d, type, v) {
+    if (muted) return;
+    try {
+      if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+      var o = ac.createOscillator(), g = ac.createGain();
+      o.type = type || "square"; o.frequency.value = f; g.gain.value = v || 0.04;
+      o.connect(g); g.connect(ac.destination); o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + d);
+      o.stop(ac.currentTime + d);
+    } catch (e) {}
+  }
+  var muteBtn = document.getElementById("mute");
+  muteBtn.addEventListener("click", function () {
+    muted = !muted;
+    muteBtn.textContent = muted ? "SONIDO: NO" : "SONIDO: SI";
+    muteBtn.setAttribute("aria-pressed", String(muted));
+  });
+
+  /* ---------- mundo ---------- */
+  var solids = [], stations = [];
+  function addStation(o) { solids.push(o); stations.push(o); return o; }
+  [2, 4, 6].forEach(function (r) {
+    [2, 6, 10].forEach(function (c) { addStation({ x: c * T, y: r * T, w: 2 * T, h: T, type: "desk", ticket: null, seed: c + r }); });
+  });
+  addStation({ x: 12 * T, y: T, w: 2 * T, h: T, type: "server", ticket: null });
+  addStation({ x: 12 * T, y: 7 * T, w: 2 * T, h: T, type: "printer", ticket: null });
+  var coffee = { x: 4 * T, y: T, w: T, h: T, type: "coffee", cool: 0 };
+  solids.push(coffee);
+  solids.push({ x: 8 * T, y: T, w: T, h: T, type: "plant" });
+  solids.push({ x: T, y: 8 * T, w: T, h: T, type: "plant" });
+  solids.push({ x: 14 * T, y: 8 * T, w: T, h: T, type: "plant" });
+
+  function blocked(x, y, hw, hh) {
+    var l = x - hw, r = x + hw, t = y - hh, b = y;
+    if (l < T || r > 15 * T || t < T || b > 9 * T) return true;
+    for (var i = 0; i < solids.length; i++) {
+      var s = solids[i];
+      if (r > s.x && l < s.x + s.w && b > s.y && t < s.y + s.h) return true;
+    }
+    return false;
+  }
+  function move(e, dx, dy) {
+    if (!blocked(e.x + dx, e.y, 9, 10)) e.x += dx;
+    if (!blocked(e.x, e.y + dy, 9, 10)) e.y += dy;
+  }
+  function distRect(x, y, r) {
+    var dx = Math.max(r.x - x, 0, x - (r.x + r.w)), dy = Math.max(r.y - y, 0, y - (r.y + r.h));
+    return Math.hypot(dx, dy);
+  }
+
+  var TEXTS = {
+    desk: ["Olvidé mi clave (otra vez)", "El Excel se congeló con 40 pestañas", "No tengo internet (el cable estaba suelto)",
+      "¿Reiniciaste el PC? Sí. No. Tal vez", "El mouse se murió de repente", "Ctrl+Z no deshace mi error", "Mi pantalla se ve azul y triste",
+      "Instalé 7 barras de herramientas", "No me abre el correo del jefe", "La pantalla está al revés"],
+    printer: ["La impresora no imprime (otra vez)", "Atasco de papel nivel jefe final", "Imprime 300 copias de la nada"],
+    server: ["Se cayó el servidor de pruebas", "El servidor huele a quemado", "Alguien tropezó con el cable del rack"]
+  };
+  var BASE = { desk: { t: 26, fix: 1.0, pts: 10 }, printer: { t: 22, fix: 1.6, pts: 20 }, server: { t: 19, fix: 2.6, pts: 40 } };
+  var BOSS_SAYS = ["¡Para ayer!", "¿Ya quedó?", "Es urgente", "¿Y eso por qué?", "Una cosita rápida"];
+
+  var P, B, tickets, pops, score, done, level, lives, combo, lastDone, spawnT, shake, clock, actPrev, best = 0, whyOver;
+  try { best = parseInt(localStorage.getItem("ticketrush-best") || "0", 10) || 0; } catch (e) {}
+
+  function reset() {
+    P = { x: 360, y: 410, boost: 0, stun: 0, inv: 0, moving: false };
+    B = { x: 650, y: 140, tx: 650, ty: 140, state: "wander", say: "", sayT: 0, flee: 0, stuckT: 0, lx: 650, ly: 140 };
+    tickets = []; pops = []; score = 0; done = 0; level = 1; lives = 3; combo = 0; lastDone = -99;
+    shake = 0; clock = 0; actPrev = false; coffee.cool = 0;
+    stations.forEach(function (s) { s.ticket = null; });
+    spawnTicket(); spawnTicket();
+    spawnT = 4;
+    pickWaypoint();
+  }
+  function spawnEvery() { return Math.max(2.4, 6 - 0.35 * (level - 1)); }
+  function maxTickets() { return Math.min(7, 3 + level); }
+  function spawnTicket() {
+    if (tickets.length >= maxTickets()) return;
+    var free = stations.filter(function (s) { return !s.ticket; });
+    if (!free.length) return;
+    var s = free[Math.floor(Math.random() * free.length)];
+    var base = BASE[s.type], list = TEXTS[s.type];
+    var k = Math.max(0.55, 1 / (1 + 0.05 * (level - 1)));
+    var t = { st: s, text: list[Math.floor(Math.random() * list.length)], t: base.t * k, total: base.t * k, fix: base.fix, pts: base.pts, p: 0 };
+    s.ticket = t; tickets.push(t);
+    if (state === "play") beep(660, 0.08, "triangle", 0.05);
+  }
+  function removeTicket(t) { t.st.ticket = null; tickets.splice(tickets.indexOf(t), 1); }
+  function pop(x, y, txt, col) { pops.push({ x: x, y: y, txt: txt, col: col, t: 1.3 }); }
+  function say(msg) { var l = document.getElementById("live"); if (l) l.textContent = msg; }
+
+  function nearestTicket() {
+    var bestT = null, bd = 38;
+    for (var i = 0; i < tickets.length; i++) {
+      var d = distRect(P.x, P.y - 6, tickets[i].st);
+      if (d < bd) { bd = d; bestT = tickets[i]; }
+    }
+    return bestT;
+  }
+
+  function complete(t) {
+    if (clock - lastDone < 5) combo = Math.min(combo + 1, 5); else combo = 0;
+    lastDone = clock;
+    var pts = Math.round(t.pts * (1 + combo * 0.2));
+    score += pts; done++;
+    pop(t.st.x + t.st.w / 2, t.st.y - 10, "+" + pts, "#5fd6a1");
+    if (combo > 0) pop(t.st.x + t.st.w / 2, t.st.y + 6, "COMBO x" + (combo + 1), "#f2b441");
+    beep(520, 0.09, "square", 0.05); setTimeout(function () { beep(780, 0.12, "square", 0.05); }, 90);
+    removeTicket(t);
+    var nl = 1 + Math.floor(done / 5);
+    if (nl > level) { level = nl; pop(W / 2, 200, "NIVEL " + level, "#a285f5"); say("Nivel " + level); }
+    if (done % 8 === 0 && lives < 3) { lives++; pop(P.x, P.y - 60, "+VIDA", "#ef5b6b"); }
+  }
+  function hurt(why) {
+    lives--; shake = 0.4;
+    beep(140, 0.25, "sawtooth", 0.06);
+    if (lives <= 0) gameOver(why);
+  }
+  function gameOver(why) {
+    state = "over";
+    try { if (score > best) { best = score; localStorage.setItem("ticketrush-best", String(best)); } } catch (e) {}
+    document.getElementById("overWhy").textContent = why;
+    document.getElementById("overStats").textContent = "Tickets resueltos: " + done + " · Puntos: " + score + " · Mejor: " + Math.max(best, score);
+    document.getElementById("over").hidden = false;
+    say("Turno terminado. " + why + " Puntos " + score);
+    keys = {}; vk = {};
+  }
+
+  /* ---------- jefe ---------- */
+  function pickWaypoint() {
+    for (var i = 0; i < 30; i++) {
+      var x = T + 20 + Math.random() * (14 * T - 40), y = T + 20 + Math.random() * (8 * T - 40);
+      if (!blocked(x, y, 12, 12)) { B.tx = x; B.ty = y; return; }
+    }
+    B.tx = B.x; B.ty = B.y;
+  }
+  function updateBoss(dt) {
+    if (B.sayT > 0) B.sayT -= dt;
+    var dxp = P.x - B.x, dyp = P.y - B.y, dist = Math.hypot(dxp, dyp);
+    var range = Math.min(260, 190 + level * 6);
+    if (B.state === "flee") {
+      B.flee -= dt;
+      if (B.flee <= 0) { B.state = "wander"; pickWaypoint(); }
+    } else if (dist < range && P.inv <= 0) {
+      if (B.state !== "chase") { B.say = BOSS_SAYS[Math.floor(Math.random() * BOSS_SAYS.length)]; B.sayT = 1.6; }
+      B.state = "chase";
+    } else if (B.state === "chase" && (dist > range * 1.4 || P.inv > 0)) { B.state = "wander"; pickWaypoint(); }
+
+    var tx = B.tx, ty = B.ty, sp = 40;
+    if (B.state === "chase") { tx = P.x; ty = P.y; sp = Math.min(105, 62 + level * 5); }
+    if (B.state === "flee") sp = 70;
+    var dx = tx - B.x, dy = ty - B.y, d = Math.hypot(dx, dy);
+    if (d < 6) { if (B.state !== "chase") pickWaypoint(); }
+    else move(B, dx / d * sp * dt, dy / d * sp * dt);
+
+    B.stuckT += dt;
+    if (B.stuckT > 0.7) {
+      if (Math.hypot(B.x - B.lx, B.y - B.ly) < 5 && B.state !== "chase") pickWaypoint();
+      B.lx = B.x; B.ly = B.y; B.stuckT = 0;
+    }
+    if (dist < 26 && P.inv <= 0 && P.stun <= 0) {
+      P.inv = 2.4; P.stun = 0.8;
+      B.say = BOSS_SAYS[Math.floor(Math.random() * BOSS_SAYS.length)]; B.sayT = 1.8;
+      B.state = "flee"; B.flee = 3;
+      B.tx = P.x < W / 2 ? 14 * T : 2 * T; B.ty = P.y < H / 2 ? 7 * T : 2 * T;
+      if (blocked(B.tx, B.ty, 12, 12)) { B.tx = 8 * T + 24; B.ty = 3 * T + 24; }
+      tickets.forEach(function (t) { t.p = 0; });
+      hurt("El jefe te alcanzó con \"una cosita rápida\".");
+    }
+  }
+
+  /* ---------- actualización ---------- */
+  function update(dt) {
+    clock += dt;
+    if (P.stun > 0) P.stun -= dt;
+    if (P.inv > 0) P.inv -= dt;
+    if (P.boost > 0) P.boost -= dt;
+    if (shake > 0) shake -= dt;
+    if (coffee.cool > 0) coffee.cool -= dt;
+
+    var dx = (inp("right") ? 1 : 0) - (inp("left") ? 1 : 0), dy = (inp("down") ? 1 : 0) - (inp("up") ? 1 : 0);
+    var act = inp("act");
+    var tk = nearestTicket();
+    var fixing = act && tk && P.stun <= 0;
+    P.moving = false;
+    if (P.stun <= 0 && !fixing && (dx || dy)) {
+      var l = Math.hypot(dx, dy), sp = P.boost > 0 ? 190 : 125;
+      move(P, dx / l * sp * dt, dy / l * sp * dt);
+      P.moving = true;
+    }
+    for (var i = 0; i < tickets.length; i++) {
+      var t = tickets[i];
+      if (t === tk && fixing) t.p += dt * (P.boost > 0 ? 1.5 : 1);
+      else t.p = Math.max(0, t.p - dt * 1.5);
+    }
+    if (tk && fixing && tk.p >= tk.fix) complete(tk);
+
+    if (act && !actPrev && P.stun <= 0 && !tk && distRect(P.x, P.y - 6, coffee) < 38 && coffee.cool <= 0) {
+      P.boost = 6; coffee.cool = 14;
+      pop(P.x, P.y - 60, "¡TURBO!", "#f2b441");
+      beep(300, 0.08, "triangle", 0.05); setTimeout(function () { beep(600, 0.15, "triangle", 0.05); }, 80);
+    }
+    actPrev = act;
+
+    var list = tickets.slice();
+    for (var j = 0; j < list.length; j++) {
+      var q = list[j]; q.t -= dt;
+      if (q.t <= 0 && state === "play") {
+        pop(q.st.x + q.st.w / 2, q.st.y - 10, "SLA VENCIDO", "#ef5b6b");
+        removeTicket(q);
+        hurt("Se venció el SLA de: " + q.text + ".");
+      }
+    }
+    if (state !== "play") return;
+    spawnT -= dt;
+    if (spawnT <= 0) { spawnTicket(); spawnT = spawnEvery(); }
+    updateBoss(dt);
+    for (var m = pops.length - 1; m >= 0; m--) { pops[m].t -= dt; pops[m].y -= 22 * dt; if (pops[m].t <= 0) pops.splice(m, 1); }
+  }
+
+  /* ---------- dibujo ---------- */
+  function R(x, y, w, h, c) { ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math.round(y), w, h); }
+  var anim = 0;
+
+  function drawFloor() {
+    R(0, 0, W, H, "#1a1828");
+    for (var r = 1; r <= 8; r++) for (var c = 1; c <= 14; c++) {
+      R(c * T, r * T, T, T, (r + c) % 2 ? "#242139" : "#292640");
+      R(c * T, r * T, T, 2, "#2f2b4a");
+    }
+    R(0, 0, W, T, "#37324d");
+    R(0, 40, W, 8, "#262238");
+    R(0, 0, W, 4, "#2a2640");
+    [40, 200, 360].forEach(function (x) {
+      R(x, 8, 120, 28, "#4a4468"); R(x + 3, 11, 114, 22, "#1d2b4a");
+      R(x + 10, 24, 14, 9, "#141d33"); R(x + 28, 19, 12, 14, "#141d33"); R(x + 46, 26, 18, 7, "#141d33"); R(x + 70, 16, 14, 17, "#141d33"); R(x + 92, 22, 16, 11, "#141d33");
+      R(x + 58, 11, 2, 22, "#4a4468");
+    });
+    ctx.fillStyle = "#e8e4f5"; ctx.beginPath(); ctx.arc(536, 22, 13, 0, 7); ctx.fill();
+    R(534, 12, 2, 10, "#262238"); R(536, 22, 8, 2, "#262238");
+    R(580, 8, 148, 28, "#cfcbd9"); R(582, 10, 144, 24, "#f2f0f8");
+    ctx.fillStyle = "#3a3550"; ctx.font = "18px " + F_B; ctx.textAlign = "left"; ctx.fillText("SLA = YA", 590, 28);
+    for (var y = T; y < 9 * T; y += 24) {
+      R(0, y, T, 24, y % 48 ? "#2f2a43" : "#332e49"); R(15 * T, y, T, 24, y % 48 ? "#2f2a43" : "#332e49");
+      R(0, y, T, 2, "#252136"); R(15 * T, y, T, 2, "#252136");
+    }
+    R(T - 4, T, 4, 8 * T, "#1c1a2a"); R(15 * T, T, 4, 8 * T, "#1c1a2a");
+  }
+
+  function drawStation(s) {
+    var x = s.x, y = s.y, tk = s.ticket;
+    if (s.type === "desk") {
+      R(x + 2, y + 42, 92, 6, "rgba(0,0,0,0.25)");
+      R(x, y + 14, 96, 22, "#74513a"); R(x, y + 14, 96, 3, "#8d6648"); R(x + 2, y + 36, 92, 10, "#4f3626");
+      R(x + 28, y - 6, 40, 28, "#1c1b24");
+      var blink = Math.floor(anim * 4) % 2;
+      if (tk) { R(x + 31, y - 3, 34, 20, blink ? "#2d5fd6" : "#2551bd"); R(x + 36, y + 2, 4, 4, "#fff"); R(x + 44, y + 2, 4, 4, "#fff"); R(x + 36, y + 10, 20, 2, "#fff"); }
+      else { R(x + 31, y - 3, 34, 20, "#173a2c"); R(x + 35, y + 1, 16, 2, "#5fd6a1"); R(x + 35, y + 6, 24, 2, "#3f9d78"); R(x + 35, y + 11, 12, 2, "#5fd6a1"); }
+      R(x + 44, y + 22, 8, 4, "#1c1b24");
+      R(x + 32, y + 26, 32, 6, "#cfc9dd"); R(x + 32, y + 30, 32, 2, "#9d96b8");
+      R(x + 8, y + 20, 9, 10, (s.seed % 2) ? "#e8e4f5" : "#ef5b6b"); R(x + 17, y + 23, 3, 4, "#cfc9dd");
+      R(x + 74, y + 21, 14, 10, "#f2f0f8"); R(x + 76, y + 23, 10, 1, "#9d96b8"); R(x + 76, y + 26, 8, 1, "#9d96b8");
+    } else if (s.type === "server") {
+      for (var k = 0; k < 2; k++) {
+        var rx = x + k * T + 4;
+        R(rx - 1, y - 21, 42, 68, "#0f0e16"); R(rx, y - 20, 40, 66, "#1f1d2b");
+        for (var i = 0; i < 5; i++) {
+          R(rx + 4, y - 14 + i * 12, 32, 9, "#2b2840");
+          var on = tk ? (Math.floor(anim * 6 + i + k) % 2) : 1;
+          R(rx + 7, y - 11 + i * 12, 4, 3, tk ? (on ? "#ef5b6b" : "#4a2028") : (i % 2 ? "#5fd6a1" : "#f2b441"));
+          R(rx + 28, y - 11 + i * 12, 5, 3, "#161422");
+        }
+      }
+    } else if (s.type === "printer") {
+      R(x + 8, y + 44, 80, 4, "rgba(0,0,0,0.25)");
+      R(x + 22, y + 0, 52, 10, "#f2f0f8"); R(x + 8, y + 10, 80, 30, "#cfcbd9"); R(x + 8, y + 10, 80, 4, "#e4e1ee"); R(x + 8, y + 36, 80, 4, "#9d96b8");
+      R(x + 62, y + 18, 18, 9, "#2b2b3a"); R(x + 65, y + 21, 5, 3, tk ? (Math.floor(anim * 5) % 2 ? "#ef5b6b" : "#4a2028") : "#5fd6a1");
+      R(x + 26, y + 38, 44, 8, "#f8f6fc"); if (tk) { R(x + 30, y + 42, 12, 6, "#e4e1ee"); R(x + 52, y + 40, 10, 8, "#d8d4e6"); }
+    } else if (s.type === "coffee") {
+      R(x + 6, y + 44, 38, 4, "rgba(0,0,0,0.25)");
+      R(x + 8, y + 2, 32, 44, "#3b3b4f"); R(x + 8, y + 2, 32, 4, "#4c4c64"); R(x + 12, y + 8, 24, 10, "#22222e");
+      R(x + 14, y + 26, 20, 16, "#d8d4e6"); R(x + 15, y + 31, 18, 10, "#5a3a28");
+      R(x + 33, y + 10, 3, 3, coffee.cool > 0 ? "#6b6580" : "#5fd6a1");
+    } else if (s.type === "plant") {
+      R(x + 10, y + 44, 28, 4, "rgba(0,0,0,0.25)");
+      R(x + 14, y + 30, 20, 16, "#a0522d"); R(x + 12, y + 28, 24, 4, "#b8683f");
+      R(x + 22, y + 6, 4, 24, "#2f7a4f"); R(x + 10, y + 10, 14, 10, "#3f9d63"); R(x + 24, y + 4, 14, 12, "#4fb878"); R(x + 8, y + 20, 12, 8, "#2f7a4f"); R(x + 26, y + 18, 12, 8, "#3f9d63");
+    }
+  }
+
+  function shadow(x, y, w) { ctx.fillStyle = "rgba(0,0,0,0.3)"; ctx.beginPath(); ctx.ellipse(Math.round(x), Math.round(y), w, 5, 0, 0, 7); ctx.fill(); }
+  function drawPlayer() {
+    shadow(P.x, P.y - 1, 14);
+    var bob = P.moving ? Math.round(Math.sin(anim * 16) * 1.5) : 0;
+    if (P.inv > 0 && Math.floor(anim * 14) % 2) ctx.globalAlpha = 0.45;
+    if (imgP.complete && imgP.naturalWidth) ctx.drawImage(imgP, Math.round(P.x - 24), Math.round(P.y - 47 + bob), 48, 48);
+    else R(P.x - 10, P.y - 36, 20, 36, "#1e8c96");
+    ctx.globalAlpha = 1;
+    if (P.boost > 0) { R(P.x - 14, P.y - 52, 28, 4, "#3a2a6e"); R(P.x - 14, P.y - 52, 28 * (P.boost / 6), 4, "#f2b441"); }
+    if (P.stun > 0) { for (var i = 0; i < 3; i++) { var a = anim * 8 + i * 2.1; R(P.x + Math.cos(a) * 14 - 2, P.y - 54 + Math.sin(a) * 4, 4, 4, "#f2b441"); } }
+  }
+  function drawBoss() {
+    shadow(B.x, B.y - 1, 14);
+    var bob = (B.state !== "wander" || Math.hypot(B.tx - B.x, B.ty - B.y) > 8) ? Math.round(Math.sin(anim * 12) * 1.5) : 0;
+    if (imgB.complete && imgB.naturalWidth) ctx.drawImage(imgB, Math.round(B.x - 24), Math.round(B.y - 47 + bob), 48, 48);
+    else R(B.x - 10, B.y - 36, 20, 36, "#34343e");
+    if (B.sayT > 0) {
+      ctx.font = "20px " + F_B; var w = ctx.measureText(B.say).width + 14;
+      var bx = Math.round(B.x - w / 2), by = Math.round(B.y - 80);
+      R(bx, by, w, 24, "#f2f0f8"); R(bx + w / 2 - 4, by + 24, 8, 6, "#f2f0f8");
+      ctx.fillStyle = "#2b2840"; ctx.textAlign = "center"; ctx.fillText(B.say, bx + w / 2, by + 18);
+    }
+  }
+  function drawBubbles() {
+    tickets.forEach(function (t) {
+      var s = t.st, cx = s.x + s.w / 2, top = s.y - (s.type === "server" ? 36 : 32) + Math.round(Math.sin(anim * 5 + s.x) * 2);
+      var frac = Math.max(0, t.t / t.total), col = frac > 0.5 ? "#5fd6a1" : (frac > 0.25 ? "#f2b441" : "#ef5b6b");
+      var urgent = frac < 0.25 && Math.floor(anim * 6) % 2;
+      R(cx - 14, top, 28, 24, "#0d0c14"); R(cx - 12, top + 2, 24, 20, urgent ? "#ef5b6b" : "#f2b441");
+      R(cx - 4, top + 24, 8, 4, "#0d0c14");
+      ctx.fillStyle = "#0d0c14"; ctx.font = "14px " + F_D; ctx.textAlign = "center"; ctx.fillText("!", cx + 1, top + 18);
+      R(cx - 16, top + 30, 32, 6, "#0d0c14"); R(cx - 14, top + 32, 28 * frac, 2, col);
+      if (t.p > 0) { R(cx - 16, top - 10, 32, 6, "#0d0c14"); R(cx - 14, top - 8, 28 * Math.min(1, t.p / t.fix), 2, "#a285f5"); }
+    });
+  }
+  function drawPops() {
+    ctx.textAlign = "center";
+    pops.forEach(function (p) { ctx.globalAlpha = Math.min(1, p.t * 1.5); ctx.font = "12px " + F_D; ctx.fillStyle = "#0d0c14"; ctx.fillText(p.txt, p.x + 1, p.y + 1); ctx.fillStyle = p.col; ctx.fillText(p.txt, p.x, p.y); });
+    ctx.globalAlpha = 1;
+  }
+  var HEART = ["0110110", "1111111", "1111111", "0111110", "0011100", "0001000"];
+  function drawHeart(x, y, on) {
+    for (var r = 0; r < HEART.length; r++) for (var c = 0; c < 7; c++) if (HEART[r][c] === "1") R(x + c * 3, y + r * 3, 3, 3, on ? "#ef5b6b" : "#3a3550");
+  }
+  function drawHUD() {
+    R(0, 9 * T, W, T, "#12101c"); R(0, 9 * T, W, 3, "#2c2840");
+    for (var i = 0; i < 3; i++) drawHeart(14 + i * 27, 9 * T + 15, i < lives);
+    ctx.textAlign = "left"; ctx.font = "10px " + F_D; ctx.fillStyle = "#a285f5"; ctx.fillText("NIV " + level, 104, 9 * T + 29);
+    var msg, col = "#9d96b8", tk = (state === "play") ? nearestTicket() : null;
+    if (state !== "play") msg = "Tickets abiertos: " + tickets.length;
+    else if (tk) { msg = "Arreglando: " + tk.text; col = "#ece8f7"; }
+    else if (distRect(P.x, P.y - 6, coffee) < 38) { msg = coffee.cool > 0 ? "La cafetera se está calentando..." : "Cafetera lista: ESPACIO = turbo"; col = "#f2b441"; }
+    else msg = "Tickets abiertos: " + tickets.length + " · ve a un !";
+    ctx.font = "20px " + F_B; ctx.fillStyle = col; ctx.fillText(msg, 190, 9 * T + 30);
+    ctx.textAlign = "right"; ctx.font = "12px " + F_D; ctx.fillStyle = "#ece8f7";
+    ctx.fillText("PTS " + String(score).padStart(4, "0"), W - 14, 9 * T + 22);
+    if (combo > 0 && clock - lastDone < 5) { ctx.font = "10px " + F_D; ctx.fillStyle = "#f2b441"; ctx.fillText("COMBO x" + (combo + 1), W - 14, 9 * T + 40); }
+  }
+
+  function render() {
+    ctx.save();
+    if (shake > 0 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) ctx.translate(Math.round((Math.random() - 0.5) * 8), Math.round((Math.random() - 0.5) * 8));
+    drawFloor();
+    var items = solids.map(function (s) { return { b: s.y + s.h, f: function () { drawStation(s); } }; });
+    items.push({ b: P.y, f: drawPlayer }); items.push({ b: B.y, f: drawBoss });
+    items.sort(function (a, b) { return a.b - b.b; });
+    items.forEach(function (it) { it.f(); });
+    drawBubbles(); drawPops();
+    ctx.restore();
+    drawHUD();
+  }
+
+  var last = 0;
+  function frame(ts) {
+    var dt = Math.min(0.05, (ts - last) / 1000 || 0); last = ts; anim = ts / 1000;
+    if (state === "play") update(dt);
+    render();
+    requestAnimationFrame(frame);
+  }
+
+  function start() {
+    reset(); state = "play";
+    document.getElementById("menu").hidden = true;
+    document.getElementById("over").hidden = true;
+    beep(440, 0.1, "square", 0.04);
+    say("Turno empezado");
+  }
+  document.getElementById("start").addEventListener("click", start);
+  document.getElementById("again").addEventListener("click", start);
+
+  reset();
+  requestAnimationFrame(frame);
+})();
+</script>

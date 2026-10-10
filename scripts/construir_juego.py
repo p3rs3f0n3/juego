@@ -1,0 +1,18 @@
+"""Une el juego (src/game_template.html) con los sprites y genera ticket_rush.html.
+Uso (desde la carpeta scripts):  python construir_juego.py
+"""
+import base64
+
+def uri(ruta):
+    with open(ruta, "rb") as f:
+        return "data:image/png;base64," + base64.b64encode(f.read()).decode()
+
+with open("../src/game_template.html", encoding="utf-8") as f:
+    html = f.read()
+
+html = html.replace("__PLAYER__", uri("../sprites/avatar_48.png"))
+html = html.replace("__BOSS__", uri("../sprites/boss_48.png"))
+
+with open("../ticket_rush.html", "w", encoding="utf-8") as f:
+    f.write(html)
+print("Listo: ticket_rush.html generado")
