@@ -44,6 +44,11 @@ def init():
                                                rank INTEGER, secs INTEGER, why TEXT);
             CREATE INDEX IF NOT EXISTS games_score ON games(score);
         """)
+        cols = [r[1] for r in c.execute("PRAGMA table_info(games)")]
+        if "gid" not in cols:  # bases creadas antes de registrar partidas abandonadas
+            c.execute("ALTER TABLE games ADD COLUMN gid TEXT")
+            c.execute("ALTER TABLE games ADD COLUMN abandoned INTEGER DEFAULT 0")
+        c.execute("CREATE UNIQUE INDEX IF NOT EXISTS games_gid ON games(gid)")
 
 
 def now():
@@ -93,9 +98,17 @@ class Handler(BaseHTTPRequestHandler):
             else:
                 tickets = num(d, "tickets", 2000)
                 score = min(num(d, "score", 10**6), tickets * 100)  # 100 pts por ticket es imposible de superar
-                c.execute("INSERT INTO games VALUES (?,?,?,?,?,?,?)",
-                          (now(), v, score, tickets, num(d, "rank", 2), num(d, "secs", 86400),
-                           str(d.get("why", ""))[:140]))
+                g = str(d.get("g", ""))
+                row = (now(), v, score, tickets, num(d, "rank", 2), num(d, "secs", 86400),
+                       str(d.get("why", ""))[:140], g if VID.match(g) else None, 1 if d.get("a") else 0)
+                # Cada partida tiene su id: si llega "abandonó" (salió de la página) y después vuelve y
+                # termina, el final real reemplaza al abandono; un abandono nunca pisa un final real.
+                c.execute("""INSERT INTO games (ts, visitor, score, tickets, rank, secs, why, gid, abandoned)
+                             VALUES (?,?,?,?,?,?,?,?,?)
+                             ON CONFLICT(gid) DO UPDATE SET ts=excluded.ts, score=excluded.score,
+                               tickets=excluded.tickets, rank=excluded.rank, secs=excluded.secs,
+                               why=excluded.why, abandoned=excluded.abandoned
+                             WHERE excluded.abandoned = 0 OR games.abandoned = 1""", row)
         self.send(204)
 
     def do_GET(self):
@@ -138,9 +151,13 @@ def stats_page():
         starts, ends = q("SELECT COUNT(*) FROM starts"), q("SELECT COUNT(*) FROM games")
         g_today = q("SELECT COUNT(*) FROM starts WHERE ts >= ?", today)
         players = q("SELECT COUNT(DISTINCT visitor) FROM starts")
-        best, avg = q("SELECT MAX(score) FROM games"), q("SELECT AVG(score) FROM games")
+        best, avg = q("SELECT MAX(score) FROM games"), q("SELECT AVG(score) FROM games WHERE abandoned = 0")
         max_t, played = q("SELECT MAX(tickets) FROM games"), q("SELECT SUM(secs) FROM games")
-        boss = q("SELECT COUNT(*) FROM games WHERE why LIKE '%jefe%'")
+        boss = q("SELECT COUNT(*) FROM games WHERE abandoned = 0 AND why LIKE '%jefe%'")
+        quit_ = q("SELECT COUNT(*) FROM games WHERE abandoned = 1")
+        sla = ends - boss - quit_
+        no_play = q("SELECT COUNT(DISTINCT visitor) FROM visits WHERE visitor NOT IN (SELECT visitor FROM starts)")
+        lost = max(0, starts - ends)  # empezaron pero no llegó ni final ni abandono
         top = c.execute("SELECT * FROM games ORDER BY score DESC, ts ASC LIMIT 10").fetchall()
         ranks = dict(c.execute("SELECT rank, COUNT(*) FROM games GROUP BY rank").fetchall())
         since = today - 13 * 86400
@@ -158,13 +175,16 @@ def stats_page():
         tile("Desde celular", f"{round(100 * mobile / visits) if visits else 0}%", f"{mobile} visitas"),
         tile("Partidas jugadas", starts, f"{g_today} hoy · {players} jugadores"),
         tile("Récord", best, f"máx. {max_t} tickets"),
-        tile("Puntaje promedio", round(avg), f"{ends} partidas terminadas"),
+        tile("Entraron sin jugar", no_play, f"de {uniq} personas"),
+        tile("Puntaje promedio", round(avg), f"{ends - quit_} partidas terminadas"),
         tile("Tiempo jugado", mins(played), "entre todos"),
-        tile("Perdieron por…", f"{boss} jefe", f"{ends - boss} SLA vencido"),
+        tile("Perdieron por…", f"{boss} jefe", f"{sla} SLA vencido · {quit_} abandonaron"
+             + (f" · {lost} sin dato" if lost else "")),
     ])
 
     rows = "".join(
-        f"<tr><td>{i}</td><td>{player(g['visitor'])}</td><td class=n>{g['score']}</td>"
+        f"<tr><td>{i}</td><td>{player(g['visitor'])}{' <em>(abandonó)</em>' if g['abandoned'] else ''}</td>"
+        f"<td class=n>{g['score']}</td>"
         f"<td class=n>{g['tickets']}</td><td>{RANKS[g['rank']]}</td>"
         f"<td>{day(g['ts']).strftime('%d/%m %H:%M')}</td></tr>"
         for i, g in enumerate(top, 1)) or '<tr><td colspan=6 class=empty>Todavía nadie ha terminado una partida.</td></tr>'
@@ -205,6 +225,7 @@ th {{ color:var(--muted); font-weight:400; }}
 td.n {{ text-align:right; font-variant-numeric:tabular-nums; }}
 tr:first-child td {{ color:var(--warn); }}
 .empty {{ color:var(--muted); text-align:center; }}
+em {{ color:var(--muted); font-style:normal; }}
 .wrap {{ overflow-x:auto; }}
 .hrow {{ display:grid; grid-template-columns:120px 1fr 48px; gap:10px; align-items:center; margin:6px 0; }}
 .hrow b {{ text-align:right; font-weight:400; }}
