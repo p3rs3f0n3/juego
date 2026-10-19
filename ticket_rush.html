@@ -183,7 +183,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   <canvas id="game" width="768" height="480" aria-label="Juego Ticket Rush: corre por la oficina resolviendo tickets de TI y esquiva al jefe"></canvas>
   <div class="screen" id="menu">
     <h2>TICKET RUSH</h2>
-    <p>Eres la nueva de TI. Corre a cada <b style="color:var(--warn)">!</b>, mantén ESPACIO para arreglar el ticket antes de que venza el SLA y esquiva al jefe. Tip: si lo llevas donde la compañera, se distrae <b style="color:#ff7eb6">♥</b></p>
+    <p>Eres la nueva de TI. Corre a cada <b style="color:var(--warn)">!</b>, mantén ESPACIO para arreglar el ticket antes de que venza el SLA y esquiva al jefe. Empiezas de practicante y asciendes resolviendo tickets. Tip: si llevas al jefe donde la compañera, se distrae <b style="color:#ff7eb6">♥</b></p>
     <button class="btn" id="start" type="button">EMPEZAR TURNO</button>
     <p class="rotate">Gira el celular para verlo más grande ↻</p>
   </div>
@@ -357,7 +357,34 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   var LOVE_SAYS = ["¿Un tintico?", "¡Qué linda hoy!", "¿Almorzamos?", "Hola, hola...", "¿Bailamos el viernes?"];
   var LOVE_TIME = 4.5, LOVE_COOL = 12;
 
-  var P, B, M, hearts, tickets, pops, score, done, level, lives, combo, lastDone, spawnT, shake, clock, actPrev, best = 0, whyOver;
+  /* ---------- dificultad: rangos que se ganan resolviendo tickets ---------- */
+  var RANKS = [
+    { name: "PRACTICANTE", from: 0 },
+    { name: "ANALISTA", from: 10 },
+    { name: "JEFE DE TI", from: 25 }
+  ];
+  // Cada valor se mezcla suavemente entre estos puntos según los tickets resueltos (después de 45 ya no sube).
+  var CURVE = {
+    at:     [0,    10,   25,   45],
+    range:  [120,  160,  196,  230],  // distancia a la que el jefe te ve
+    bossSp: [50,   60,   67,   95],   // velocidad del jefe persiguiendo (tú vas a 125)
+    sla:    [1.4,  1.15, 1.0,  0.75], // multiplicador del tiempo de cada ticket
+    spawn:  [8,    7,    6,    3.5],  // segundos entre tickets nuevos
+    maxT:   [3,    4,    5,    7],    // tickets abiertos a la vez como máximo
+    keep:   [1,    0.5,  0,    0]     // cuánto avance de los tickets conservas si el jefe te alcanza
+  };
+  var MAX_LIVES = 5;
+  function diff(key) {
+    var at = CURVE.at, v = CURVE[key];
+    if (done >= at[at.length - 1]) return v[v.length - 1];
+    for (var i = 1; i < at.length; i++) {
+      if (done < at[i]) { var f = (done - at[i - 1]) / (at[i] - at[i - 1]); return v[i - 1] + (v[i] - v[i - 1]) * f; }
+    }
+    return v[v.length - 1];
+  }
+  function rankOf(n) { var r = 0; for (var i = 0; i < RANKS.length; i++) if (n >= RANKS[i].from) r = i; return r; }
+
+  var P, B, M, hearts, tickets, pops, score, done, rank, lives, combo, lastDone, spawnT, shake, clock, actPrev, best = 0, whyOver, banner = null;
   try { best = parseInt(localStorage.getItem("ticketrush-best") || "0", 10) || 0; } catch (e) {}
 
   function reset() {
@@ -365,22 +392,22 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     B = { x: 650, y: 140, tx: 650, ty: 140, state: "wander", say: "", sayT: 0, flee: 0, love: 0, stuckT: 0, lx: 650, ly: 140 };
     M = { x: 170, y: 420, tx: 170, ty: 420, cool: 3, pause: 0, stuckT: 0, lx: 170, ly: 420 };
     hearts = [];
-    tickets = []; pops = []; score = 0; done = 0; level = 1; lives = 3; combo = 0; lastDone = -99;
+    tickets = []; pops = []; score = 0; done = 0; rank = 0; lives = 3; banner = null; combo = 0; lastDone = -99;
     shake = 0; clock = 0; actPrev = false; coffee.cool = 0;
     stations.forEach(function (s) { s.ticket = null; });
     spawnTicket(); spawnTicket();
     spawnT = 4;
     pickWaypoint(B); pickWaypoint(M);
   }
-  function spawnEvery() { return Math.max(2.4, 6 - 0.35 * (level - 1)); }
-  function maxTickets() { return Math.min(7, 3 + level); }
+  function spawnEvery() { return diff("spawn"); }
+  function maxTickets() { return Math.round(diff("maxT")); }
   function spawnTicket() {
     if (tickets.length >= maxTickets()) return;
     var free = stations.filter(function (s) { return !s.ticket; });
     if (!free.length) return;
     var s = free[Math.floor(Math.random() * free.length)];
     var base = BASE[s.type], list = TEXTS[s.type];
-    var k = Math.max(0.55, 1 / (1 + 0.05 * (level - 1)));
+    var k = diff("sla");
     var t = { st: s, text: list[Math.floor(Math.random() * list.length)], t: base.t * k, total: base.t * k, fix: base.fix, pts: base.pts, p: 0 };
     s.ticket = t; tickets.push(t);
     if (state === "play") beep(660, 0.08, "triangle", 0.05);
@@ -407,9 +434,15 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     if (combo > 0) pop(t.st.x + t.st.w / 2, t.st.y + 6, "COMBO x" + (combo + 1), "#f2b441");
     beep(520, 0.09, "square", 0.05); setTimeout(function () { beep(780, 0.12, "square", 0.05); }, 90);
     removeTicket(t);
-    var nl = 1 + Math.floor(done / 5);
-    if (nl > level) { level = nl; pop(W / 2, 200, "NIVEL " + level, "#a285f5"); say("Nivel " + level); }
-    if (done % 8 === 0 && lives < 3) { lives++; pop(P.x, P.y - 60, "+VIDA", "#ef5b6b"); }
+    var nr = rankOf(done);
+    if (nr > rank) {
+      rank = nr;
+      banner = { t: 2.8, title: "¡ASCENSO!", sub: "AHORA ERES " + RANKS[rank].name };
+      if (lives < MAX_LIVES) { lives++; pop(P.x, P.y - 60, "+VIDA", "#ef5b6b"); }
+      beep(523, 0.1, "square", 0.05); setTimeout(function () { beep(659, 0.1, "square", 0.05); }, 110);
+      setTimeout(function () { beep(784, 0.2, "square", 0.05); }, 220);
+      say("Ascenso: ahora eres " + RANKS[rank].name.toLowerCase());
+    } else if (done % 8 === 0 && lives < MAX_LIVES) { lives++; pop(P.x, P.y - 60, "+VIDA", "#ef5b6b"); }
   }
   function hurt(why) {
     lives--; shake = 0.4;
@@ -420,7 +453,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     state = "over";
     try { if (score > best) { best = score; localStorage.setItem("ticketrush-best", String(best)); } } catch (e) {}
     document.getElementById("overWhy").textContent = why;
-    document.getElementById("overStats").textContent = "Tickets resueltos: " + done + " · Puntos: " + score + " · Mejor: " + Math.max(best, score);
+    document.getElementById("overStats").textContent = "Rango: " + RANKS[rank].name + " · Tickets: " + done + " · Puntos: " + score + " · Mejor: " + Math.max(best, score);
     document.getElementById("over").hidden = false;
     say("Turno terminado. " + why + " Puntos " + score);
     keys = {}; vk = {};
@@ -467,7 +500,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   function updateBoss(dt) {
     if (B.sayT > 0) B.sayT -= dt;
     var dxp = P.x - B.x, dyp = P.y - B.y, dist = Math.hypot(dxp, dyp);
-    var range = Math.min(260, 190 + level * 6);
+    var range = diff("range");
     if (B.state !== "love" && B.state !== "flee" && M.cool <= 0 && Math.hypot(M.x - B.x, M.y - B.y) < 46) {
       B.state = "love"; B.love = LOVE_TIME;
       B.say = LOVE_SAYS[Math.floor(Math.random() * LOVE_SAYS.length)]; B.sayT = 2.2;
@@ -490,7 +523,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     } else if (B.state === "chase" && (dist > range * 1.4 || P.inv > 0)) { B.state = "wander"; pickWaypoint(B); }
 
     var tx = B.tx, ty = B.ty, sp = 40;
-    if (B.state === "chase") { tx = P.x; ty = P.y; sp = Math.min(105, 62 + level * 5); }
+    if (B.state === "chase") { tx = P.x; ty = P.y; sp = diff("bossSp"); }
     if (B.state === "flee") sp = 70;
     var dx = tx - B.x, dy = ty - B.y, d = Math.hypot(dx, dy);
     if (d < 6) { if (B.state !== "chase") pickWaypoint(B); }
@@ -504,7 +537,8 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
       B.state = "flee"; B.flee = 3;
       B.tx = P.x < W / 2 ? 14 * T : 2 * T; B.ty = P.y < H / 2 ? 7 * T : 2 * T;
       if (blocked(B.tx, B.ty, 12, 12)) { B.tx = 8 * T + 24; B.ty = 3 * T + 24; }
-      tickets.forEach(function (t) { t.p = 0; });
+      var keep = diff("keep");
+      tickets.forEach(function (t) { t.p *= keep; });
       hurt("El jefe te alcanzó con \"una cosita rápida\".");
     }
   }
@@ -557,6 +591,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     updateMate(dt);
     updateBoss(dt);
     updateHearts(dt);
+    if (banner) { banner.t -= dt; if (banner.t <= 0) banner = null; }
     for (var m = pops.length - 1; m >= 0; m--) { pops[m].t -= dt; pops[m].y -= 22 * dt; if (pops[m].t <= 0) pops.splice(m, 1); }
   }
 
@@ -672,6 +707,17 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     });
     ctx.globalAlpha = 1;
   }
+  function drawBanner() {
+    if (!banner) return;
+    var a = Math.min(1, banner.t * 2, (2.8 - banner.t) * 6);
+    ctx.globalAlpha = a;
+    R(0, 178, W, 74, "rgba(13, 12, 20, 0.88)"); R(0, 178, W, 3, "#f2b441"); R(0, 249, W, 3, "#f2b441");
+    ctx.textAlign = "center";
+    ctx.font = "22px " + F_D; ctx.fillStyle = "#0d0c14"; ctx.fillText(banner.title, W / 2 + 2, 214);
+    ctx.fillStyle = "#f2b441"; ctx.fillText(banner.title, W / 2, 212);
+    ctx.font = "12px " + F_D; ctx.fillStyle = "#a285f5"; ctx.fillText(banner.sub, W / 2, 238);
+    ctx.globalAlpha = 1;
+  }
   function drawBubbles() {
     tickets.forEach(function (t) {
       var s = t.st, cx = s.x + s.w / 2, top = s.y - (s.type === "server" ? 36 : 32) + Math.round(Math.sin(anim * 5 + s.x) * 2);
@@ -695,14 +741,14 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   }
   function drawHUD() {
     R(0, 9 * T, W, T, "#12101c"); R(0, 9 * T, W, 3, "#2c2840");
-    for (var i = 0; i < 3; i++) drawHeart(14 + i * 27, 9 * T + 15, i < lives);
-    ctx.textAlign = "left"; ctx.font = "10px " + F_D; ctx.fillStyle = "#a285f5"; ctx.fillText("NIV " + level, 104, 9 * T + 29);
+    for (var i = 0; i < MAX_LIVES; i++) drawHeart(12 + i * 22, 9 * T + 15, i < lives);
+    ctx.textAlign = "left"; ctx.font = "8px " + F_D; ctx.fillStyle = "#a285f5"; ctx.fillText(RANKS[rank].name, 128, 9 * T + 28);
     var msg, col = "#9d96b8", tk = (state === "play") ? nearestTicket() : null;
     if (state !== "play") msg = "Tickets abiertos: " + tickets.length;
     else if (tk) { msg = "Arreglando: " + tk.text; col = "#ece8f7"; }
     else if (distRect(P.x, P.y - 6, coffee) < 38) { msg = coffee.cool > 0 ? "La cafetera se está calentando..." : "Cafetera lista: ESPACIO = turbo"; col = "#f2b441"; }
     else msg = "Tickets abiertos: " + tickets.length + " · ve a un !";
-    ctx.font = "20px " + F_B; ctx.fillStyle = col; ctx.fillText(msg, 190, 9 * T + 30);
+    ctx.font = "20px " + F_B; ctx.fillStyle = col; ctx.fillText(msg, 228, 9 * T + 30);
     ctx.textAlign = "right"; ctx.font = "12px " + F_D; ctx.fillStyle = "#ece8f7";
     ctx.fillText("PTS " + String(score).padStart(4, "0"), W - 14, 9 * T + 22);
     if (combo > 0 && clock - lastDone < 5) { ctx.font = "10px " + F_D; ctx.fillStyle = "#f2b441"; ctx.fillText("COMBO x" + (combo + 1), W - 14, 9 * T + 40); }
@@ -718,6 +764,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     items.forEach(function (it) { it.f(); });
     drawBubbles(); drawHearts(); drawPops();
     ctx.restore();
+    drawBanner();
     drawHUD();
   }
 
