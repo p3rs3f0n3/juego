@@ -183,7 +183,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   <canvas id="game" width="768" height="480" aria-label="Juego Ticket Rush: corre por la oficina resolviendo tickets de TI y esquiva al jefe"></canvas>
   <div class="screen" id="menu">
     <h2>TICKET RUSH</h2>
-    <p>Eres la nueva de TI. Corre a cada <b style="color:var(--warn)">!</b>, mantén ESPACIO para arreglar el ticket antes de que venza el SLA y esquiva al jefe.</p>
+    <p>Eres la nueva de TI. Corre a cada <b style="color:var(--warn)">!</b>, mantén ESPACIO para arreglar el ticket antes de que venza el SLA y esquiva al jefe. Tip: si lo llevas donde la compañera, se distrae <b style="color:#ff7eb6">♥</b></p>
     <button class="btn" id="start" type="button">EMPEZAR TURNO</button>
     <p class="rotate">Gira el celular para verlo más grande ↻</p>
   </div>
@@ -195,7 +195,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   </div>
 </div>
 
-<p class="hint">Flechas o WASD para moverte · mantén ESPACIO o E para arreglar · la cafetera da turbo</p>
+<p class="hint">Flechas o WASD para moverte · mantén ESPACIO o E para arreglar · la cafetera da turbo · lleva al jefe donde la compañera ♥</p>
 
 <div class="pad" aria-label="Controles táctiles">
   <div class="dpad">
@@ -218,6 +218,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
 
   var imgP = new Image(); imgP.src = "__PLAYER__";
   var imgB = new Image(); imgB.src = "__BOSS__";
+  var imgM = new Image(); imgM.src = "__MATE__";
 
   var F_D = '"Press Start 2P", ui-monospace, monospace';
   var F_B = 'VT323, ui-monospace, monospace';
@@ -281,18 +282,63 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   solids.push({ x: T, y: 8 * T, w: T, h: T, type: "plant" });
   solids.push({ x: 14 * T, y: 8 * T, w: T, h: T, type: "plant" });
 
+  /* Caja de choque ajustada a lo que se ve dibujado (solo la base del objeto, en la parte de abajo
+     de su casilla). Así no se choca contra aire y se puede pasar "por detrás" de lo alto. */
+  var HITBOX = {
+    desk: [2, 16, 92, 30],     // la mesa, sin el monitor
+    server: [3, 24, 90, 22],   // la base de los racks
+    printer: [8, 14, 80, 32],
+    coffee: [8, 20, 32, 26],
+    plant: [12, 28, 24, 18]    // la maceta, no las hojas
+  };
+  solids.forEach(function (s) {
+    var hb = HITBOX[s.type];
+    s.cb = { x: s.x + hb[0], y: s.y + hb[1], w: hb[2], h: hb[3] };
+  });
+
+  var HW = 8, HH = 6;          // los pies: ancho y "grosor" del personaje contra los objetos
+  var NUDGE = 14;              // ayuda de esquinas: cuánto puede deslizarse para rodear un borde
   function blocked(x, y, hw, hh) {
     var l = x - hw, r = x + hw, t = y - hh, b = y;
     if (l < T || r > 15 * T || t < T || b > 9 * T) return true;
     for (var i = 0; i < solids.length; i++) {
-      var s = solids[i];
+      var s = solids[i].cb;
       if (r > s.x && l < s.x + s.w && b > s.y && t < s.y + s.h) return true;
     }
     return false;
   }
+  /* Si choca de frente contra un borde pero hay espacio libre muy cerca hacia un lado,
+     se desliza hacia ese lado en vez de quedarse pegado (como en Zelda o Pokémon). */
+  function slideAround(e, ax, step) {
+    var dir = step > 0 ? 1 : -1, sp = Math.abs(step);
+    for (var off = 1; off <= NUDGE; off++) {
+      for (var sgn = -1; sgn <= 1; sgn += 2) {
+        var o = off * sgn;
+        var nx = ax === "x" ? e.x + dir : e.x + o, ny = ax === "x" ? e.y + o : e.y + dir;
+        var sx = ax === "x" ? e.x : e.x + o, sy = ax === "x" ? e.y + o : e.y;
+        if (!blocked(nx, ny, HW, HH) && !blocked(sx, sy, HW, HH)) {
+          var m = Math.min(sp, off) * sgn;
+          if (ax === "x") { if (!blocked(e.x, e.y + m, HW, HH)) e.y += m; }
+          else if (!blocked(e.x + m, e.y, HW, HH)) e.x += m;
+          return;
+        }
+      }
+    }
+  }
+  // Avanza lo que pueda hasta tocar el obstáculo; devuelve true si logró moverse algo.
+  function approach(e, ax, step) {
+    var dir = step > 0 ? 1 : -1, left = Math.abs(step), moved = false;
+    while (left > 0) {
+      var s = Math.min(1, left) * dir;
+      if (blocked(ax === "x" ? e.x + s : e.x, ax === "x" ? e.y : e.y + s, HW, HH)) break;
+      if (ax === "x") e.x += s; else e.y += s;
+      left -= 1; moved = true;
+    }
+    return moved;
+  }
   function move(e, dx, dy) {
-    if (!blocked(e.x + dx, e.y, 9, 10)) e.x += dx;
-    if (!blocked(e.x, e.y + dy, 9, 10)) e.y += dy;
+    if (dx && !approach(e, "x", dx) && !dy) slideAround(e, "x", dx);
+    if (dy && !approach(e, "y", dy) && !dx) slideAround(e, "y", dy);
   }
   function distRect(x, y, r) {
     var dx = Math.max(r.x - x, 0, x - (r.x + r.w)), dy = Math.max(r.y - y, 0, y - (r.y + r.h));
@@ -308,19 +354,23 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   };
   var BASE = { desk: { t: 26, fix: 1.0, pts: 10 }, printer: { t: 22, fix: 1.6, pts: 20 }, server: { t: 19, fix: 2.6, pts: 40 } };
   var BOSS_SAYS = ["¡Para ayer!", "¿Ya quedó?", "Es urgente", "¿Y eso por qué?", "Una cosita rápida"];
+  var LOVE_SAYS = ["¿Un tintico?", "¡Qué linda hoy!", "¿Almorzamos?", "Hola, hola...", "¿Bailamos el viernes?"];
+  var LOVE_TIME = 4.5, LOVE_COOL = 12;
 
-  var P, B, tickets, pops, score, done, level, lives, combo, lastDone, spawnT, shake, clock, actPrev, best = 0, whyOver;
+  var P, B, M, hearts, tickets, pops, score, done, level, lives, combo, lastDone, spawnT, shake, clock, actPrev, best = 0, whyOver;
   try { best = parseInt(localStorage.getItem("ticketrush-best") || "0", 10) || 0; } catch (e) {}
 
   function reset() {
     P = { x: 360, y: 410, boost: 0, stun: 0, inv: 0, moving: false };
-    B = { x: 650, y: 140, tx: 650, ty: 140, state: "wander", say: "", sayT: 0, flee: 0, stuckT: 0, lx: 650, ly: 140 };
+    B = { x: 650, y: 140, tx: 650, ty: 140, state: "wander", say: "", sayT: 0, flee: 0, love: 0, stuckT: 0, lx: 650, ly: 140 };
+    M = { x: 170, y: 420, tx: 170, ty: 420, cool: 3, pause: 0, stuckT: 0, lx: 170, ly: 420 };
+    hearts = [];
     tickets = []; pops = []; score = 0; done = 0; level = 1; lives = 3; combo = 0; lastDone = -99;
     shake = 0; clock = 0; actPrev = false; coffee.cool = 0;
     stations.forEach(function (s) { s.ticket = null; });
     spawnTicket(); spawnTicket();
     spawnT = 4;
-    pickWaypoint();
+    pickWaypoint(B); pickWaypoint(M);
   }
   function spawnEvery() { return Math.max(2.4, 6 - 0.35 * (level - 1)); }
   function maxTickets() { return Math.min(7, 3 + level); }
@@ -377,37 +427,77 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   }
 
   /* ---------- jefe ---------- */
-  function pickWaypoint() {
+  function pickWaypoint(e) {
     for (var i = 0; i < 30; i++) {
       var x = T + 20 + Math.random() * (14 * T - 40), y = T + 20 + Math.random() * (8 * T - 40);
-      if (!blocked(x, y, 12, 12)) { B.tx = x; B.ty = y; return; }
+      if (!blocked(x, y, 12, 12)) { e.tx = x; e.ty = y; return; }
     }
-    B.tx = B.x; B.ty = B.y;
+    e.tx = e.x; e.ty = e.y;
   }
+  function unstick(e, dt) {
+    e.stuckT += dt;
+    if (e.stuckT > 0.7) {
+      if (Math.hypot(e.x - e.lx, e.y - e.ly) < 10) pickWaypoint(e);
+      e.lx = e.x; e.ly = e.y; e.stuckT = 0;
+    }
+  }
+
+  /* ---------- compañera: pasea por la oficina y distrae al jefe ---------- */
+  function updateMate(dt) {
+    if (M.cool > 0) M.cool -= dt;
+    if (M.pause > 0) { M.pause -= dt; return; }
+    var dx = M.tx - M.x, dy = M.ty - M.y, d = Math.hypot(dx, dy);
+    if (d < 6) { M.pause = 1 + Math.random() * 2; pickWaypoint(M); }
+    else { move(M, dx / d * 34 * dt, dy / d * 34 * dt); unstick(M, dt); }
+  }
+  function updateHearts(dt) {
+    if (B.state === "love") {
+      B.heartT = (B.heartT || 0) - dt;
+      if (B.heartT <= 0) {
+        hearts.push({ x: B.x + (Math.random() - 0.5) * 22, y: B.y - 56, t: 1.4, s: Math.random() < 0.4 ? 2 : 1 });
+        B.heartT = 0.28;
+      }
+    }
+    for (var i = hearts.length - 1; i >= 0; i--) {
+      var h = hearts[i]; h.t -= dt; h.y -= 26 * dt; h.x += Math.sin(h.t * 6) * 10 * dt;
+      if (h.t <= 0) hearts.splice(i, 1);
+    }
+  }
+
   function updateBoss(dt) {
     if (B.sayT > 0) B.sayT -= dt;
     var dxp = P.x - B.x, dyp = P.y - B.y, dist = Math.hypot(dxp, dyp);
     var range = Math.min(260, 190 + level * 6);
+    if (B.state !== "love" && B.state !== "flee" && M.cool <= 0 && Math.hypot(M.x - B.x, M.y - B.y) < 46) {
+      B.state = "love"; B.love = LOVE_TIME;
+      B.say = LOVE_SAYS[Math.floor(Math.random() * LOVE_SAYS.length)]; B.sayT = 2.2;
+      M.pause = LOVE_TIME;
+      pop(B.x, B.y - 100, "¡DISTRAÍDO!", "#ff7eb6");
+      beep(880, 0.1, "triangle", 0.04); setTimeout(function () { beep(1100, 0.16, "triangle", 0.04); }, 110);
+      say("El jefe se distrajo con la compañera");
+    }
+    if (B.state === "love") {
+      B.love -= dt;
+      if (B.love <= 0) { B.state = "wander"; M.cool = LOVE_COOL; pickWaypoint(B); }
+      return;
+    }
     if (B.state === "flee") {
       B.flee -= dt;
-      if (B.flee <= 0) { B.state = "wander"; pickWaypoint(); }
+      if (B.flee <= 0) { B.state = "wander"; pickWaypoint(B); }
     } else if (dist < range && P.inv <= 0) {
       if (B.state !== "chase") { B.say = BOSS_SAYS[Math.floor(Math.random() * BOSS_SAYS.length)]; B.sayT = 1.6; }
       B.state = "chase";
-    } else if (B.state === "chase" && (dist > range * 1.4 || P.inv > 0)) { B.state = "wander"; pickWaypoint(); }
+    } else if (B.state === "chase" && (dist > range * 1.4 || P.inv > 0)) { B.state = "wander"; pickWaypoint(B); }
 
     var tx = B.tx, ty = B.ty, sp = 40;
     if (B.state === "chase") { tx = P.x; ty = P.y; sp = Math.min(105, 62 + level * 5); }
     if (B.state === "flee") sp = 70;
     var dx = tx - B.x, dy = ty - B.y, d = Math.hypot(dx, dy);
-    if (d < 6) { if (B.state !== "chase") pickWaypoint(); }
+    if (d < 6) { if (B.state !== "chase") pickWaypoint(B); }
     else move(B, dx / d * sp * dt, dy / d * sp * dt);
 
-    B.stuckT += dt;
-    if (B.stuckT > 0.7) {
-      if (Math.hypot(B.x - B.lx, B.y - B.ly) < 5 && B.state !== "chase") pickWaypoint();
-      B.lx = B.x; B.ly = B.y; B.stuckT = 0;
-    }
+    if (B.state !== "chase") unstick(B, dt);
+    else B.stuckT = 0;
     if (dist < 26 && P.inv <= 0 && P.stun <= 0) {
       P.inv = 2.4; P.stun = 0.8;
       B.say = BOSS_SAYS[Math.floor(Math.random() * BOSS_SAYS.length)]; B.sayT = 1.8;
@@ -464,7 +554,9 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     if (state !== "play") return;
     spawnT -= dt;
     if (spawnT <= 0) { spawnTicket(); spawnT = spawnEvery(); }
+    updateMate(dt);
     updateBoss(dt);
+    updateHearts(dt);
     for (var m = pops.length - 1; m >= 0; m--) { pops[m].t -= dt; pops[m].y -= 22 * dt; if (pops[m].t <= 0) pops.splice(m, 1); }
   }
 
@@ -551,7 +643,8 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   }
   function drawBoss() {
     shadow(B.x, B.y - 1, 14);
-    var bob = (B.state !== "wander" || Math.hypot(B.tx - B.x, B.ty - B.y) > 8) ? Math.round(Math.sin(anim * 12) * 1.5) : 0;
+    var bob = B.state === "love" ? Math.round(Math.sin(anim * 4) * 1.5)
+      : (B.state !== "wander" || Math.hypot(B.tx - B.x, B.ty - B.y) > 8) ? Math.round(Math.sin(anim * 12) * 1.5) : 0;
     if (imgB.complete && imgB.naturalWidth) ctx.drawImage(imgB, Math.round(B.x - 24), Math.round(B.y - 47 + bob), 48, 48);
     else R(B.x - 10, B.y - 36, 20, 36, "#34343e");
     if (B.sayT > 0) {
@@ -560,6 +653,24 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
       R(bx, by, w, 24, "#f2f0f8"); R(bx + w / 2 - 4, by + 24, 8, 6, "#f2f0f8");
       ctx.fillStyle = "#2b2840"; ctx.textAlign = "center"; ctx.fillText(B.say, bx + w / 2, by + 18);
     }
+  }
+  function drawMate() {
+    shadow(M.x, M.y - 1, 14);
+    var bob = M.pause > 0 ? 0 : Math.round(Math.sin(anim * 10) * 1.5);
+    if (imgM.complete && imgM.naturalWidth) ctx.drawImage(imgM, Math.round(M.x - 24), Math.round(M.y - 47 + bob), 48, 48);
+    else R(M.x - 10, M.y - 36, 20, 36, "#de5670");
+  }
+  var MINI_HEART = ["01010", "11111", "11111", "01110", "00100"];
+  function drawHearts() {
+    hearts.forEach(function (h) {
+      ctx.globalAlpha = Math.min(1, h.t * 1.4);
+      var px = 2 * h.s, x0 = Math.round(h.x - 2.5 * px), y0 = Math.round(h.y);
+      for (var r = 0; r < 5; r++) for (var c = 0; c < 5; c++) {
+        if (MINI_HEART[r][c] !== "1") continue;
+        R(x0 + c * px, y0 + r * px, px, px, (r === 1 && c === 1) ? "#ffd1e3" : "#ff5c9a");
+      }
+    });
+    ctx.globalAlpha = 1;
   }
   function drawBubbles() {
     tickets.forEach(function (t) {
@@ -602,10 +713,10 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     if (shake > 0 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) ctx.translate(Math.round((Math.random() - 0.5) * 8), Math.round((Math.random() - 0.5) * 8));
     drawFloor();
     var items = solids.map(function (s) { return { b: s.y + s.h, f: function () { drawStation(s); } }; });
-    items.push({ b: P.y, f: drawPlayer }); items.push({ b: B.y, f: drawBoss });
+    items.push({ b: P.y, f: drawPlayer }); items.push({ b: B.y, f: drawBoss }); items.push({ b: M.y, f: drawMate });
     items.sort(function (a, b) { return a.b - b.b; });
     items.forEach(function (it) { it.f(); });
-    drawBubbles(); drawPops();
+    drawBubbles(); drawHearts(); drawPops();
     ctx.restore();
     drawHUD();
   }
