@@ -101,6 +101,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
 }
 .screen p { margin: 0; max-width: 44ch; font-size: clamp(16px, 2.6vw, 24px); color: var(--fg); text-wrap: pretty; }
 .screen .stats { color: var(--muted); }
+.screen .tips { color: var(--muted); font-size: clamp(15px, 2.3vw, 20px); }
 .btn {
   font-family: var(--display);
   font-size: clamp(10px, 2.2vw, 14px);
@@ -183,7 +184,8 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   <canvas id="game" width="768" height="480" aria-label="Juego Ticket Rush: corre por la oficina resolviendo tickets de TI y esquiva al jefe"></canvas>
   <div class="screen" id="menu">
     <h2>TICKET RUSH</h2>
-    <p>Eres la nueva de TI. Corre a cada <b style="color:var(--warn)">!</b>, mantén ESPACIO para arreglar el ticket antes de que venza el SLA y esquiva al jefe. Empiezas de practicante y asciendes resolviendo tickets. Tip: si llevas al jefe donde la compañera, se distrae <b style="color:#ff7eb6">♥</b></p>
+    <p>Eres la nueva de TI. Corre a cada <b style="color:var(--warn)">!</b>, mantén ARREGLAR (o ESPACIO) antes de que venza el SLA y esquiva al jefe. Asciende de practicante a jefe de TI.</p>
+    <p class="tips"><b style="color:var(--warn)">☕</b> La cafetera da turbo · <b style="color:#ff7eb6">♥</b> El jefe se distrae con la compañera</p>
     <button class="btn" id="start" type="button">EMPEZAR TURNO</button>
     <p class="rotate">Gira el celular para verlo más grande ↻</p>
   </div>
@@ -658,6 +660,25 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
       R(x + 8, y + 2, 32, 44, "#3b3b4f"); R(x + 8, y + 2, 32, 4, "#4c4c64"); R(x + 12, y + 8, 24, 10, "#22222e");
       R(x + 14, y + 26, 20, 16, "#d8d4e6"); R(x + 15, y + 31, 18, 10, "#5a3a28");
       R(x + 33, y + 10, 3, 3, coffee.cool > 0 ? "#6b6580" : "#5fd6a1");
+      // pantallita: barra que se llena mientras se recalienta, verde cuando está lista
+      var heat = coffee.cool > 0 ? 1 - coffee.cool / 14 : 1;
+      R(x + 14, y + 12, Math.round(16 * heat), 3, coffee.cool > 0 ? "#f2b441" : "#5fd6a1");
+      if (coffee.cool <= 0) {
+        // vapor: dos hilitos que suben y se mecen sobre la taza
+        for (var v = 0; v < 2; v++) {
+          for (var j = 0; j < 4; j++) {
+            var ph = (anim * 1.6 + v * 0.5 + j * 0.25) % 1;
+            var sx = x + 19 + v * 9 + Math.round(Math.sin((anim * 3 + j + v * 2)) * 2);
+            ctx.globalAlpha = 0.85 * (1 - ph);
+            R(sx, y + 2 - ph * 24, 3, 4, "#e8e4f5");
+          }
+        }
+        ctx.globalAlpha = 1;
+        // destello: una estrellita que parpadea en la esquina
+        if (Math.floor(anim * 2.5) % 3 === 0) {
+          R(x + 9, y - 2, 1, 7, "#fff6d6"); R(x + 6, y + 1, 7, 1, "#fff6d6"); R(x + 9, y + 1, 1, 1, "#f2b441");
+        }
+      }
     } else if (s.type === "plant") {
       R(x + 10, y + 44, 28, 4, "rgba(0,0,0,0.25)");
       R(x + 14, y + 30, 20, 16, "#a0522d"); R(x + 12, y + 28, 24, 4, "#b8683f");
