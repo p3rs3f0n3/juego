@@ -1,0 +1,19 @@
+[Unit]
+Description=Ticket Rush - contador de visitas y estadisticas
+After=network.target
+
+[Service]
+User=nelly
+WorkingDirectory=/home/nelly/juego-stats
+Environment=STATS_DB=/home/nelly/juego-stats/stats.db
+Environment=STATS_PORT=8095
+ExecStart=/usr/bin/python3 /home/nelly/juego-stats/stats_server.py
+Restart=on-failure
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/nelly/juego-stats
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

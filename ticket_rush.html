@@ -250,6 +250,24 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     b.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   });
 
+  /* ---------- estadísticas: visitas y partidas (anónimo, sin IPs ni nombres) ---------- */
+  var vid = "";
+  try { vid = localStorage.getItem("ticketrush-vid") || ""; } catch (e) {}
+  if (!/^[a-z0-9-]{4,40}$/.test(vid)) {
+    vid = Math.random().toString(36).slice(2, 10) + "-" + Date.now().toString(36);
+    try { localStorage.setItem("ticketrush-vid", vid); } catch (e) {}
+  }
+  function track(kind, data) {
+    if (!/^https?:$/.test(location.protocol)) return;  // abierto como archivo local: no mandar nada
+    try {
+      data = data || {}; data.v = vid;
+      var body = JSON.stringify(data);
+      if (navigator.sendBeacon && navigator.sendBeacon("/api/" + kind, new Blob([body], { type: "application/json" }))) return;
+      fetch("/api/" + kind, { method: "POST", body: body, headers: { "Content-Type": "application/json" }, keepalive: true }).catch(function () {});
+    } catch (e) {}
+  }
+  track("visit", { m: window.matchMedia("(pointer: coarse)").matches ? 1 : 0 });
+
   /* ---------- sonido ---------- */
   var ac = null, muted = false;
   function beep(f, d, type, v) {
@@ -458,6 +476,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     document.getElementById("overStats").textContent = "Rango: " + RANKS[rank].name + " · Tickets: " + done + " · Puntos: " + score + " · Mejor: " + Math.max(best, score);
     document.getElementById("over").hidden = false;
     say("Turno terminado. " + why + " Puntos " + score);
+    track("end", { score: score, tickets: done, rank: rank, secs: Math.round(clock), why: why });
     keys = {}; vk = {};
   }
 
@@ -803,6 +822,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     document.getElementById("over").hidden = true;
     beep(440, 0.1, "square", 0.04);
     say("Turno empezado");
+    track("start");
   }
   document.getElementById("start").addEventListener("click", start);
   document.getElementById("again").addEventListener("click", start);
