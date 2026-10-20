@@ -220,6 +220,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
 
   var imgP = new Image(); imgP.src = "__PLAYER__";
   var imgB = new Image(); imgB.src = "__BOSS__";
+  var imgG = new Image(); imgG.src = "__GERENTE__";
   var imgM = new Image(); imgM.src = "__MATE__";
 
   var F_D = '"Press Start 2P", ui-monospace, monospace';
@@ -374,16 +375,40 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     return Math.hypot(dx, dy);
   }
 
-  var TEXTS = {
-    desk: ["Olvidé mi clave (otra vez)", "El Excel se congeló con 40 pestañas", "No tengo internet (el cable estaba suelto)",
-      "¿Reiniciaste el PC? Sí. No. Tal vez", "El mouse se murió de repente", "Ctrl+Z no deshace mi error", "Mi pantalla se ve azul y triste",
-      "Instalé 7 barras de herramientas", "No me abre el correo del jefe", "La pantalla está al revés"],
-    printer: ["La impresora no imprime (otra vez)", "Atasco de papel nivel jefe final", "Imprime 300 copias de la nada"],
-    server: ["Se cayó el servidor de pruebas", "El servidor huele a quemado", "Alguien tropezó con el cable del rack"]
-  };
+  /* Lo que haces cambia con el rango: mismos controles y misma dificultad, otra historia. */
+  var TEXTS = [
+    { // practicante: lo básico
+      desk: ["Olvidé mi clave (otra vez)", "El Excel se congeló con 40 pestañas", "No tengo internet (cable suelto)",
+        "¿Reiniciaste el PC? Sí. No. Tal vez", "El mouse se murió de repente", "Ctrl+Z no deshace mi error",
+        "Mi pantalla se ve azul y triste", "Instalé 7 barras de herramientas", "La pantalla está al revés"],
+      printer: ["La impresora no imprime (otra vez)", "La impresora dice 'sin papel' y sí hay"],
+      server: ["El servidor hace un ruido raro", "Alguien desconectó el servidor para cargar el celular"]
+    },
+    { // analista: problemas de verdad
+      desk: ["Configurar la VPN del gerente", "Instalar el sistema en 10 equipos", "Migrar correos al nuevo servidor",
+        "Recuperar el archivo que 'nadie borró'", "Crear 30 usuarios para mañana", "El antivirus bloqueó la nómina"],
+      printer: ["Atasco de papel nivel jefe final", "Imprime 300 copias de la nada"],
+      server: ["Se cayó el servidor de pruebas", "El servidor huele a quemado", "Alguien tropezó con el cable del rack"]
+    },
+    { // jefe de TI: ya no arreglas, apruebas
+      desk: ["Aprobar compra de 50 mouses", "Responder el correo del rector", "Evaluar al practicante",
+        "Firmar las vacaciones de todo TI", "Explicar por qué se pidió otra RAM", "Revisar el informe del analista"],
+      printer: ["Firmar el contrato de impresoras", "Aprobar 3 cotizaciones de tóner"],
+      server: ["Reunión: ¿por qué se cayó el servidor?", "Plan de contingencia para auditoría", "Presupuesto de servidores 2027"]
+    }
+  ];
+  var ACT_BTN = ["ARREGLAR", "RESOLVER", "APROBAR"];
+  var ACT_HUD = ["Arreglando", "Resolviendo", "Aprobando"];
   var BASE = { desk: { t: 26, fix: 1.0, pts: 10 }, printer: { t: 22, fix: 1.6, pts: 20 }, server: { t: 19, fix: 2.6, pts: 40 } };
-  var BOSS_SAYS = ["¡Para ayer!", "¿Ya quedó?", "Es urgente", "¿Y eso por qué?", "Una cosita rápida"];
-  var LOVE_SAYS = ["¿Un tintico?", "¡Qué linda hoy!", "¿Almorzamos?", "Hola, hola...", "¿Bailamos el viernes?"];
+  /* Quien te persigue: el jefe, y desde JEFE DE TI el gerente (tu nuevo jefe). */
+  var BOSSES = [
+    { name: "jefe", says: ["¡Para ayer!", "¿Ya quedó?", "Es urgente", "¿Y eso por qué?", "Una cosita rápida"],
+      love: ["¿Un tintico?", "¡Qué linda hoy!", "¿Almorzamos?", "Hola, hola...", "¿Bailamos el viernes?"] },
+    { name: "gerente", says: ["¿Y el presupuesto?", "Necesito un informe ya", "¿Por qué TI cuesta tanto?", "¿Eso no lo hace la IA?", "Para la junta de mañana"],
+      love: ["¿Le gustaría un café, señorita?", "¿Almorzamos en el club?", "Qué buen informe el suyo", "¿Viene a la fiesta de fin de año?"] }
+  ];
+  function boss() { return BOSSES[rank >= 2 ? 1 : 0]; }
+  function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
   var LOVE_TIME = 4.5, LOVE_COOL = 12;
 
   /* ---------- dificultad: rangos que se ganan resolviendo tickets ---------- */
@@ -435,7 +460,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     var free = stations.filter(function (s) { return !s.ticket; });
     if (!free.length) return;
     var s = free[Math.floor(Math.random() * free.length)];
-    var base = BASE[s.type], list = TEXTS[s.type];
+    var base = BASE[s.type], list = TEXTS[rank][s.type];
     var k = diff("sla");
     var t = { st: s, text: list[Math.floor(Math.random() * list.length)], t: base.t * k, total: base.t * k, fix: base.fix, pts: base.pts, p: 0 };
     s.ticket = t; tickets.push(t);
@@ -466,7 +491,11 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     var nr = rankOf(done);
     if (nr > rank) {
       rank = nr;
-      banner = { t: 2.8, title: "¡ASCENSO!", sub: "AHORA ERES " + RANKS[rank].name };
+      var bt = rank >= 2 ? 3.6 : 2.8;
+      banner = { t: bt, total: bt, title: "¡ASCENSO!", sub: "AHORA ERES " + RANKS[rank].name,
+        sub2: rank >= 2 ? "TU NUEVO JEFE: EL GERENTE" : "" };
+      if (rank >= 2) pop(B.x, B.y - 60, "¡GERENTE!", "#e8b840");
+      setActLabel();
       if (lives < MAX_LIVES) { lives++; pop(P.x, P.y - 60, "+VIDA", "#ef5b6b"); }
       beep(523, 0.1, "square", 0.05); setTimeout(function () { beep(659, 0.1, "square", 0.05); }, 110);
       setTimeout(function () { beep(784, 0.2, "square", 0.05); }, 220);
@@ -533,11 +562,11 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     var range = diff("range");
     if (B.state !== "love" && B.state !== "flee" && M.cool <= 0 && Math.hypot(M.x - B.x, M.y - B.y) < 46) {
       B.state = "love"; B.love = LOVE_TIME;
-      B.say = LOVE_SAYS[Math.floor(Math.random() * LOVE_SAYS.length)]; B.sayT = 2.2;
+      B.say = pick(boss().love); B.sayT = 2.2;
       M.pause = LOVE_TIME;
       pop(B.x, B.y - 100, "¡DISTRAÍDO!", "#ff7eb6");
       beep(880, 0.1, "triangle", 0.04); setTimeout(function () { beep(1100, 0.16, "triangle", 0.04); }, 110);
-      say("El jefe se distrajo con la compañera");
+      say("El " + boss().name + " se distrajo con la compañera");
     }
     if (B.state === "love") {
       B.love -= dt;
@@ -548,7 +577,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
       B.flee -= dt;
       if (B.flee <= 0) { B.state = "wander"; pickWaypoint(B); }
     } else if (dist < range && P.inv <= 0) {
-      if (B.state !== "chase") { B.say = BOSS_SAYS[Math.floor(Math.random() * BOSS_SAYS.length)]; B.sayT = 1.6; }
+      if (B.state !== "chase") { B.say = pick(boss().says); B.sayT = 1.6; }
       B.state = "chase";
     } else if (B.state === "chase" && (dist > range * 1.4 || P.inv > 0)) { B.state = "wander"; pickWaypoint(B); }
 
@@ -563,13 +592,13 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     else B.stuckT = 0;
     if (dist < 26 && P.inv <= 0 && P.stun <= 0) {
       P.inv = 2.4; P.stun = 0.8;
-      B.say = BOSS_SAYS[Math.floor(Math.random() * BOSS_SAYS.length)]; B.sayT = 1.8;
+      B.say = pick(boss().says); B.sayT = 1.8;
       B.state = "flee"; B.flee = 3;
       B.tx = P.x < W / 2 ? 14 * T : 2 * T; B.ty = P.y < H / 2 ? 7 * T : 2 * T;
       if (blocked(B.tx, B.ty, 12, 12)) { B.tx = 8 * T + 24; B.ty = 3 * T + 24; }
       var keep = diff("keep");
       tickets.forEach(function (t) { t.p *= keep; });
-      hurt("El jefe te alcanzó con \"una cosita rápida\".");
+      hurt(rank >= 2 ? "El gerente (tu nuevo jefe) te alcanzó con \"un informe para ya\"." : "El jefe te alcanzó con \"una cosita rápida\".");
     }
   }
 
@@ -729,7 +758,8 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     shadow(B.x, B.y - 1, 14);
     var bob = B.state === "love" ? Math.round(Math.sin(anim * 4) * 1.5)
       : (B.state !== "wander" || Math.hypot(B.tx - B.x, B.ty - B.y) > 8) ? Math.round(Math.sin(anim * 12) * 1.5) : 0;
-    if (imgB.complete && imgB.naturalWidth) ctx.drawImage(imgB, Math.round(B.x - 24), Math.round(B.y - 47 + bob), 48, 48);
+    var img = rank >= 2 ? imgG : imgB;
+    if (img.complete && img.naturalWidth) ctx.drawImage(img, Math.round(B.x - 24), Math.round(B.y - 47 + bob), 48, 48);
     else R(B.x - 10, B.y - 36, 20, 36, "#34343e");
     if (B.sayT > 0) {
       ctx.font = "20px " + F_B; var w = ctx.measureText(B.say).width + 14;
@@ -758,13 +788,14 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   }
   function drawBanner() {
     if (!banner) return;
-    var a = Math.min(1, banner.t * 2, (2.8 - banner.t) * 6);
+    var a = Math.min(1, banner.t * 2, (banner.total - banner.t) * 6), tall = banner.sub2 ? 22 : 0;
     ctx.globalAlpha = a;
-    R(0, 178, W, 74, "rgba(13, 12, 20, 0.88)"); R(0, 178, W, 3, "#f2b441"); R(0, 249, W, 3, "#f2b441");
+    R(0, 178, W, 74 + tall, "rgba(13, 12, 20, 0.88)"); R(0, 178, W, 3, "#f2b441"); R(0, 249 + tall, W, 3, "#f2b441");
     ctx.textAlign = "center";
     ctx.font = "22px " + F_D; ctx.fillStyle = "#0d0c14"; ctx.fillText(banner.title, W / 2 + 2, 214);
     ctx.fillStyle = "#f2b441"; ctx.fillText(banner.title, W / 2, 212);
     ctx.font = "12px " + F_D; ctx.fillStyle = "#a285f5"; ctx.fillText(banner.sub, W / 2, 238);
+    if (banner.sub2) { ctx.fillStyle = "#e8b840"; ctx.fillText(banner.sub2, W / 2, 260); }
     ctx.globalAlpha = 1;
   }
   function drawBubbles() {
@@ -794,7 +825,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     ctx.textAlign = "left"; ctx.font = "8px " + F_D; ctx.fillStyle = "#a285f5"; ctx.fillText(RANKS[rank].name, 128, 9 * T + 28);
     var msg, col = "#9d96b8", tk = (state === "play") ? nearestTicket() : null;
     if (state !== "play") msg = "Tickets abiertos: " + tickets.length;
-    else if (tk) { msg = "Arreglando: " + tk.text; col = "#ece8f7"; }
+    else if (tk) { msg = ACT_HUD[rank] + ": " + tk.text; col = "#ece8f7"; }
     else if (distRect(P.x, P.y - 6, coffee) < 38) { msg = coffee.cool > 0 ? "La cafetera se está calentando..." : "Cafetera lista: ESPACIO = turbo"; col = "#f2b441"; }
     else msg = "Tickets abiertos: " + tickets.length + " · ve a un !";
     ctx.font = "20px " + F_B; ctx.fillStyle = col; ctx.fillText(msg, 228, 9 * T + 30);
@@ -825,8 +856,12 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     requestAnimationFrame(frame);
   }
 
+  // El botón táctil dice lo que haces en tu rango: ARREGLAR, RESOLVER o APROBAR.
+  var actBtn = document.querySelector(".actbtn");
+  function setActLabel() { if (actBtn) actBtn.textContent = ACT_BTN[rank]; }
+
   function start() {
-    reset(); state = "play";
+    reset(); setActLabel(); state = "play";
     document.getElementById("menu").hidden = true;
     document.getElementById("over").hidden = true;
     beep(440, 0.1, "square", 0.04);
