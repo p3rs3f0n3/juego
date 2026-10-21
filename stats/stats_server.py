@@ -2,13 +2,16 @@
 """Contador de visitas y estadisticas de Ticket Rush.
 
 Solo usa la libreria estandar de Python (sin pip). Guarda todo en SQLite.
-No guarda IPs ni nombres: cada navegador manda un identificador al azar.
+No guarda IPs: cada navegador manda un identificador al azar. El apodo es opcional.
 
   POST /api/visit   {"v": id, "m": 1|0}                 se abrio el juego (m = celular)
   POST /api/start   {"v": id}                           empezo una partida
-  POST /api/end     {"v": id, "score", "tickets",       termino una partida
-                     "rank", "secs", "why"}
+  POST /api/end     {"v": id, "g": partida, "score",    termino (o abandono, "a": 1) una partida
+                     "tickets", "rank", "secs", "why", "dist", "n": apodo}
+  POST /api/name    {"v": id, "n": apodo}               guardar apodo ("" = anonimo); 422 si no se permite
+  GET  /api/board?v=id                                  tabla de lideres publica (semana e historica)
   GET  /stats       pagina de estadisticas (Caddy la protege con usuario y clave)
+  POST /stats/hide  ocultar o mostrar el apodo de un jugador (desde /stats)
 
 Variables de entorno: STATS_DB (ruta de la base), STATS_PORT (por defecto 8095),
 STATS_STATIC (solo para probar en local: carpeta desde donde servir el juego).
@@ -18,6 +21,8 @@ import json
 import os
 import re
 import sqlite3
+import unicodedata
+from urllib.parse import parse_qs, urlparse
 from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -49,6 +54,89 @@ def init():
             c.execute("ALTER TABLE games ADD COLUMN gid TEXT")
             c.execute("ALTER TABLE games ADD COLUMN abandoned INTEGER DEFAULT 0")
         c.execute("CREATE UNIQUE INDEX IF NOT EXISTS games_gid ON games(gid)")
+        if "dist" not in cols:  # veces que distrajo al jefe con la companera
+            c.execute("ALTER TABLE games ADD COLUMN dist INTEGER DEFAULT 0")
+        c.execute("CREATE TABLE IF NOT EXISTS players (visitor TEXT PRIMARY KEY, name TEXT, hidden INTEGER DEFAULT 0, ts INTEGER)")
+
+
+# ---------------------------------------------------------------- apodos
+
+NAME_OK = re.compile(r"^[0-9A-Za-zÁÉÍÓÚÜÑáéíóúüñ ._-]{2,12}$")
+# Palabras largas: se rechazan aunque vengan pegadas a otras. Cortas: solo como palabra o inicio de palabra
+# (para no rechazar nombres normales como "Penélope" o "Cómputo").
+BAD_ANY = ["mierda", "marica", "malparid", "gonorrea", "hijueput", "pendej", "cabron", "zorra", "perra",
+           "fuck", "shit", "bitch", "nigg", "hitler", "nazi", "porno", "violad", "estupid", "imbecil", "idiota"]
+BAD_WORD = ["puta", "puto", "culo", "pene", "verga", "sexo", "hp", "ano", "teta"]
+LEET = str.maketrans("013457@$", "oieastas")
+
+
+def flat(s):
+    s = unicodedata.normalize("NFKD", s.lower()).encode("ascii", "ignore").decode()
+    return s.translate(LEET)
+
+
+def clean_name(n):
+    """Devuelve el apodo limpio, "" si queda anonimo, o None si no se permite."""
+    n = re.sub(r"\s+", " ", str(n or "")).strip()
+    if not n:
+        return ""
+    if not NAME_OK.match(n):
+        return None
+    f = flat(n)
+    joined = re.sub(r"[^a-z]", "", f)
+    words = re.findall(r"[a-z]+", f)
+    if any(b in joined for b in BAD_ANY):
+        return None
+    # corta: palabra exacta, o inicio de palabra si tiene 4+ letras ("putaa" no, "Penelope" si)
+    if any(w == b or (len(b) >= 4 and w.startswith(b) and w not in ALLOWED) for w in words for b in BAD_WORD):
+        return None
+    return n
+
+
+ALLOWED = {"penelope", "vergara"}  # nombres normales que empiezan como una palabra fea
+
+
+def save_name(c, v, n):
+    c.execute("""INSERT INTO players (visitor, name, ts) VALUES (?,?,?)
+                 ON CONFLICT(visitor) DO UPDATE SET name=excluded.name, ts=excluded.ts""", (v, n or None, now()))
+
+
+def names(c, admin=False):
+    q = "SELECT visitor, name, hidden FROM players WHERE name IS NOT NULL" + ("" if admin else " AND hidden = 0")
+    return {r["visitor"]: r["name"] for r in c.execute(q)}
+
+
+def shown(v, nm):
+    return nm.get(v) or "Anónimo " + v[:4]
+
+
+def week_start():
+    d = datetime.now(TZ)
+    monday = (d - timedelta(days=d.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
+    return int(monday.timestamp())
+
+
+def board(me):
+    """Tabla publica: mejor puntaje de cada persona (una linea por persona), semana e historica."""
+    with db() as c:
+        nm = names(c)
+        agg = {r["visitor"]: r for r in c.execute(
+            "SELECT visitor, COUNT(*) AS games, MAX(rank) AS top, SUM(dist) AS dist FROM games GROUP BY visitor")}
+
+        def best(since):
+            # en SQLite, con MAX() las demas columnas salen de la fila del maximo
+            return c.execute("""SELECT visitor, MAX(score) AS score, tickets, rank, MIN(ts) AS first FROM games
+                                WHERE ts >= ? GROUP BY visitor ORDER BY score DESC, first ASC""", (since,)).fetchall()
+
+        out = {}
+        for key, rows in (("week", best(week_start())), ("all", best(0))):
+            out[key] = [{"n": shown(r["visitor"], nm), "s": r["score"], "t": r["tickets"], "r": r["rank"],
+                         "g": agg[r["visitor"]]["games"], "top": agg[r["visitor"]]["top"],
+                         "d": agg[r["visitor"]]["dist"] or 0, "me": r["visitor"] == me} for r in rows[:10]]
+            pos = next((i for i, r in enumerate(rows, 1) if r["visitor"] == me), 0)
+            out[key + "Me"] = {"pos": pos, "of": len(rows), "best": rows[pos - 1]["score"] if pos else 0}
+        out["name"] = nm.get(me, "")
+        return out
 
 
 def now():
@@ -76,9 +164,14 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def send_json(self, code, obj):
+        self.send(code, json.dumps(obj, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8")
+
     def do_POST(self):
+        if self.path.split("?")[0].rstrip("/") == "/stats/hide":
+            return self.hide()
         kind = self.path.split("?")[0].rstrip("/").rsplit("/", 1)[-1]
-        if not self.path.startswith("/api/") or kind not in ("visit", "start", "end"):
+        if not self.path.startswith("/api/") or kind not in ("visit", "start", "end", "name"):
             return self.send(404)
         n = int(self.headers.get("Content-Length") or 0)
         if n <= 0 or n > 2048:
@@ -90,29 +183,43 @@ class Handler(BaseHTTPRequestHandler):
         if not isinstance(d, dict) or not VID.match(str(d.get("v", ""))):
             return self.send(400)
         v = d["v"]
+        if kind == "name":
+            n = clean_name(d.get("n"))
+            if n is None:
+                return self.send_json(422, {"ok": False})
+            with db() as c:
+                save_name(c, v, n)
+            return self.send_json(200, {"ok": True, "name": n})
         with db() as c:
             if kind == "visit":
                 c.execute("INSERT INTO visits VALUES (?,?,?)", (now(), v, 1 if d.get("m") else 0))
             elif kind == "start":
                 c.execute("INSERT INTO starts VALUES (?,?)", (now(), v))
             else:
-                tickets = num(d, "tickets", 2000)
-                score = min(num(d, "score", 10**6), tickets * 100)  # 100 pts por ticket es imposible de superar
+                secs = num(d, "secs", 86400)
+                # topes: nadie resuelve mas de un ticket cada 2 s, ni saca mas de 80 pts por ticket (servidor x combo)
+                tickets = min(num(d, "tickets", 2000), secs // 2 + 3)
+                score = min(num(d, "score", 10**6), tickets * 80)
+                if "n" in d and clean_name(d["n"]) is not None:
+                    save_name(c, v, clean_name(d["n"]))
                 g = str(d.get("g", ""))
-                row = (now(), v, score, tickets, num(d, "rank", 2), num(d, "secs", 86400),
-                       str(d.get("why", ""))[:140], g if VID.match(g) else None, 1 if d.get("a") else 0)
+                row = (now(), v, score, tickets, num(d, "rank", 2), secs, str(d.get("why", ""))[:140],
+                       g if VID.match(g) else None, 1 if d.get("a") else 0, num(d, "dist", 500))
                 # Cada partida tiene su id: si llega "abandonó" (salió de la página) y después vuelve y
                 # termina, el final real reemplaza al abandono; un abandono nunca pisa un final real.
-                c.execute("""INSERT INTO games (ts, visitor, score, tickets, rank, secs, why, gid, abandoned)
-                             VALUES (?,?,?,?,?,?,?,?,?)
+                c.execute("""INSERT INTO games (ts, visitor, score, tickets, rank, secs, why, gid, abandoned, dist)
+                             VALUES (?,?,?,?,?,?,?,?,?,?)
                              ON CONFLICT(gid) DO UPDATE SET ts=excluded.ts, score=excluded.score,
                                tickets=excluded.tickets, rank=excluded.rank, secs=excluded.secs,
-                               why=excluded.why, abandoned=excluded.abandoned
+                               why=excluded.why, abandoned=excluded.abandoned, dist=excluded.dist
                              WHERE excluded.abandoned = 0 OR games.abandoned = 1""", row)
         self.send(204)
 
     def do_GET(self):
         path = self.path.split("?")[0]
+        if path.rstrip("/") == "/api/board":
+            me = (parse_qs(urlparse(self.path).query).get("v") or [""])[0]
+            return self.send_json(200, board(me if VID.match(me) else ""))
         if path.rstrip("/") == "/stats":
             return self.send(200, stats_page().encode("utf-8"), "text/html; charset=utf-8")
         if STATIC:
@@ -123,16 +230,24 @@ class Handler(BaseHTTPRequestHandler):
                     return self.send(200, fh.read(), "text/html; charset=utf-8")
         self.send(404)
 
+    def hide(self):
+        n = int(self.headers.get("Content-Length") or 0)
+        f = parse_qs(self.rfile.read(min(n, 512)).decode("utf-8", "ignore")) if n > 0 else {}
+        v = (f.get("v") or [""])[0]
+        if VID.match(v):
+            with db() as c:
+                c.execute("UPDATE players SET hidden = ? WHERE visitor = ?",
+                          (1 if (f.get("h") or ["0"])[0] == "1" else 0, v))
+        self.send_response(303)
+        self.send_header("Location", "/stats")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
 
 # ---------------------------------------------------------------- pagina de estadisticas
 
 def day(ts):
     return datetime.fromtimestamp(ts, TZ)
-
-
-def player(v):
-    # "Jugador 3f2a": los 4 primeros caracteres del id al azar, suficiente para distinguirlos
-    return "Jugador " + html.escape(v[:4])
 
 
 def mins(secs):
@@ -159,6 +274,11 @@ def stats_page():
         no_play = q("SELECT COUNT(DISTINCT visitor) FROM visits WHERE visitor NOT IN (SELECT visitor FROM starts)")
         lost = max(0, starts - ends)  # empezaron pero no llegó ni final ni abandono
         top = c.execute("SELECT * FROM games ORDER BY score DESC, ts ASC LIMIT 10").fetchall()
+        nm = names(c, admin=True)
+        hidden = {r[0] for r in c.execute("SELECT visitor FROM players WHERE hidden = 1")}
+        people = c.execute("""SELECT visitor, COUNT(*) AS games, MAX(score) AS best, MAX(rank) AS top,
+                                     SUM(dist) AS dist, MAX(ts) AS last
+                              FROM games GROUP BY visitor ORDER BY best DESC""").fetchall()
         ranks = dict(c.execute("SELECT rank, COUNT(*) FROM games GROUP BY rank").fetchall())
         since = today - 13 * 86400
         per_v = dict(c.execute("SELECT (ts - ?) / 86400, COUNT(*) FROM visits WHERE ts >= ? GROUP BY 1",
@@ -183,11 +303,23 @@ def stats_page():
     ])
 
     rows = "".join(
-        f"<tr><td>{i}</td><td>{player(g['visitor'])}{' <em>(abandonó)</em>' if g['abandoned'] else ''}</td>"
+        f"<tr><td>{i}</td><td>{html.escape(shown(g['visitor'], nm))}{' <em>(abandonó)</em>' if g['abandoned'] else ''}</td>"
         f"<td class=n>{g['score']}</td>"
         f"<td class=n>{g['tickets']}</td><td>{RANKS[g['rank']]}</td>"
         f"<td>{day(g['ts']).strftime('%d/%m %H:%M')}</td></tr>"
         for i, g in enumerate(top, 1)) or '<tr><td colspan=6 class=empty>Todavía nadie ha terminado una partida.</td></tr>'
+
+    def hide_btn(v):
+        h = v in hidden
+        return (f'<form method=post action="/stats/hide"><input type=hidden name=v value="{v}">'
+                f'<input type=hidden name=h value="{0 if h else 1}"><button>{"Mostrar" if h else "Ocultar"}</button></form>')
+
+    people_rows = "".join(
+        f"<tr><td>{html.escape(nm.get(p['visitor']) or '—')}{' <em>(oculto)</em>' if p['visitor'] in hidden else ''}"
+        f"<br><small>{p['visitor'][:4]}</small></td><td class=n>{p['games']}</td><td class=n>{p['best']}</td>"
+        f"<td>{RANKS[p['top']]}</td><td class=n>{p['dist'] or 0}</td><td>{day(p['last']).strftime('%d/%m')}</td>"
+        f"<td>{hide_btn(p['visitor']) if nm.get(p['visitor']) else ''}</td></tr>"
+        for p in people) or '<tr><td colspan=7 class=empty>Todavía no hay jugadores.</td></tr>'
 
     total_r = sum(ranks.values()) or 1
     rank_bars = "".join(
@@ -210,11 +342,14 @@ def stats_page():
 * {{ box-sizing:border-box; }}
 body {{ margin:0; background:var(--bg); color:var(--fg); font:20px/1.25 VT323, ui-monospace, monospace; padding:20px 16px 40px; }}
 main {{ max-width:900px; margin:0 auto; display:grid; grid-template-columns:minmax(0,1fr); gap:18px; }}
-.tiles {{ grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr)); }}
 h1 {{ font:400 clamp(14px,3.6vw,22px) "Press Start 2P", monospace; color:var(--accent); margin:0; }}
 h2 {{ font:400 11px "Press Start 2P", monospace; color:var(--warn); margin:0 0 12px; }}
 .sub {{ color:var(--muted); }}
-.tiles {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; }}
+.tiles {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr)); gap:10px; }}
+td small {{ color:var(--muted); font-size:14px; }}
+form {{ margin:0; }}
+button {{ font:16px VT323, monospace; color:var(--fg); background:#221f33; border:1px solid var(--line); padding:2px 8px; cursor:pointer; }}
+button:hover {{ border-color:var(--accent); }}
 .tile, section {{ background:var(--panel); border:2px solid var(--line); padding:12px 14px; }}
 .tile {{ display:grid; gap:2px; }}
 .tile span, .tile small {{ color:var(--muted); }}
@@ -245,6 +380,10 @@ em {{ color:var(--muted); font-style:normal; }}
   <section><h2>TOP 10 PUNTAJES</h2><div class="wrap"><table>
     <tr><th>#</th><th>Quién</th><th class=n>Puntos</th><th class=n>Tickets</th><th>Rango</th><th>Cuándo</th></tr>
     {rows}</table></div></section>
+  <section><h2>JUGADORES</h2><div class="wrap"><table>
+    <tr><th>Apodo</th><th class=n>Partidas</th><th class=n>Mejor</th><th>Rango máx.</th><th class=n>♥ Distrajo</th><th>Última</th><th></th></tr>
+    {people_rows}</table></div>
+    <div class="legend">"Ocultar" quita el apodo de la tabla pública del juego (sale como Anónimo).</div></section>
   <section><h2>HASTA DÓNDE LLEGAN</h2>{rank_bars}</section>
   <section><h2>ÚLTIMOS 14 DÍAS</h2><div class="days">{days}</div>
     <div class="legend"><b style="color:var(--accent)">■</b> visitas · <b style="color:var(--good)">■</b> partidas</div></section>

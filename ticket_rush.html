@@ -80,6 +80,7 @@ h1 {
 }
 canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; touch-action: none; }
 .screen {
+  overflow: hidden;
   position: absolute;
   inset: 0;
   display: flex;
@@ -113,6 +114,39 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   box-shadow: 0 4px 0 #5b43b0;
 }
 .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #5b43b0; }
+.btn.alt { background: var(--panel); color: var(--fg); box-shadow: 0 4px 0 var(--line); border: 2px solid var(--line); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.screen .who { color: var(--muted); font-size: clamp(15px, 2.3vw, 20px); }
+.who b { color: var(--fg); font-weight: 400; }
+.link { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
+.screen .brag { color: var(--warn); }
+.screen .err { color: var(--bad); font-size: clamp(15px, 2.3vw, 20px); }
+#nameIn {
+  font: 22px var(--body); color: var(--fg); background: var(--bg); border: 2px solid var(--accent);
+  padding: 8px 12px; width: min(280px, 90%); text-align: center;
+}
+#nameIn:focus-visible { outline: 3px solid var(--warn); outline-offset: 2px; }
+#boardScr { justify-content: flex-start; padding-top: 12px; }
+.tabs { display: flex; gap: 6px; }
+.tab { font: 9px var(--display); color: var(--muted); background: var(--panel); border: 2px solid var(--line); padding: 7px 10px; cursor: pointer; }
+.tab.on { color: #0d0c14; background: var(--warn); border-color: var(--warn); }
+.board { list-style: none; margin: 0; padding: 0; width: min(560px, 100%); min-height: 0; overflow-y: auto; flex: 1 1 auto; text-align: left; }
+.board li { display: grid; grid-template-columns: 2.2em 1fr auto; column-gap: 8px; padding: 3px 6px; border-bottom: 1px solid var(--line); font-size: clamp(15px, 2.3vw, 20px); }
+.board li.me { background: #2a2147; }
+.board .pos { color: var(--muted); text-align: right; }
+.board .pts { color: var(--warn); text-align: right; font-variant-numeric: tabular-nums; }
+.board small { grid-column: 2 / 4; color: var(--muted); font-size: 0.8em; }
+.board .empty { display: block; color: var(--muted); text-align: center; border: 0; }
+.foot { align-items: center; }
+/* Pantallas bajas (celular horizontal): tabla compacta para que quepan más puestos */
+@media (max-height: 520px) {
+  #boardScr { gap: 6px; padding-top: 8px; padding-bottom: 8px; }
+  #menu, #over, #nameScr { gap: 6px; padding-block: 6px; }
+  #boardScr h2 { font-size: 12px; }
+  .board li { padding: 1px 6px; font-size: 15px; }
+  .board small { display: none; }
+  .foot .btn { padding: 8px 14px; }
+}
 .hint { width: 100%; max-width: 768px; color: var(--muted); font-size: 20px; text-align: center; }
 .pad {
   display: none;
@@ -184,16 +218,46 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   <canvas id="game" width="768" height="480" aria-label="Juego Ticket Rush: corre por la oficina resolviendo tickets de TI y esquiva al jefe"></canvas>
   <div class="screen" id="menu">
     <h2>TICKET RUSH</h2>
-    <p>Eres la nueva de TI. Corre a cada <b style="color:var(--warn)">!</b>, mantén ARREGLAR (o ESPACIO) antes de que venza el SLA y esquiva al jefe. Asciende de practicante a jefe de TI.</p>
+    <p>Corre a cada <b style="color:var(--warn)">!</b>, mantén ARREGLAR (o ESPACIO) antes de que venza el SLA y esquiva al jefe. Asciende de practicante a jefe de TI.</p>
     <p class="tips"><b style="color:var(--warn)">☕</b> La cafetera da turbo · <b style="color:#ff7eb6">♥</b> El jefe se distrae con la compañera</p>
-    <button class="btn" id="start" type="button">EMPEZAR TURNO</button>
+    <div class="row">
+      <button class="btn" id="start" type="button">EMPEZAR TURNO</button>
+      <button class="btn alt" id="boardBtn" type="button" hidden>🏆 TABLA</button>
+    </div>
+    <p class="who" id="who" hidden></p>
     <p class="rotate">Gira el celular para verlo más grande ↻</p>
   </div>
   <div class="screen" id="over" hidden>
     <h2 id="overTitle">TURNO TERMINADO</h2>
     <p id="overWhy"></p>
     <p class="stats" id="overStats"></p>
-    <button class="btn" id="again" type="button">OTRA VEZ</button>
+    <p class="brag" id="overBrag" hidden></p>
+    <div class="row">
+      <button class="btn" id="again" type="button">OTRA VEZ</button>
+      <button class="btn alt" id="boardBtn2" type="button" hidden>🏆 TABLA</button>
+    </div>
+  </div>
+  <div class="screen" id="nameScr" hidden>
+    <h2>¿CÓMO TE LLAMAS?</h2>
+    <p>Tu apodo sale en la tabla de líderes. Es opcional.</p>
+    <input id="nameIn" type="text" maxlength="12" autocomplete="off" spellcheck="false" placeholder="Tu apodo" aria-label="Tu apodo">
+    <p class="err" id="nameErr" hidden>Ese apodo no se puede usar. Prueba otro (2 a 12 letras).</p>
+    <div class="row">
+      <button class="btn" id="nameOk" type="button">GUARDAR</button>
+      <button class="btn alt" id="nameAnon" type="button">JUGAR ANÓNIMO</button>
+    </div>
+  </div>
+  <div class="screen" id="boardScr" hidden>
+    <h2>TABLA DE LÍDERES</h2>
+    <div class="tabs" role="tablist">
+      <button class="tab on" type="button" data-t="week" role="tab">ESTA SEMANA</button>
+      <button class="tab" type="button" data-t="all" role="tab">HISTÓRICO</button>
+    </div>
+    <ol class="board" id="boardList"></ol>
+    <div class="row foot">
+      <p class="stats" id="boardMe"></p>
+      <button class="btn" id="boardBack" type="button">VOLVER</button>
+    </div>
   </div>
 </div>
 
@@ -232,6 +296,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     ArrowUp: "up", w: "up", W: "up", ArrowDown: "down", s: "down", S: "down", " ": "act", e: "act", E: "act" };
   var state = "menu";
   window.addEventListener("keydown", function (e) {
+    if (e.target && e.target.tagName === "INPUT") return;  // escribiendo el apodo
     var k = KEYMAP[e.key]; if (!k) return;
     if (state === "play") e.preventDefault();
     keys[k] = true;
@@ -273,7 +338,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   // Solo avisa; no toca el juego. Si vuelve y termina, el final real reemplaza este aviso.
   function leaving() {
     if (state !== "play" || !gameId) return;
-    track("end", { g: gameId, a: 1, score: score, tickets: done, rank: rank, secs: Math.round(clock), why: "Abandonó la partida." });
+    track("end", { g: gameId, a: 1, score: score, tickets: done, rank: rank, secs: Math.round(clock), why: "Abandonó la partida.", dist: dists, n: myName });
   }
   window.addEventListener("pagehide", leaving);
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") leaving(); });
@@ -438,6 +503,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   }
   function rankOf(n) { var r = 0; for (var i = 0; i < RANKS.length; i++) if (n >= RANKS[i].from) r = i; return r; }
 
+  var dists = 0;
   var P, B, M, hearts, tickets, pops, score, done, rank, lives, combo, lastDone, spawnT, shake, clock, actPrev, best = 0, whyOver, banner = null;
   try { best = parseInt(localStorage.getItem("ticketrush-best") || "0", 10) || 0; } catch (e) {}
 
@@ -445,7 +511,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     P = { x: 360, y: 410, boost: 0, stun: 0, inv: 0, moving: false };
     B = { x: 650, y: 140, tx: 650, ty: 140, state: "wander", say: "", sayT: 0, flee: 0, love: 0, stuckT: 0, lx: 650, ly: 140 };
     M = { x: 170, y: 420, tx: 170, ty: 420, cool: 3, pause: 0, stuckT: 0, lx: 170, ly: 420 };
-    hearts = [];
+    hearts = []; dists = 0;
     tickets = []; pops = []; score = 0; done = 0; rank = 0; lives = 3; banner = null; combo = 0; lastDone = -99;
     shake = 0; clock = 0; actPrev = false; coffee.cool = 0;
     stations.forEach(function (s) { s.ticket = null; });
@@ -514,7 +580,8 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     document.getElementById("overStats").textContent = "Rango: " + RANKS[rank].name + " · Tickets: " + done + " · Puntos: " + score + " · Mejor: " + Math.max(best, score);
     document.getElementById("over").hidden = false;
     say("Turno terminado. " + why + " Puntos " + score);
-    track("end", { g: gameId, score: score, tickets: done, rank: rank, secs: Math.round(clock), why: why });
+    track("end", { g: gameId, score: score, tickets: done, rank: rank, secs: Math.round(clock), why: why, dist: dists, n: myName });
+    showBrag(score);
     keys = {}; vk = {};
   }
 
@@ -561,7 +628,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     var dxp = P.x - B.x, dyp = P.y - B.y, dist = Math.hypot(dxp, dyp);
     var range = diff("range");
     if (B.state !== "love" && B.state !== "flee" && M.cool <= 0 && Math.hypot(M.x - B.x, M.y - B.y) < 46) {
-      B.state = "love"; B.love = LOVE_TIME;
+      B.state = "love"; B.love = LOVE_TIME; dists++;
       B.say = pick(boss().love); B.sayT = 2.2;
       M.pause = LOVE_TIME;
       pop(B.x, B.y - 100, "¡DISTRAÍDO!", "#ff7eb6");
@@ -674,8 +741,17 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     });
     ctx.fillStyle = "#e8e4f5"; ctx.beginPath(); ctx.arc(536, 22, 13, 0, 7); ctx.fill();
     R(534, 12, 2, 10, "#262238"); R(536, 22, 8, 2, "#262238");
-    R(580, 8, 148, 28, "#cfcbd9"); R(582, 10, 144, 24, "#f2f0f8");
-    ctx.fillStyle = "#3a3550"; ctx.font = "18px " + F_B; ctx.textAlign = "left"; ctx.fillText("SLA = YA", 590, 28);
+    var leader = weekLeader();
+    if (leader) {
+      // marco dorado con el nombre del empleado de la semana
+      R(578, 4, 152, 36, "#8a6a1c"); R(580, 6, 148, 32, "#e2b84a"); R(582, 8, 144, 28, "#f6efd9");
+      R(588, 13, 8, 7, "#e2b84a"); R(590, 20, 4, 5, "#c0392b"); R(589, 14, 6, 5, "#f8d978");  // medallita
+      ctx.textAlign = "center"; ctx.fillStyle = "#6b5520"; ctx.font = "13px " + F_B; ctx.fillText("EMPLEADO DE LA SEMANA", 660, 19);
+      ctx.fillStyle = "#2b2236"; ctx.font = "17px " + F_B; ctx.fillText(leader, 660, 33);
+    } else {
+      R(580, 8, 148, 28, "#cfcbd9"); R(582, 10, 144, 24, "#f2f0f8");
+      ctx.fillStyle = "#3a3550"; ctx.font = "18px " + F_B; ctx.textAlign = "left"; ctx.fillText("SLA = YA", 590, 28);
+    }
     for (var y = T; y < 9 * T; y += 24) {
       R(0, y, T, 24, y % 48 ? "#2f2a43" : "#332e49"); R(15 * T, y, T, 24, y % 48 ? "#2f2a43" : "#332e49");
       R(0, y, T, 2, "#252136"); R(15 * T, y, T, 2, "#252136");
@@ -862,15 +938,128 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
 
   function start() {
     reset(); setActLabel(); state = "play";
-    document.getElementById("menu").hidden = true;
-    document.getElementById("over").hidden = true;
+    prevBoard = boardData;
+    showScreen(null);
     beep(440, 0.1, "square", 0.04);
     say("Turno empezado");
     gameId = Math.random().toString(36).slice(2, 10) + "-" + Date.now().toString(36);
     track("start");
   }
-  document.getElementById("start").addEventListener("click", start);
-  document.getElementById("again").addEventListener("click", start);
+  /* ---------- apodo y tabla de líderes ---------- */
+  var myName = "", asked = false, boardData = null, prevBoard = null, boardTab = "week", boardFrom = "menu", afterName = "start";
+  try { myName = localStorage.getItem("ticketrush-name") || ""; asked = localStorage.getItem("ticketrush-asked") === "1"; } catch (e) {}
+  var online = /^https?:$/.test(location.protocol);
+  function el(id) { return document.getElementById(id); }
+  function showScreen(id) { ["menu", "over", "nameScr", "boardScr"].forEach(function (s) { el(s).hidden = s !== id; }); }
+  function weekLeader() { var w = boardData && boardData.week; return w && w.length && w[0].s > 0 ? w[0].n : ""; }
+
+  function updateWho() {
+    var who = el("who");
+    if (!online) { who.hidden = true; return; }
+    who.hidden = false; who.textContent = "";
+    who.appendChild(document.createTextNode("Jugando como "));
+    var b = document.createElement("b"); b.textContent = myName || "Anónimo"; who.appendChild(b);
+    who.appendChild(document.createTextNode(" · "));
+    var l = document.createElement("button"); l.type = "button"; l.className = "link"; l.textContent = "cambiar";
+    l.addEventListener("click", function () { askName("menu"); }); who.appendChild(l);
+  }
+  function loadBoard(cb) {
+    if (!online) return;
+    fetch("/api/board?v=" + encodeURIComponent(vid), { cache: "no-store" })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { boardData = d; el("boardBtn").hidden = false; el("boardBtn2").hidden = false; if (cb) cb(d); })
+      .catch(function () {});
+  }
+
+  function askName(then) {
+    afterName = then;
+    el("nameIn").value = myName; el("nameErr").hidden = true;
+    showScreen("nameScr");
+    setTimeout(function () { try { el("nameIn").focus(); } catch (e) {} }, 50);
+  }
+  function nameDone(n) {
+    myName = n; asked = true;
+    try { localStorage.setItem("ticketrush-name", n); localStorage.setItem("ticketrush-asked", "1"); } catch (e) {}
+    updateWho();
+    if (afterName === "start") start(); else { showScreen("menu"); loadBoard(); }
+  }
+  function saveName() {
+    var n = el("nameIn").value.replace(/\s+/g, " ").trim();
+    if (!n) return anonName();
+    if (!/^[0-9A-Za-zÁÉÍÓÚÜÑáéíóúüñ ._-]{2,12}$/.test(n)) { el("nameErr").hidden = false; return; }
+    fetch("/api/name", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ v: vid, n: n }) })
+      .then(function (r) { if (r.status === 422) el("nameErr").hidden = false; else nameDone(n); })
+      .catch(function () { nameDone(n); });  // sin conexión: se guarda aquí y viaja con la partida
+  }
+  function anonName() {
+    track("name", { n: "" });
+    nameDone("");
+  }
+  el("nameOk").addEventListener("click", saveName);
+  el("nameAnon").addEventListener("click", anonName);
+  el("nameIn").addEventListener("keydown", function (e) { if (e.key === "Enter") saveName(); });
+
+  function renderBoard() {
+    var list = el("boardList"), d = boardData || {}, rows = d[boardTab] || [], me = d[boardTab + "Me"] || {};
+    list.textContent = "";
+    Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (t) {
+      t.classList.toggle("on", t.getAttribute("data-t") === boardTab);
+      t.setAttribute("aria-selected", String(t.getAttribute("data-t") === boardTab));
+    });
+    if (!rows.length) {
+      var e = document.createElement("li"); e.className = "empty";
+      e.textContent = boardTab === "week" ? "Nadie ha jugado esta semana. ¡Sé el primero!" : "Todavía no hay partidas.";
+      list.appendChild(e);
+    }
+    rows.forEach(function (r, i) {
+      var li = document.createElement("li"); if (r.me) li.className = "me";
+      var pos = document.createElement("span"); pos.className = "pos"; pos.textContent = (i + 1) + ".";
+      var nm = document.createElement("span");
+      var crown = i === 0 ? (boardTab === "week" ? "🏅 " : "🏆 ") : "";
+      nm.textContent = crown + r.n + (r.me ? " (tú)" : "");
+      var pts = document.createElement("span"); pts.className = "pts"; pts.textContent = r.s;
+      var sm = document.createElement("small");
+      sm.textContent = (i === 0 ? (boardTab === "week" ? "Empleado de la semana · " : "Leyenda de TI · ") : "") +
+        ["Practicante", "Analista", "Jefe de TI"][r.top] + " · " + r.g + (r.g === 1 ? " partida" : " partidas") + " · ♥ " + r.d;
+      li.appendChild(pos); li.appendChild(nm); li.appendChild(pts); li.appendChild(sm);
+      list.appendChild(li);
+    });
+    el("boardMe").textContent = me.pos ? "Tu puesto: #" + me.pos + " de " + me.of + " · tu mejor: " + me.best
+      : (boardTab === "week" ? "Todavía no tienes partidas esta semana." : "Todavía no tienes partidas.");
+  }
+  function openBoard(from) {
+    boardFrom = from; boardTab = "week";
+    renderBoard(); showScreen("boardScr");
+    loadBoard(renderBoard);
+  }
+  el("boardBtn").addEventListener("click", function () { openBoard("menu"); });
+  el("boardBtn2").addEventListener("click", function () { openBoard("over"); });
+  el("boardBack").addEventListener("click", function () { showScreen(boardFrom); });
+  Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (t) {
+    t.addEventListener("click", function () { boardTab = t.getAttribute("data-t"); renderBoard(); });
+  });
+
+  // Al terminar: récord personal, a quién le ganaste y en qué puesto quedaste.
+  function showBrag(sc) {
+    var brag = el("overBrag"); brag.hidden = true;
+    if (!online) return;
+    var before = prevBoard || {}, prevBest = (before.allMe || {}).best || 0, beat = "";
+    (before.all || []).forEach(function (r) { if (!r.me && !beat && r.s > prevBest && r.s < sc) beat = r.n; });
+    setTimeout(function () {
+      loadBoard(function (d) {
+        var parts = [];
+        if (sc > prevBest && sc > 0 && prevBest > 0) parts.push("¡NUEVO RÉCORD PERSONAL!");
+        if (beat) parts.push("¡Le ganaste a " + beat + "!");
+        if (d.weekMe && d.weekMe.pos) parts.push("Vas #" + d.weekMe.pos + " de " + d.weekMe.of + " esta semana");
+        if (parts.length) { brag.textContent = parts.join(" · "); brag.hidden = false; }
+      });
+    }, 700);  // darle tiempo al servidor de guardar la partida
+  }
+
+  el("start").addEventListener("click", function () { if (online && !asked) askName("start"); else start(); });
+  el("again").addEventListener("click", start);
+  updateWho();
+  loadBoard();
 
   reset();
   requestAnimationFrame(frame);
