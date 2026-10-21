@@ -734,24 +734,26 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     R(0, 0, W, T, "#37324d");
     R(0, 40, W, 8, "#262238");
     R(0, 0, W, 4, "#2a2640");
-    [40, 200, 360].forEach(function (x) {
+    var leader = weekLeader();
+    // Si hay empleado de la semana, su cuadro reemplaza la tercera ventana (ahí no lo tapa nada).
+    (leader ? [40, 200] : [40, 200, 360]).forEach(function (x) {
       R(x, 8, 120, 28, "#4a4468"); R(x + 3, 11, 114, 22, "#1d2b4a");
       R(x + 10, 24, 14, 9, "#141d33"); R(x + 28, 19, 12, 14, "#141d33"); R(x + 46, 26, 18, 7, "#141d33"); R(x + 70, 16, 14, 17, "#141d33"); R(x + 92, 22, 16, 11, "#141d33");
       R(x + 58, 11, 2, 22, "#4a4468");
     });
-    ctx.fillStyle = "#e8e4f5"; ctx.beginPath(); ctx.arc(536, 22, 13, 0, 7); ctx.fill();
-    R(534, 12, 2, 10, "#262238"); R(536, 22, 8, 2, "#262238");
-    var leader = weekLeader();
     if (leader) {
       // marco dorado con el nombre del empleado de la semana
-      R(578, 4, 152, 36, "#8a6a1c"); R(580, 6, 148, 32, "#e2b84a"); R(582, 8, 144, 28, "#f6efd9");
-      R(588, 13, 8, 7, "#e2b84a"); R(590, 20, 4, 5, "#c0392b"); R(589, 14, 6, 5, "#f8d978");  // medallita
-      ctx.textAlign = "center"; ctx.fillStyle = "#6b5520"; ctx.font = "13px " + F_B; ctx.fillText("EMPLEADO DE LA SEMANA", 660, 19);
-      ctx.fillStyle = "#2b2236"; ctx.font = "17px " + F_B; ctx.fillText(leader, 660, 33);
-    } else {
-      R(580, 8, 148, 28, "#cfcbd9"); R(582, 10, 144, 24, "#f2f0f8");
-      ctx.fillStyle = "#3a3550"; ctx.font = "18px " + F_B; ctx.textAlign = "left"; ctx.fillText("SLA = YA", 590, 28);
+      R(350, 4, 140, 38, "#8a6a1c"); R(352, 6, 136, 34, "#e2b84a"); R(354, 8, 132, 30, "#f6efd9");
+      ctx.textAlign = "center"; ctx.fillStyle = "#6b5520"; ctx.font = "13px " + F_B; ctx.fillText("EMPLEADO DE LA SEMANA", 424, 19);
+      ctx.font = "17px " + F_B;
+      var mx = Math.round(424 - ctx.measureText(leader).width / 2 - 12);  // medallita junto al nombre
+      R(mx, 23, 8, 6, "#e2b84a"); R(mx + 1, 24, 6, 4, "#f8d978"); R(mx + 2, 29, 4, 5, "#c0392b");
+      ctx.fillStyle = "#2b2236"; ctx.fillText(leader, 428, 35);
     }
+    ctx.fillStyle = "#e8e4f5"; ctx.beginPath(); ctx.arc(536, 22, 13, 0, 7); ctx.fill();
+    R(534, 12, 2, 10, "#262238"); R(536, 22, 8, 2, "#262238");
+    R(580, 8, 148, 28, "#cfcbd9"); R(582, 10, 144, 24, "#f2f0f8");
+    ctx.fillStyle = "#3a3550"; ctx.font = "18px " + F_B; ctx.textAlign = "left"; ctx.fillText("SLA = YA", 590, 28);
     for (var y = T; y < 9 * T; y += 24) {
       R(0, y, T, 24, y % 48 ? "#2f2a43" : "#332e49"); R(15 * T, y, T, 24, y % 48 ? "#2f2a43" : "#332e49");
       R(0, y, T, 2, "#252136"); R(15 * T, y, T, 2, "#252136");
