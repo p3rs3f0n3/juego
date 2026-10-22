@@ -224,8 +224,9 @@ class Handler(BaseHTTPRequestHandler):
             return self.send(200, stats_page().encode("utf-8"), "text/html; charset=utf-8")
         if STATIC:
             name = "ticket_rush.html" if path == "/" else path.lstrip("/")
-            f = os.path.normpath(os.path.join(STATIC, name))
-            if f.startswith(os.path.normpath(STATIC)) and os.path.isfile(f):
+            root = os.path.abspath(STATIC)
+            f = os.path.abspath(os.path.join(root, name))
+            if f.startswith(root) and os.path.isfile(f):
                 with open(f, "rb") as fh:
                     return self.send(200, fh.read(), "text/html; charset=utf-8")
         self.send(404)

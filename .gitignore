@@ -6,3 +6,7 @@ venv/
 .idea/
 Thumbs.db
 .DS_Store
+
+# bases de datos de prueba del servicio de estadisticas
+*.db
+*.db.bak*

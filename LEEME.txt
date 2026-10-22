@@ -2,14 +2,17 @@ TICKET RUSH - The Office IT
 ===========================
 Jugar en linea: https://juego.66.94.101.47.sslip.io
 
+README.md               Que es el juego, como se juega y como esta hecho (empieza por ahi).
 ticket_rush.html        El juego terminado. Doble clic y se abre en el navegador.
 src/game_template.html  El codigo del juego en formato legible (CSS + JavaScript).
 sprites/                Los personajes en pixel art (avatar, jefe, companera y companero).
+stats/                  Servicio de estadisticas y tabla de lideres (Python + SQLite).
 scripts/                Scripts de Python (necesitan: pip install pillow)
   crear_avatar.py       Dibuja el avatar pixel por pixel.
   crear_jefe.py         Dibuja al jefe pixel por pixel.
   crear_companera.py    Dibuja a la companera (pasea por la oficina; si el jefe
                         pasa cerca se distrae unos segundos con corazones).
+  crear_gerente.py      Crea al Gerente cambiando colores del jefe (correr despues de crear_jefe.py).
   crear_companero.py    Dibuja al companero pixel por pixel (todavia no sale en el juego).
   construir_juego.py    Mete los sprites dentro del juego y genera ticket_rush.html.
 
@@ -22,3 +25,18 @@ construir_juego.py lo vuelve a escribir y se pierde el cambio.
 
 Publicar: subir ticket_rush.html a la VPS como /var/www/juego/index.html.
 No hay que reiniciar nada; si se ve la version vieja, recargar la pagina.
+
+COMO COLABORAR
+--------------
+1. Trabaja en una rama, una por idea (git checkout -b nombre-de-la-idea).
+   No subas cambios directo a main: main es lo que esta publicado.
+2. En tu rama sube solo los archivos fuente (src/, scripts/, sprites/, stats/).
+   NO subas ticket_rush.html: se regenera completo y siempre daria conflictos.
+   Se regenera una sola vez, despues de unir la rama a main.
+3. No cambies la dificultad (CURVE, RANKS, velocidades, tiempos) sin hablarlo:
+   hay una tabla de lideres semanal y la competencia dejaria de ser justa.
+4. Pruebalo en tu computador, en pantalla grande y en celular horizontal
+   (como correrlo con la tabla de lideres en local: ver README.md).
+5. Abre un Pull Request hacia main contando que cambiaste y por que.
+
+La idea es que el juego siga siendo simple y divertido, con humor de oficina de TI.
