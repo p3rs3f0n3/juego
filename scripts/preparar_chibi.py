@@ -20,6 +20,11 @@ CELDA = 56          # tamano de cada cuadro en el juego
 ALTO = 50           # alto de la jugadora caminando (la mas alta); los demas, a la misma escala
 COLORES = 20        # paleta por personaje
 NOMBRES = ["jugadora", "jefe", "dani", "sapo"]
+# Hojas extra (de frente, una sola animacion): nombre -> (personaje, columnas, filas, extension).
+# Salen a la misma estatura que ese personaje quieto de frente.
+EXTRAS = {
+    "jugadora_arreglando": ("jugadora", 4, 2, ".webp"),  # nerviosa y sudando mientras arregla un ticket
+}
 
 
 def mascara(cell):
@@ -68,13 +73,13 @@ def limpiar_celda(cell):
     return limpio, grande  # grande: la figura principal (para alinear los pies)
 
 
-def hoja(nombre):
-    im = Image.open(ARTE + nombre + ".png").convert("RGBA")
-    cw, ch = im.width // 4, im.height // 3
+def hoja(nombre, cols=4, filas=3, ext=".png"):
+    im = Image.open(ARTE + nombre + ext).convert("RGBA")
+    cw, ch = im.width // cols, im.height // filas
     celdas, pies = [], []
-    for fila in range(3):
+    for fila in range(filas):
         fila_celdas = []
-        for col in range(4):
+        for col in range(cols):
             c, grande = limpiar_celda(im.crop((col * cw, fila * ch, (col + 1) * cw, (fila + 1) * ch)))
             fila_celdas.append(c)
             pies.append(grande[4] if grande else ch - 1)
@@ -89,27 +94,36 @@ def construir():
     caja = cel[0][0].getbbox()
     k = ALTO / (pies[0] - caja[1] + 1)
     for nombre, (celdas, pies, cw, ch) in hojas.items():
-        tira = Image.new("RGBA", (CELDA * 12, CELDA), (0, 0, 0, 0))
-        for fila in range(3):
-            base = max(pies[fila * 4:fila * 4 + 4])  # pies de la fila: todos apoyados a la misma altura
-            for col in range(4):
-                c = celdas[fila][col]
-                peq = c.resize((max(1, round(cw * k)), max(1, round(ch * k))), Image.LANCZOS)
-                a = peq.getchannel("A").point(lambda v: 255 if v >= 110 else 0)
-                peq.putalpha(a)
-                # centro de la celda original -> centro del cuadro; pies de la fila -> borde de abajo
-                dx = round(CELDA / 2 - cw * k / 2)
-                dy = round(CELDA - 1 - base * k)
-                cuadro = Image.new("RGBA", (CELDA, CELDA), (0, 0, 0, 0))
-                cuadro.paste(peq, (dx, dy), peq)
-                tira.alpha_composite(cuadro, ((fila * 4 + col) * CELDA, 0))
-        tira = paleta(tira)
+        tira = paleta(armar(celdas, pies, cw, ch, k, 4, 3))
         tira.save(SP + "chibi_" + nombre + ".png", optimize=True)
         frente = tira.crop((8 * CELDA, 0, 9 * CELDA, CELDA))  # cuadro "quieto de frente", para la ayuda
         frente.crop(frente.getbbox()).save(SP + "chibi_" + nombre + "_frente.png", optimize=True)
         if nombre == "jefe":
             gerente(tira).save(SP + "chibi_gerente.png", optimize=True)
         print("ok", nombre)
+    for extra, (quien, cols, filas, ext) in EXTRAS.items():
+        celdas, pies, cw, ch = hoja(extra, cols, filas, ext)
+        ref = Image.open(SP + "chibi_" + quien + "_frente.png")  # estatura del personaje quieto de frente
+        k2 = ref.height / (pies[0] - celdas[0][0].getbbox()[1] + 1)
+        paleta(armar(celdas, pies, cw, ch, k2, cols, filas)).save(SP + "chibi_" + extra + ".png", optimize=True)
+        print("ok", extra)
+
+
+def armar(celdas, pies, cw, ch, k, cols, filas):
+    """Reduce cada celda con la escala k y la pone en una tira de cuadros de CELDA px, pies abajo."""
+    tira = Image.new("RGBA", (CELDA * cols * filas, CELDA), (0, 0, 0, 0))
+    for fila in range(filas):
+        base = max(pies[fila * cols:fila * cols + cols])  # pies de la fila: todos apoyados a la misma altura
+        for col in range(cols):
+            peq = celdas[fila][col].resize((max(1, round(cw * k)), max(1, round(ch * k))), Image.LANCZOS)
+            peq.putalpha(peq.getchannel("A").point(lambda v: 255 if v >= 110 else 0))
+            # centro de la celda original -> centro del cuadro; pies de la fila -> borde de abajo
+            dx = round(CELDA / 2 - cw * k / 2)
+            dy = round(CELDA - 1 - base * k)
+            cuadro = Image.new("RGBA", (CELDA, CELDA), (0, 0, 0, 0))
+            cuadro.paste(peq, (dx, dy), peq)
+            tira.alpha_composite(cuadro, ((fila * cols + col) * CELDA, 0))
+    return tira
 
 
 def paleta(tira):

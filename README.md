@@ -96,7 +96,7 @@ Los `*_preview.png` son versiones grandes para ver el dibujo.
 
 | Personaje | Camina | Corre | Acción especial |
 |---|---|---|---|
-| Jugadora | al moverse | con turbo ☕ | celebra al ascender |
+| Jugadora | al moverse | con turbo ☕ | celebra al ascender; nerviosa y sudando mientras arregla (hoja extra `jugadora_arreglando.webp`) |
 | Jefe / Gerente | paseando | persiguiendo o huyendo | se enoja al alcanzarte |
 | Dani | paseando | — | se enamora cuando distrae al jefe |
 | Sapo | (preparado, todavía no sale en el juego) | | chismea |

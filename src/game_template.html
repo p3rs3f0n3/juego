@@ -393,6 +393,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   var CH = 56;
   function sheet(src) { var i = new Image(); i.src = src; return i; }
   var shP = sheet("__CHIBI_JUGADORA__"), shB = sheet("__CHIBI_JEFE__"), shG = sheet("__CHIBI_GERENTE__"), shM = sheet("__CHIBI_DANI__");
+  var shPA = sheet("__CHIBI_JUGADORA_ARREGLANDO__");  // 8 cuadros de frente: arreglando un ticket
   function ready(i) { return i.complete && i.naturalWidth; }
   function facing(e) {
     if (e.fx === undefined) { e.fx = e.x; e.face = 1; }
@@ -835,6 +836,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     var act = inp("act");
     var tk = nearestTicket();
     var fixing = act && tk && P.stun <= 0;
+    P.fixing = !!fixing;  // solo para el dibujo: nerviosa y sudando mientras arregla
     if (P.party > 0) P.party -= dt;
     if (B.angry > 0) B.angry -= dt;
     P.moving = false;
@@ -984,6 +986,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     if (ready(shP)) {
       // celebra al ascender · aturdida si el jefe la alcanzó · corre con turbo · camina · quieta de frente
       if (P.party > 0) drawChibi(shP, P, cycle(8, 6), true);
+      else if (P.fixing && ready(shPA)) drawChibi(shPA, P, Math.floor(anim * 8) % 8, true);
       else if (P.stun > 0 || !P.moving) drawChibi(shP, P, 8, true);
       else drawChibi(shP, P, P.boost > 0 ? cycle(4, 12) : cycle(0, 8));
     } else if (imgP.complete && imgP.naturalWidth) ctx.drawImage(imgP, Math.round(P.x - 24), Math.round(P.y - 47 + bob), 48, 48);
