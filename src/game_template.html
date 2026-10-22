@@ -146,6 +146,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
 .board .pts { color: var(--warn); text-align: right; font-variant-numeric: tabular-nums; }
 .board small { grid-column: 2 / 4; color: var(--muted); font-size: 0.8em; }
 .board .empty { display: block; color: var(--muted); text-align: center; border: 0; }
+.screen .fame { color: var(--warn); font-size: clamp(14px, 2.1vw, 18px); }
 .foot { align-items: center; }
 /* Pantallas bajas (celular horizontal): tabla compacta para que quepan más puestos */
 @media (max-height: 520px) {
@@ -304,8 +305,9 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     <h2>TABLA DE LÍDERES</h2>
     <div class="tabs" role="tablist">
       <button class="tab on" type="button" data-t="week" role="tab">ESTA SEMANA</button>
-      <button class="tab" type="button" data-t="all" role="tab">HISTÓRICO</button>
+      <button class="tab" type="button" data-t="all" role="tab" id="tabAll">TEMPORADA</button>
     </div>
+    <p class="fame" id="boardFame" hidden></p>
     <ol class="board" id="boardList"></ol>
     <div class="row foot">
       <p class="stats" id="boardMe"></p>
@@ -1087,7 +1089,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     });
     if (!rows.length) {
       var e = document.createElement("li"); e.className = "empty";
-      e.textContent = boardTab === "week" ? "Nadie ha jugado esta semana. ¡Sé el primero!" : "Todavía no hay partidas.";
+      e.textContent = boardTab === "week" ? "Nadie ha jugado esta semana. ¡Sé el primero!" : "Nadie ha jugado esta temporada. ¡Sé el primero!";
       list.appendChild(e);
     }
     rows.forEach(function (r, i) {
@@ -1103,8 +1105,13 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       li.appendChild(pos); li.appendChild(nm); li.appendChild(pts); li.appendChild(sm);
       list.appendChild(li);
     });
+    // Nombre de la temporada en la pestaña y campeones de temporadas pasadas (salón de la fama)
+    if (d.season) el("tabAll").textContent = d.season.toUpperCase();
+    var fameEl = el("boardFame"), fame = d.fame || [];
+    fameEl.hidden = !fame.length;
+    fameEl.textContent = fame.length ? "🏆 Salón de la fama · " + fame.map(function (f) { return f.season + ": " + f.n + " (" + f.s + ")"; }).join(" · ") : "";
     el("boardMe").textContent = me.pos ? "Tu puesto: #" + me.pos + " de " + me.of + " · tu mejor: " + me.best
-      : (boardTab === "week" ? "Todavía no tienes partidas esta semana." : "Todavía no tienes partidas.");
+      : (boardTab === "week" ? "Todavía no tienes partidas esta semana." : "Todavía no tienes partidas esta temporada.");
   }
   function openBoard(from) {
     boardFrom = from; boardTab = "week";

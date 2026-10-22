@@ -12,6 +12,8 @@ No guarda IPs: cada navegador manda un identificador al azar. El apodo es opcion
   GET  /api/board?v=id                                  tabla de lideres publica (semana e historica)
   GET  /stats       pagina de estadisticas (Caddy la protege con usuario y clave)
   POST /stats/hide  ocultar o mostrar el apodo de un jugador (desde /stats)
+  POST /stats/season empezar una temporada nueva: la tabla arranca de cero y la anterior queda en el
+                    salon de la fama (no se borra nada)
 
 Variables de entorno: STATS_DB (ruta de la base), STATS_PORT (por defecto 8095),
 STATS_STATIC (solo para probar en local: carpeta desde donde servir el juego).
@@ -57,6 +59,25 @@ def init():
         if "dist" not in cols:  # veces que distrajo al jefe con la companera
             c.execute("ALTER TABLE games ADD COLUMN dist INTEGER DEFAULT 0")
         c.execute("CREATE TABLE IF NOT EXISTS players (visitor TEXT PRIMARY KEY, name TEXT, hidden INTEGER DEFAULT 0, ts INTEGER)")
+        # Temporadas: la tabla de lideres solo cuenta desde el inicio de la temporada actual.
+        c.execute("CREATE TABLE IF NOT EXISTS seasons (id INTEGER PRIMARY KEY AUTOINCREMENT, start INTEGER, name TEXT)")
+        if not c.execute("SELECT COUNT(*) FROM seasons").fetchone()[0]:
+            c.execute("INSERT INTO seasons (start, name) VALUES (0, 'Temporada 1')")
+
+
+def seasons(c):
+    return c.execute("SELECT id, start, name FROM seasons ORDER BY start").fetchall()
+
+
+def fame(c, nm):
+    """Campeon de cada temporada ya terminada (mejor puntaje entre su inicio y el de la siguiente)."""
+    out, ss = [], seasons(c)
+    for cur, nxt in zip(ss, ss[1:]):
+        r = c.execute("""SELECT visitor, MAX(score) AS score FROM games WHERE ts >= ? AND ts < ?
+                         GROUP BY visitor ORDER BY score DESC, MIN(ts) ASC LIMIT 1""", (cur["start"], nxt["start"])).fetchone()
+        if r:
+            out.append({"season": cur["name"], "n": shown(r["visitor"], nm), "s": r["score"]})
+    return out
 
 
 # ---------------------------------------------------------------- apodos
@@ -117,11 +138,13 @@ def week_start():
 
 
 def board(me):
-    """Tabla publica: mejor puntaje de cada persona (una linea por persona), semana e historica."""
+    """Tabla publica: mejor puntaje de cada persona (una linea por persona), semana y temporada actual."""
     with db() as c:
         nm = names(c)
+        season = seasons(c)[-1]
         agg = {r["visitor"]: r for r in c.execute(
-            "SELECT visitor, COUNT(*) AS games, MAX(rank) AS top, SUM(dist) AS dist FROM games GROUP BY visitor")}
+            """SELECT visitor, COUNT(*) AS games, MAX(rank) AS top, SUM(dist) AS dist FROM games
+               WHERE ts >= ? GROUP BY visitor""", (season["start"],))}
 
         def best(since):
             # en SQLite, con MAX() las demas columnas salen de la fila del maximo
@@ -129,13 +152,15 @@ def board(me):
                                 WHERE ts >= ? GROUP BY visitor ORDER BY score DESC, first ASC""", (since,)).fetchall()
 
         out = {}
-        for key, rows in (("week", best(week_start())), ("all", best(0))):
+        for key, rows in (("week", best(max(week_start(), season["start"]))), ("all", best(season["start"]))):
             out[key] = [{"n": shown(r["visitor"], nm), "s": r["score"], "t": r["tickets"], "r": r["rank"],
                          "g": agg[r["visitor"]]["games"], "top": agg[r["visitor"]]["top"],
                          "d": agg[r["visitor"]]["dist"] or 0, "me": r["visitor"] == me} for r in rows[:10]]
             pos = next((i for i, r in enumerate(rows, 1) if r["visitor"] == me), 0)
             out[key + "Me"] = {"pos": pos, "of": len(rows), "best": rows[pos - 1]["score"] if pos else 0}
         out["name"] = nm.get(me, "")
+        out["season"] = season["name"]
+        out["fame"] = fame(c, nm)
         return out
 
 
@@ -170,6 +195,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path.split("?")[0].rstrip("/") == "/stats/hide":
             return self.hide()
+        if self.path.split("?")[0].rstrip("/") == "/stats/season":
+            return self.new_season()
         kind = self.path.split("?")[0].rstrip("/").rsplit("/", 1)[-1]
         if not self.path.startswith("/api/") or kind not in ("visit", "start", "end", "name"):
             return self.send(404)
@@ -244,6 +271,19 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", "0")
         self.end_headers()
 
+    def new_season(self):
+        n = int(self.headers.get("Content-Length") or 0)
+        f = parse_qs(self.rfile.read(min(n, 512)).decode("utf-8", "ignore")) if n > 0 else {}
+        name = re.sub(r"\s+", " ", (f.get("name") or [""])[0]).strip()[:40]
+        with db() as c:
+            if not name:
+                name = "Temporada %d" % (len(seasons(c)) + 1)
+            c.execute("INSERT INTO seasons (start, name) VALUES (?, ?)", (now(), name))
+        self.send_response(303)
+        self.send_header("Location", "/stats")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
 
 # ---------------------------------------------------------------- pagina de estadisticas
 
@@ -275,6 +315,9 @@ def stats_page():
         no_play = q("SELECT COUNT(DISTINCT visitor) FROM visits WHERE visitor NOT IN (SELECT visitor FROM starts)")
         lost = max(0, starts - ends)  # empezaron pero no llegó ni final ni abandono
         top = c.execute("SELECT * FROM games ORDER BY score DESC, ts ASC LIMIT 10").fetchall()
+        season = seasons(c)[-1]
+        champs = fame(c, names(c, admin=True))
+        next_name = "Temporada %d" % (len(seasons(c)) + 1)
         nm = names(c, admin=True)
         hidden = {r[0] for r in c.execute("SELECT visitor FROM players WHERE hidden = 1")}
         people = c.execute("""SELECT visitor, COUNT(*) AS games, MAX(score) AS best, MAX(rank) AS top,
@@ -351,6 +394,8 @@ td small {{ color:var(--muted); font-size:14px; }}
 form {{ margin:0; }}
 button {{ font:16px VT323, monospace; color:var(--fg); background:#221f33; border:1px solid var(--line); padding:2px 8px; cursor:pointer; }}
 button:hover {{ border-color:var(--accent); }}
+section p {{ margin:0 0 8px; }}
+input {{ font:16px VT323, monospace; color:var(--fg); background:#0d0c14; border:1px solid var(--line); padding:2px 6px; }}
 .tile, section {{ background:var(--panel); border:2px solid var(--line); padding:12px 14px; }}
 .tile {{ display:grid; gap:2px; }}
 .tile span, .tile small {{ color:var(--muted); }}
@@ -381,6 +426,13 @@ em {{ color:var(--muted); font-style:normal; }}
   <section><h2>TOP 10 PUNTAJES</h2><div class="wrap"><table>
     <tr><th>#</th><th>Quién</th><th class=n>Puntos</th><th class=n>Tickets</th><th>Rango</th><th>Cuándo</th></tr>
     {rows}</table></div></section>
+  <section><h2>TEMPORADAS</h2>
+    <p>Temporada actual: <b>{html.escape(season["name"])}</b>{" (desde " + day(season["start"]).strftime("%d/%m/%Y %H:%M") + ")" if season["start"] else ""}.
+    La tabla de líderes del juego solo cuenta desde ahí; esta página muestra todo.</p>
+    {"".join(f"<p>🏆 {html.escape(f['season'])}: <b>{html.escape(f['n'])}</b> · {f['s']} pts</p>" for f in champs) or "<p class=legend>Todavía no hay temporadas terminadas.</p>"}
+    <form method=post action="/stats/season" onsubmit="return confirm('¿Empezar una temporada nueva? La tabla del juego arranca de cero (no se borra nada).')">
+      <input name=name value="{next_name}" maxlength=40 aria-label="Nombre de la temporada nueva"> <button>Empezar temporada nueva</button>
+    </form></section>
   <section><h2>JUGADORES</h2><div class="wrap"><table>
     <tr><th>Apodo</th><th class=n>Partidas</th><th class=n>Mejor</th><th>Rango máx.</th><th class=n>♥ Distrajo</th><th>Última</th><th></th></tr>
     {people_rows}</table></div>
