@@ -30,6 +30,8 @@ Empiezas de practicante ("DÍA 1") y asciendes resolviendo tickets. Cada ascenso
 | Analista | 10 tickets | RESOLVER | El jefe | "El antivirus bloqueó la nómina" |
 | Jefe de TI | 25 tickets | APROBAR | **El Gerente** | "Explicar por qué se pidió otra RAM" |
 
+Con cada ascenso también **cambia el escenario** (sin mover los muebles): la oficina de siempre → el área de TI moderna (portátiles, tablero de sprint, atardecer) → el piso ejecutivo (madera, monitores anchos, ciudad de noche).
+
 La dificultad sube poco a poco, ticket a ticket, y se estabiliza a los 45 tickets (tabla `CURVE` en `src/game_template.html`):
 
 | Tickets | El jefe te ve a | Velocidad del jefe* | Tiempo de los tickets | Nuevo ticket cada | Máx. abiertos | Avance que conservas si te alcanza |

@@ -973,22 +973,98 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   function R(x, y, w, h, c) { ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math.round(y), w, h); }
   var anim = 0;
 
-  function drawFloor() {
-    R(0, 0, W, H, "#1a1828");
-    for (var r = 1; r <= 8; r++) for (var c = 1; c <= 14; c++) {
-      R(c * T, r * T, T, T, (r + c) % 2 ? "#242139" : "#292640");
-      R(c * T, r * T, T, 2, "#2f2b4a");
+  /* ---------- escenarios: cambian con el rango ----------
+     Los muebles quedan en el mismo sitio (la dificultad no cambia); cambian colores, piso, ventanas,
+     equipos y adornos. Las máquinas de las paredes laterales son solo decoración (ahí no se camina). */
+  var THEMES = [
+    { // practicante (Día 1): la oficina de siempre
+      bg: "#1a1828", floor: ["#242139", "#292640", "#2f2b4a"], wall: ["#37324d", "#262238", "#2a2640"],
+      side: ["#2f2a43", "#332e49", "#252136", "#1c1a2a"], sky: "noche", frame: "#4a4468",
+      board: "sla", desk: ["#74513a", "#8d6648", "#4f3626"], pc: "crt", leds: ["#5fd6a1", "#f2b441"], plant: 0 },
+    { // analista (1 año después): área de TI moderna, alfombra azul, portátiles, atardecer
+      bg: "#14223a", floor: ["#1f3350", "#22395a", "#2a4468"], wall: ["#3d5a73", "#2b4359", "#33506a"],
+      side: ["#2c4560", "#304b67", "#223a52", "#172a3d"], sky: "atardecer", frame: "#e9eef2",
+      board: "sprint", desk: ["#d9dde3", "#f2f4f7", "#9aa3ad"], pc: "portatil", leds: ["#5fb8f2", "#5fd6a1"], plant: 1, extras: "ti" },
+    { // jefe de TI (5 años después): piso ejecutivo, madera oscura, alfombra vinotinto, ciudad de noche
+      bg: "#1b0f0d", floor: ["#3b2418", "#43291b", "#4f311f"], wall: ["#2a1f2e", "#1c1420", "#231a27"],
+      side: ["#3a2a36", "#40303c", "#2a1e28", "#160e14"], sky: "ciudad", frame: "#8a6a1c", carpet: "#5a1f2e",
+      board: "cuadro", desk: ["#5a2e1c", "#6e3a24", "#3a1d12"], pc: "ancho", leds: ["#e8b840", "#f2f0f8"], plant: 2, extras: "ejecutivo" }
+  ];
+  function theme() { return THEMES[rank] || THEMES[0]; }
+
+  function drawWindow(x, th) {
+    R(x, 8, 120, 28, th.frame);
+    if (th.sky === "atardecer") {
+      R(x + 3, 11, 114, 8, "#f6b26b"); R(x + 3, 19, 114, 7, "#ef8a6a"); R(x + 3, 26, 114, 7, "#c95d7c");
+    } else R(x + 3, 11, 114, 22, th.sky === "ciudad" ? "#0b1026" : "#1d2b4a");
+    var b = th.sky === "atardecer" ? "#5b2a4a" : th.sky === "ciudad" ? "#1a2040" : "#141d33";
+    R(x + 10, 24, 14, 9, b); R(x + 28, 19, 12, 14, b); R(x + 46, 26, 18, 7, b); R(x + 70, 16, 14, 17, b); R(x + 92, 22, 16, 11, b);
+    if (th.sky === "ciudad") {  // oficinas con la luz prendida (el jefe de TI sale tarde)
+      [[13, 26], [18, 29], [31, 21], [35, 26], [73, 19], [77, 24], [73, 28], [96, 25], [101, 28]].forEach(function (w) { R(x + w[0], w[1], 2, 2, "#f2d76b"); });
+      R(x + 104, 14, 5, 5, "#e8e4f5");  // luna
     }
-    R(0, 0, W, T, "#37324d");
-    R(0, 40, W, 8, "#262238");
-    R(0, 0, W, 4, "#2a2640");
+    R(x + 58, 11, 2, 22, th.frame);
+  }
+
+  function drawBoard(th) {
+    if (th.board === "sprint") {  // tablero de sprint con post-its
+      R(580, 8, 148, 28, "#cfd6dc"); R(582, 10, 144, 24, "#f7f9fb");
+      ctx.fillStyle = "#2b4359"; ctx.font = "16px " + F_B; ctx.textAlign = "left"; ctx.fillText("SPRINT 42", 588, 27);
+      var cols = ["#f2b441", "#ff7eb6", "#5fd6a1", "#5fb8f2"];
+      for (var c = 0; c < 3; c++) {
+        R(660 + c * 22, 12, 1, 20, "#cfd6dc");
+        for (var r = 0; r < 2; r++) if ((c + r) % 3 !== 2) R(664 + c * 22, 14 + r * 9, 10, 7, cols[(c + r * 2) % 4]);
+      }
+    } else if (th.board === "cuadro") {  // un cuadro elegante en la oficina del jefe de TI
+      R(580, 6, 148, 32, "#c9a227"); R(583, 9, 142, 26, "#1f3b2f");
+      R(583, 25, 142, 10, "#2f5d43"); R(620, 21, 50, 8, "#3c7354"); R(583, 30, 142, 5, "#24482f");
+      ctx.fillStyle = "#f2b441"; ctx.beginPath(); ctx.arc(700, 17, 5, 0, 7); ctx.fill();
+    } else {
+      R(580, 8, 148, 28, "#cfcbd9"); R(582, 10, 144, 24, "#f2f0f8");
+      ctx.fillStyle = "#3a3550"; ctx.font = "18px " + F_B; ctx.textAlign = "left"; ctx.fillText("SLA = YA", 590, 28);
+    }
+  }
+
+  function drawSideExtras(th) {
+    if (th.extras === "ti") {
+      // máquina de snacks (pared izquierda)
+      R(6, 186, 36, 64, "#1e2a38"); R(9, 190, 22, 50, "#9fd3f0");
+      for (var r = 0; r < 4; r++) for (var c = 0; c < 3; c++) R(11 + c * 7, 193 + r * 12, 5, 6, ["#ef5b6b", "#f2b441", "#5fd6a1", "#ff7eb6"][(r + c) % 4]);
+      R(33, 196, 6, 10, "#2b3a4c"); R(34, 210, 4, 4, "#5fd6a1"); R(9, 242, 22, 5, "#0f1720");
+      // dispensador de agua (pared derecha)
+      R(727, 300, 34, 50, "#e9eef2"); R(731, 276, 26, 26, "#7fc4ef"); R(733, 278, 8, 18, "#a9daf6");
+      R(737, 314, 14, 6, "#2b4359"); R(739, 322, 4, 4, "#5fb8f2"); R(745, 322, 4, 4, "#ef5b6b");
+    } else if (th.extras === "ejecutivo") {
+      // biblioteca (pared izquierda)
+      R(6, 170, 36, 96, "#4a2a1a"); R(9, 173, 30, 90, "#2a170e");
+      var books = ["#7a1f2e", "#c9a227", "#2f5d43", "#3d5a73", "#8a6a1c", "#5a1f2e"];
+      for (var sh = 0; sh < 4; sh++) {
+        R(9, 194 + sh * 22, 30, 2, "#4a2a1a");
+        for (var k = 0; k < 6; k++) R(10 + k * 5, 176 + sh * 22 + (k % 3), 4, 18 - (k % 3), books[(k + sh) % 6]);
+      }
+      // dispensador de agua elegante (pared derecha)
+      R(727, 300, 34, 50, "#3a2a36"); R(731, 276, 26, 26, "#7fc4ef"); R(733, 278, 8, 18, "#a9daf6");
+      R(737, 314, 14, 6, "#c9a227"); R(739, 322, 4, 4, "#5fb8f2"); R(745, 322, 4, 4, "#ef5b6b");
+    }
+  }
+
+  function drawFloor() {
+    var th = theme(), f = th.floor, wl = th.wall, sd = th.side;
+    R(0, 0, W, H, th.bg);
+    for (var r = 1; r <= 8; r++) for (var c = 1; c <= 14; c++) {
+      R(c * T, r * T, T, T, (r + c) % 2 ? f[0] : f[1]);
+      R(c * T, r * T, T, 2, f[2]);
+      if (th.pc === "ancho") R(c * T, r * T + 24, T, 1, f[2]);  // tablas de madera
+    }
+    if (th.carpet) {  // alfombras vinotinto en los pasillos entre escritorios
+      [3, 5].forEach(function (row) { R(T + 8, row * T + 8, 14 * T - 16, 32, th.carpet); R(T + 12, row * T + 12, 14 * T - 24, 24, "#6b2738"); });
+    }
+    R(0, 0, W, T, wl[0]);
+    R(0, 40, W, 8, wl[1]);
+    R(0, 0, W, 4, wl[2]);
     var leader = weekLeader();
     // Si hay empleado de la semana, su cuadro reemplaza la tercera ventana (ahí no lo tapa nada).
-    (leader ? [40, 200] : [40, 200, 360]).forEach(function (x) {
-      R(x, 8, 120, 28, "#4a4468"); R(x + 3, 11, 114, 22, "#1d2b4a");
-      R(x + 10, 24, 14, 9, "#141d33"); R(x + 28, 19, 12, 14, "#141d33"); R(x + 46, 26, 18, 7, "#141d33"); R(x + 70, 16, 14, 17, "#141d33"); R(x + 92, 22, 16, 11, "#141d33");
-      R(x + 58, 11, 2, 22, "#4a4468");
-    });
+    (leader ? [40, 200] : [40, 200, 360]).forEach(function (x) { drawWindow(x, th); });
     if (leader) {
       // marco dorado con el nombre del empleado de la semana
       R(350, 4, 140, 38, "#8a6a1c"); R(352, 6, 136, 34, "#e2b84a"); R(354, 8, 132, 30, "#f6efd9");
@@ -1000,26 +1076,48 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     }
     ctx.fillStyle = "#e8e4f5"; ctx.beginPath(); ctx.arc(536, 22, 13, 0, 7); ctx.fill();
     R(534, 12, 2, 10, "#262238"); R(536, 22, 8, 2, "#262238");
-    R(580, 8, 148, 28, "#cfcbd9"); R(582, 10, 144, 24, "#f2f0f8");
-    ctx.fillStyle = "#3a3550"; ctx.font = "18px " + F_B; ctx.textAlign = "left"; ctx.fillText("SLA = YA", 590, 28);
+    drawBoard(th);
     for (var y = T; y < 9 * T; y += 24) {
-      R(0, y, T, 24, y % 48 ? "#2f2a43" : "#332e49"); R(15 * T, y, T, 24, y % 48 ? "#2f2a43" : "#332e49");
-      R(0, y, T, 2, "#252136"); R(15 * T, y, T, 2, "#252136");
+      R(0, y, T, 24, y % 48 ? sd[0] : sd[1]); R(15 * T, y, T, 24, y % 48 ? sd[0] : sd[1]);
+      R(0, y, T, 2, sd[2]); R(15 * T, y, T, 2, sd[2]);
     }
-    R(T - 4, T, 4, 8 * T, "#1c1a2a"); R(15 * T, T, 4, 8 * T, "#1c1a2a");
+    R(T - 4, T, 4, 8 * T, sd[3]); R(15 * T, T, 4, 8 * T, sd[3]);
+    drawSideExtras(th);
+  }
+
+  // Pantalla de un computador: con ticket parpadea en azul con carita triste; sin ticket, código en verde.
+  function screen(sx, sy, sw, sh, tk, blink) {
+    if (tk) {
+      R(sx, sy, sw, sh, blink ? "#2d5fd6" : "#2551bd");
+      R(sx + Math.round(sw * 0.15), sy + Math.round(sh * 0.25), 4, 4, "#fff"); R(sx + Math.round(sw * 0.38), sy + Math.round(sh * 0.25), 4, 4, "#fff");
+      R(sx + Math.round(sw * 0.15), sy + Math.round(sh * 0.65), Math.round(sw * 0.6), 2, "#fff");
+    } else {
+      R(sx, sy, sw, sh, "#173a2c");
+      R(sx + 4, sy + 4, Math.round(sw * 0.47), 2, "#5fd6a1"); R(sx + 4, sy + 9, Math.round(sw * 0.7), 2, "#3f9d78"); R(sx + 4, sy + 14, Math.round(sw * 0.35), 2, "#5fd6a1");
+    }
+  }
+  function drawPC(x, y, tk, blink, kind) {
+    if (kind === "portatil") {  // portátil abierto
+      R(x + 32, y + 1, 32, 23, "#c9ced6"); screen(x + 34, y + 3, 28, 19, tk, blink);
+      R(x + 28, y + 24, 40, 6, "#b8bec8"); R(x + 28, y + 28, 40, 2, "#8a919c"); R(x + 42, y + 25, 12, 2, "#9aa3ad");
+    } else if (kind === "ancho") {  // monitor ancho y teclado delgado
+      R(x + 20, y - 6, 56, 27, "#101018"); screen(x + 22, y - 4, 52, 21, tk, blink);
+      R(x + 46, y + 21, 4, 5, "#2a2a33"); R(x + 40, y + 25, 16, 2, "#2a2a33");
+      R(x + 32, y + 28, 32, 3, "#2d2d38");
+    } else {  // monitor viejo de la oficina de siempre
+      R(x + 28, y - 6, 40, 28, "#1c1b24"); screen(x + 31, y - 3, 34, 20, tk, blink);
+      R(x + 44, y + 22, 8, 4, "#1c1b24");
+      R(x + 32, y + 26, 32, 6, "#cfc9dd"); R(x + 32, y + 30, 32, 2, "#9d96b8");
+    }
   }
 
   function drawStation(s) {
     var x = s.x, y = s.y, tk = s.ticket;
     if (s.type === "desk") {
+      var th = theme(), dk = th.desk;
       R(x + 2, y + 42, 92, 6, "rgba(0,0,0,0.25)");
-      R(x, y + 14, 96, 22, "#74513a"); R(x, y + 14, 96, 3, "#8d6648"); R(x + 2, y + 36, 92, 10, "#4f3626");
-      R(x + 28, y - 6, 40, 28, "#1c1b24");
-      var blink = Math.floor(anim * 4) % 2;
-      if (tk) { R(x + 31, y - 3, 34, 20, blink ? "#2d5fd6" : "#2551bd"); R(x + 36, y + 2, 4, 4, "#fff"); R(x + 44, y + 2, 4, 4, "#fff"); R(x + 36, y + 10, 20, 2, "#fff"); }
-      else { R(x + 31, y - 3, 34, 20, "#173a2c"); R(x + 35, y + 1, 16, 2, "#5fd6a1"); R(x + 35, y + 6, 24, 2, "#3f9d78"); R(x + 35, y + 11, 12, 2, "#5fd6a1"); }
-      R(x + 44, y + 22, 8, 4, "#1c1b24");
-      R(x + 32, y + 26, 32, 6, "#cfc9dd"); R(x + 32, y + 30, 32, 2, "#9d96b8");
+      R(x, y + 14, 96, 22, dk[0]); R(x, y + 14, 96, 3, dk[1]); R(x + 2, y + 36, 92, 10, dk[2]);
+      drawPC(x, y, tk, Math.floor(anim * 4) % 2, th.pc);
       R(x + 8, y + 20, 9, 10, (s.seed % 2) ? "#e8e4f5" : "#ef5b6b"); R(x + 17, y + 23, 3, 4, "#cfc9dd");
       R(x + 74, y + 21, 14, 10, "#f2f0f8"); R(x + 76, y + 23, 10, 1, "#9d96b8"); R(x + 76, y + 26, 8, 1, "#9d96b8");
     } else if (s.type === "server") {
@@ -1029,7 +1127,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
         for (var i = 0; i < 5; i++) {
           R(rx + 4, y - 14 + i * 12, 32, 9, "#2b2840");
           var on = tk ? (Math.floor(anim * 6 + i + k) % 2) : 1;
-          R(rx + 7, y - 11 + i * 12, 4, 3, tk ? (on ? "#ef5b6b" : "#4a2028") : (i % 2 ? "#5fd6a1" : "#f2b441"));
+          R(rx + 7, y - 11 + i * 12, 4, 3, tk ? (on ? "#ef5b6b" : "#4a2028") : theme().leds[i % 2]);
           R(rx + 28, y - 11 + i * 12, 5, 3, "#161422");
         }
       }
@@ -1065,7 +1163,10 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     } else if (s.type === "plant") {
       R(x + 10, y + 44, 28, 4, "rgba(0,0,0,0.25)");
       R(x + 14, y + 30, 20, 16, "#a0522d"); R(x + 12, y + 28, 24, 4, "#b8683f");
-      R(x + 22, y + 6, 4, 24, "#2f7a4f"); R(x + 10, y + 10, 14, 10, "#3f9d63"); R(x + 24, y + 4, 14, 12, "#4fb878"); R(x + 8, y + 20, 12, 8, "#2f7a4f"); R(x + 26, y + 18, 12, 8, "#3f9d63");
+      var g = theme().plant;  // las matas crecen con los años (solo las hojas; la maceta es la misma)
+      R(x + 22, y + 6 - g * 6, 4, 24 + g * 6, "#2f7a4f"); R(x + 10, y + 10 - g * 4, 14, 10, "#3f9d63"); R(x + 24, y + 4 - g * 6, 14, 12, "#4fb878"); R(x + 8, y + 20, 12, 8, "#2f7a4f"); R(x + 26, y + 18, 12, 8, "#3f9d63");
+      if (g) { R(x + 6, y + 4 - g * 6, 12, 10, "#4fb878"); R(x + 30, y + 6 - g * 5, 12, 10, "#2f7a4f"); }
+      if (g > 1) { R(x + 16, y - 10, 16, 10, "#3f9d63"); R(x + 2, y + 12, 10, 8, "#3f9d63"); R(x + 36, y + 14, 10, 8, "#4fb878"); }
     }
   }
 
