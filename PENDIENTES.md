@@ -23,12 +23,12 @@ Cuando algo se termine, se marca con `[x]` y se anota el Pull Request o commit.
 ## 2. Después: animaciones de Manuel
 
 - [ ] **Integrar los spritesheets chibi** (`spritesheets-chibi-v2.zip`): caminar, correr con turbo y acción especial (jugadora celebra al ascender, jefe se enoja al alcanzarte, compañera enamorada al distraer al jefe). Son generados con IA: hay que limpiarlos (bordes nítidos, sin transparencias, paleta reducida) y reducirlos a 48 px. Faltan las direcciones arriba/abajo (izquierda = reflejar).
-- [ ] **Decidir: ¿Gerente sí o no?** En la propuesta de Manuel la chismosa reemplaza al Gerente (que hoy aparece al llegar a Jefe de TI). Opciones: quedarse con el Gerente, reemplazarlo, o tener los dos.
+- [x] **Decidir: ¿Gerente sí o no?** Decidido (22 oct 2026): **el Gerente se queda** (aparece al llegar a Jefe de TI). El sprite de la chismosa de Manuel es para el **compañero sapo** (sección 3), no reemplaza al Gerente. Para las animaciones, el Gerente puede salir como variante de colores del jefe chibi.
 - [ ] **Decidir el vestido de Dani** (la propuesta nueva es un vestido rosado strapless; la actual es blusa y falda de oficina).
 
 ## 3. Personajes nuevos (cambian la jugabilidad)
 
-- [ ] **Compañera chismosa / coordinadora / "sapo lambón"** que perjudica a la de TI. Aparecería **en un rango alto**. Manuel ya hizo su sprite. *(Jesús, Daniela, Carlos)*
+- [ ] **Compañera chismosa / coordinadora / "sapo lambón"** que perjudica a la de TI. Aparecería **en un rango alto**. Su sprite es la "compañera chismosa" de `spritesheets-chibi-v2.zip` (moño, gafas, cárdigan lila; acción especial: chismear). *(Jesús, Daniela, Carlos)*
   - Decidir qué hace: le cuenta al jefe dónde estás y él va directo · le da turbo al jefe · te distrae con frases · o es "bipolar" (un día ayuda y otro perjudica).
 - [ ] **Pasante del SENA / auxiliar** que ayuda a la de TI. *(Daniela, Carlos)*
   - Decidir qué hace: te da turbo · resuelve tickets solo · otra cosa. Ya existe un sprite sin usar (`scripts/crear_companero.py`).
