@@ -26,6 +26,19 @@ Cuando algo se termine, se marca con `[x]` y se anota el Pull Request o commit.
 - [x] **Decidir: ¿Gerente sí o no?** Decidido (22 oct 2026): **el Gerente se queda** (aparece al llegar a Jefe de TI). El sprite de la chismosa de Manuel es para el **compañero sapo** (sección 3), no reemplaza al Gerente. Para las animaciones, el Gerente puede salir como variante de colores del jefe chibi.
 - [x] **Decidir el vestido de Dani**: se probó el vestido rosado de Manuel (22 oct 2026).
 
+## 2b. Nuevas ideas (22 oct 2026, segunda ronda del chat)
+
+Orden sugerido: frases + días → intro cómic → señora del aseo → comodines.
+
+- [ ] **Frases nuevas del jefe:** "Renunció Pepito y borró las BD", "No hay documentación".
+- [ ] **Los rangos son "días" con transición tipo película:** "Día 1" como practicante → cartel *"1 año después"* al pasar a Analista → *"5 años después"* al llegar a Jefe de TI ("cada día trae su afán", Alex). Reemplaza o acompaña el cartel de "¡ASCENSO!". No cambia la dificultad.
+- [ ] **Intro tipo cómic:** 4 ilustraciones con slider (deslizar/flechas), botón "Saltar", se ve una sola vez (recordado en el navegador) y se puede volver a ver desde AYUDA. **Necesita las 4 ilustraciones de Manuel.** Cargarlas como archivos aparte (no dentro del HTML) para no hacer pesado el juego.
+- [ ] **Señora del aseo** 🧹: pasea por la oficina y "desconecta cosas"; los tickets aparecen en el puesto por donde ella pasó. Si los tickets salen con la misma frecuencia (solo cambia dónde), no toca la dificultad. **Necesita sprite de Manuel.**
+- [ ] **Comodines / excusas para defenderse del jefe:** "Tengo cita médica", "Voy por el boletín escolar", "Voy al baño", "Le dije que había que hacer un DRP", "Yo pedí otro servidor", "El proveedor de internet se cayó".
+  - Propuesta: se **compran con puntos** en la transición entre días (mini tienda en el cartel de "1 año después").
+  - Propuesta para no agregar botones: si tienes un comodín y el jefe te alcanza, **se usa solo**: la jugadora dice la excusa, el jefe se va y no pierdes la vida.
+  - **Ojo: cambia la dificultad** (hace más fácil al jefe). Probarlo y aprobarlo antes, como la curva.
+
 ## 3. Personajes nuevos (cambian la jugabilidad)
 
 - [ ] **Compañera chismosa / coordinadora / "sapo lambón"** que perjudica a la de TI. Aparecería **en un rango alto**. Su sprite es la "compañera chismosa" de `spritesheets-chibi-v2.zip` (moño, gafas, cárdigan lila; acción especial: chismear). *(Jesús, Daniela, Carlos)*
@@ -41,7 +54,12 @@ Cuando algo se termine, se marca con `[x]` y se anota el Pull Request o commit.
 
 ## Decisiones pendientes
 
-- [ ] **Ko-fi**: a qué cuenta debe apuntar el enlace de donaciones (hoy va a la página principal de Ko-fi). Se queda en el PR mientras se define.
+- [ ] **Ko-fi**: a qué cuenta debe apuntar el enlace de donaciones. Manuel lo quitó al ajustar el PR #1; hoy el juego no tiene enlace. Cuando se defina la cuenta, se vuelve a agregar.
+
+## Detalles menores
+
+- [ ] El color de la chaqueta de la jugadora cambia un poco al empezar a arreglar (las hojas de Manuel tienen tonos distintos). Igualar en el script o pedir a Manuel el mismo tono.
+- [ ] Animaciones caminando hacia arriba/abajo, si Manuel las hace.
 
 ## Ya decidido
 
