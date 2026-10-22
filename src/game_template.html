@@ -156,7 +156,10 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   .board small { display: none; }
   .foot .btn { padding: 8px 14px; }
 }
-.hint { width: 100%; max-width: 768px; color: #424957; font-size: 20px; text-align: center; }
+.support { width: 100%; max-width: 768px; color: #424957; font-size: 20px; text-align: center; padding-block: 8px; }
+.support a { color: #76233d; text-underline-offset: 4px; }
+.support a:hover { color: #451426; }
+.support a:focus-visible { outline: 3px solid #76233d; outline-offset: 4px; }
 .pad {
   display: none;
   width: 100%;
@@ -170,7 +173,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
 }
 @media (pointer: coarse) {
   .pad { display: flex; }
-  .hint { display: none; }
+  .support { display: none; }
 }
 .dpad { display: grid; grid-template-columns: repeat(3, 56px); grid-template-rows: repeat(3, 56px); gap: 4px; }
 .pad button {
@@ -304,7 +307,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   </div>
 </div>
 
-<p class="hint">Flechas o WASD para moverte · mantén ESPACIO o E para arreglar · la cafetera da turbo · lleva al jefe donde la compañera ♥</p>
+<footer class="support">¿Te gustó el juego? <span id="kofiSupport">Invítanos a un café en Ko-fi.</span></footer>
 
 <div class="pad" aria-label="Controles táctiles">
   <div class="dpad">
