@@ -92,6 +92,17 @@ Los sprites se **dibujan con código** (Python + Pillow), píxel por píxel, sin
 
 Los `*_preview.png` son versiones grandes para ver el dibujo.
 
+**Animaciones chibi (de Manuel).** Los personajes del juego hoy usan las hojas de `arte/chibi/` (generadas con IA por Manuel: 4 columnas × 3 filas, caminar, correr y acción especial). `scripts/preparar_chibi.py` las limpia (bordes nítidos, sin transparencias a medias, paleta reducida, pies alineados, misma escala para todos) y genera `sprites/chibi_<nombre>.png`: una tira de 12 cuadros de 56 px. El Gerente sale del jefe cambiando colores. Los sprites de 48 px de arriba quedan de respaldo por si las tiras no cargan.
+
+| Personaje | Camina | Corre | Acción especial |
+|---|---|---|---|
+| Jugadora | al moverse | con turbo ☕ | celebra al ascender |
+| Jefe / Gerente | paseando | persiguiendo o huyendo | se enoja al alcanzarte |
+| Dani | paseando | — | se enamora cuando distrae al jefe |
+| Sapo | (preparado, todavía no sale en el juego) | | chismea |
+
+Para actualizar las animaciones: reemplazar las hojas en `arte/chibi/`, correr `python preparar_chibi.py` y luego `python construir_juego.py` (desde `scripts/`).
+
 ### Estadísticas (`stats/`)
 
 `stats_server.py` es un servicio pequeño con solo la librería estándar de Python y SQLite:

@@ -22,9 +22,9 @@ Cuando algo se termine, se marca con `[x]` y se anota el Pull Request o commit.
 
 ## 2. Después: animaciones de Manuel
 
-- [ ] **Integrar los spritesheets chibi** (`spritesheets-chibi-v2.zip`): caminar, correr con turbo y acción especial (jugadora celebra al ascender, jefe se enoja al alcanzarte, compañera enamorada al distraer al jefe). Son generados con IA: hay que limpiarlos (bordes nítidos, sin transparencias, paleta reducida) y reducirlos a 48 px. Faltan las direcciones arriba/abajo (izquierda = reflejar).
+- [x] **Integrar los spritesheets chibi** (22 oct 2026): caminar, correr con turbo y acciones especiales (jugadora celebra al ascender, jefe/Gerente se enoja al alcanzarte, Dani enamorada al distraer al jefe). Limpieza con `scripts/preparar_chibi.py`; izquierda = reflejo. Pendiente opcional: cuadros caminando hacia arriba/abajo si Manuel los hace.
 - [x] **Decidir: ¿Gerente sí o no?** Decidido (22 oct 2026): **el Gerente se queda** (aparece al llegar a Jefe de TI). El sprite de la chismosa de Manuel es para el **compañero sapo** (sección 3), no reemplaza al Gerente. Para las animaciones, el Gerente puede salir como variante de colores del jefe chibi.
-- [ ] **Decidir el vestido de Dani** (la propuesta nueva es un vestido rosado strapless; la actual es blusa y falda de oficina).
+- [x] **Decidir el vestido de Dani**: se probó el vestido rosado de Manuel (22 oct 2026).
 
 ## 3. Personajes nuevos (cambian la jugabilidad)
 
