@@ -157,6 +157,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   .foot .btn { padding: 8px 14px; }
 }
 .support { width: 100%; max-width: 768px; color: #424957; font-size: 20px; text-align: center; padding-block: 8px; }
+.support-icon { display: inline-block; width: 22px; height: 22px; vertical-align: middle; margin-inline: 5px; shape-rendering: crispEdges; }
 .support a { color: #76233d; text-underline-offset: 4px; }
 .support a:hover { color: #451426; }
 .support a:focus-visible { outline: 3px solid #76233d; outline-offset: 4px; }
@@ -307,7 +308,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   </div>
 </div>
 
-<footer class="support">¿Te gustó el juego? <span id="kofiSupport">Invítanos a un café en Ko-fi.</span></footer>
+<footer class="support">¿Te gustó el juego? <a id="kofiSupport" href="https://ko-fi.com/" target="_blank" rel="noopener noreferrer"><svg class="support-icon" viewBox="0 0 12 12" aria-hidden="true"><path fill="#fc1d64" d="M1 2h3v1h2V2h3v1h2v4H9v2H7v2H5V9H3V7H1z"/></svg>Invítanos a un café en Ko-fi<svg class="support-icon" viewBox="0 0 16 16" aria-hidden="true"><path fill="#59656b" d="M4 0h1v2H4zm4 1h1v2H8z"/><path fill="#29303c" d="M2 5h10v2h3v6h-3v2H2zm10 4v2h1V9z" fill-rule="evenodd"/><path fill="#f7f2df" d="M3 6h8v7H3z"/><path fill="#785139" d="M4 7h6v2H4z"/><path fill="#29303c" d="M1 15h12v1H1z"/></svg><span class="sr"> (abre en otra pestaña)</span></a></footer>
 
 <div class="pad" aria-label="Controles táctiles">
   <div class="dpad">
