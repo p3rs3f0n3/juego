@@ -211,7 +211,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
     <h1>TICKET RUSH</h1>
     <span class="sub">The Office IT</span>
   </div>
-  <button class="chip" id="mute" type="button" aria-pressed="false">SONIDO: SI</button>
+  <button class="chip" id="mute" type="button" aria-pressed="false"><span id="soundIcon" aria-hidden="true">🔊</span> <span id="soundLabel">SONIDO: SI</span></button>
 </header>
 
 <div class="stage">
@@ -359,7 +359,8 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   var muteBtn = document.getElementById("mute");
   muteBtn.addEventListener("click", function () {
     muted = !muted;
-    muteBtn.textContent = muted ? "SONIDO: NO" : "SONIDO: SI";
+    document.getElementById("soundIcon").textContent = muted ? "🔇" : "🔊";
+    document.getElementById("soundLabel").textContent = muted ? "SONIDO: NO" : "SONIDO: SI";
     muteBtn.setAttribute("aria-pressed", String(muted));
   });
 
