@@ -447,6 +447,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     }, 400);
   }
   window.addEventListener("keydown", function (e) {
+    if (cut && state === "play") { if (!e.repeat) skipCut(); return; }
     if (helpDialog.open) return;
     if (e.target && e.target.tagName === "INPUT") return;  // escribiendo el apodo
     var k = KEYMAP[e.key]; if (!k) return;
@@ -459,7 +460,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
 
   Array.prototype.forEach.call(document.querySelectorAll(".pad button"), function (b) {
     var k = b.getAttribute("data-k");
-    function on(e) { e.preventDefault(); vk[k] = true; b.classList.add("on"); try { b.setPointerCapture(e.pointerId); } catch (x) {} }
+    function on(e) { e.preventDefault(); if (cut) { skipCut(); return; } vk[k] = true; b.classList.add("on"); try { b.setPointerCapture(e.pointerId); } catch (x) {} }
     function off() { vk[k] = false; b.classList.remove("on"); }
     b.addEventListener("pointerdown", on);
     b.addEventListener("pointerup", off);
@@ -620,7 +621,8 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   /* Quien te persigue: el jefe, y desde JEFE DE TI el gerente (tu nuevo jefe). */
   var BOSSES = [
     { name: "jefe", says: ["¡Para ayer!", "¿Ya quedó?", "Es urgente", "¿Y eso por qué?", "Una cosita rápida",
-        "Uy, venga le digo", "Hoy se queda conmigo hasta las 8", "Usted es solo reiniciar el PC", "Tanto que le pagan por reiniciar"],
+        "Uy, venga le digo", "Hoy se queda conmigo hasta las 8", "Usted es solo reiniciar el PC", "Tanto que le pagan por reiniciar",
+        "Renunció Pepito y borró las BD", "No hay documentación"],
       love: ["¿Un tintico, Dani?", "¡Qué linda hoy, Dani!", "¿Almorzamos?", "Hola, hola, Dani...", "¿Bailamos el viernes?"] },
     { name: "gerente", says: ["¿Y el presupuesto?", "Necesito un informe ya", "¿Por qué TI cuesta tanto?", "¿Eso no lo hace la IA?", "Para la junta de mañana",
         "Los de TI no hacen nada", "La de TI entró por palanca", "Hoy hay informe hasta las 8"],
@@ -658,7 +660,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   function rankOf(n) { var r = 0; for (var i = 0; i < RANKS.length; i++) if (n >= RANKS[i].from) r = i; return r; }
 
   var dists = 0;
-  var P, B, M, hearts, tickets, pops, score, done, rank, lives, combo, lastDone, spawnT, shake, clock, actPrev, best = 0, whyOver, banner = null;
+  var P, B, M, hearts, tickets, pops, score, done, rank, lives, combo, lastDone, spawnT, shake, clock, actPrev, best = 0, whyOver, cut = null;
   try { best = parseInt(localStorage.getItem("ticketrush-best") || "0", 10) || 0; } catch (e) {}
 
   function reset() {
@@ -666,7 +668,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     B = { x: 650, y: 140, tx: 650, ty: 140, state: "wander", say: "", sayT: 0, flee: 0, love: 0, stuckT: 0, lx: 650, ly: 140 };
     M = { x: 170, y: 420, tx: 170, ty: 420, cool: 3, pause: 0, stuckT: 0, lx: 170, ly: 420 };
     hearts = []; dists = 0;
-    tickets = []; pops = []; score = 0; done = 0; rank = 0; lives = 3; banner = null; combo = 0; lastDone = -99;
+    tickets = []; pops = []; score = 0; done = 0; rank = 0; lives = 3; combo = 0; lastDone = -99;
     shake = 0; clock = 0; actPrev = false; coffee.cool = 0;
     stations.forEach(function (s) { s.ticket = null; });
     spawnTicket(); spawnTicket();
@@ -711,15 +713,15 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     var nr = rankOf(done);
     if (nr > rank) {
       rank = nr;
-      var bt = rank >= 2 ? 3.6 : 2.8; P.party = 1.6;
-      banner = { t: bt, total: bt, title: "¡ASCENSO!", sub: "AHORA ERES " + RANKS[rank].name,
-        sub2: rank >= 2 ? "TU NUEVO JEFE: EL GERENTE" : "" };
+      P.party = 1.6;
+      if (rank >= 2) showCut("5 AÑOS DESPUÉS", "Ahora eres JEFE DE TI", "Tu nuevo jefe: EL GERENTE", 3.6);
+      else showCut("1 AÑO DESPUÉS", "Ahora eres ANALISTA", "+1 vida", 3.2);
       if (rank >= 2) pop(B.x, B.y - 60, "¡GERENTE!", "#e8b840");
       setActLabel();
       if (lives < MAX_LIVES) { lives++; pop(P.x, P.y - 60, "+VIDA", "#ef5b6b"); }
       beep(523, 0.1, "square", 0.05); setTimeout(function () { beep(659, 0.1, "square", 0.05); }, 110);
       setTimeout(function () { beep(784, 0.2, "square", 0.05); }, 220);
-      say("Ascenso: ahora eres " + RANKS[rank].name.toLowerCase());
+      say((rank >= 2 ? "Cinco años después" : "Un año después") + ": ahora eres " + RANKS[rank].name.toLowerCase());
     } else if (done % 8 === 0 && lives < MAX_LIVES) { lives++; pop(P.x, P.y - 60, "+VIDA", "#ef5b6b"); }
   }
   function hurt(why) {
@@ -874,7 +876,6 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     updateMate(dt);
     updateBoss(dt);
     updateHearts(dt);
-    if (banner) { banner.t -= dt; if (banner.t <= 0) banner = null; }
     for (var m = pops.length - 1; m >= 0; m--) { pops[m].t -= dt; pops[m].y -= 22 * dt; if (pops[m].t <= 0) pops.splice(m, 1); }
   }
 
@@ -1041,16 +1042,23 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     });
     ctx.globalAlpha = 1;
   }
-  function drawBanner() {
-    if (!banner) return;
-    var a = Math.min(1, banner.t * 2, (banner.total - banner.t) * 6), tall = banner.sub2 ? 22 : 0;
-    ctx.globalAlpha = a;
-    R(0, 178, W, 74 + tall, "rgba(13, 12, 20, 0.88)"); R(0, 178, W, 3, "#f2b441"); R(0, 249 + tall, W, 3, "#f2b441");
+  /* ---------- cartel tipo película: "DÍA 1", "1 AÑO DESPUÉS", "5 AÑOS DESPUÉS" ----------
+     Corre con el reloj real y la partida queda en pausa mientras se ve; se salta con una tecla o un toque.
+     Usa VT323 porque la fuente pixel no trae mayúsculas con tilde. */
+  function now() { return performance.now() / 1000; }  // reloj real (el juego está en pausa)
+  function showCut(title, sub, sub2, dur) { cut = { start: now(), dur: dur, title: title, sub: sub, sub2: sub2 }; keys = {}; vk = {}; }
+  function skipCut() { if (cut && now() - cut.start > 0.8) cut = null; }
+  function drawCut() {
+    if (!cut) return;
+    var t = now() - cut.start;
+    ctx.globalAlpha = Math.max(0, Math.min(1, t * 3, (cut.dur - t) * 3));
+    R(0, 0, W, H, "#0d0c14");
+    R(W / 2 - 150, 168, 300, 3, "#f2b441"); R(W / 2 - 150, 318, 300, 3, "#f2b441");
     ctx.textAlign = "center";
-    ctx.font = "22px " + F_D; ctx.fillStyle = "#0d0c14"; ctx.fillText(banner.title, W / 2 + 2, 214);
-    ctx.fillStyle = "#f2b441"; ctx.fillText(banner.title, W / 2, 212);
-    ctx.font = "12px " + F_D; ctx.fillStyle = "#a285f5"; ctx.fillText(banner.sub, W / 2, 238);
-    if (banner.sub2) { ctx.fillStyle = "#e8b840"; ctx.fillText(banner.sub2, W / 2, 260); }
+    ctx.font = "64px " + F_B; ctx.fillStyle = "#f2b441"; ctx.fillText(cut.title, W / 2, 238);
+    ctx.font = "30px " + F_B; ctx.fillStyle = "#ece8f7"; ctx.fillText(cut.sub, W / 2, 280);
+    if (cut.sub2) { ctx.font = "24px " + F_B; ctx.fillStyle = "#ff7eb6"; ctx.fillText(cut.sub2, W / 2, 306); }
+    if (t > 0.8) { ctx.font = "18px " + F_B; ctx.fillStyle = "#6b6580"; ctx.fillText("toca o pulsa una tecla para seguir", W / 2, H - 28); }
     ctx.globalAlpha = 1;
   }
   function drawBubbles() {
@@ -1099,14 +1107,15 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     items.forEach(function (it) { it.f(); });
     drawBubbles(); drawHearts(); drawPops();
     ctx.restore();
-    drawBanner();
     drawHUD();
+    drawCut();  // el cartel tapa todo, también la barra de abajo
   }
 
   var last = 0;
   function frame(ts) {
     var dt = Math.min(0.05, (ts - last) / 1000 || 0); last = ts; anim = ts / 1000;
-    if (state === "play" && !helpDialog.open && !rotateShown()) update(dt);
+    if (cut && now() - cut.start >= cut.dur) cut = null;
+    if (state === "play" && !helpDialog.open && !rotateShown() && !cut) update(dt);
     render();
     requestAnimationFrame(frame);
   }
@@ -1120,7 +1129,8 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     prevBoard = boardData;
     showScreen(null);
     beep(440, 0.1, "square", 0.04);
-    say("Turno empezado");
+    say("Día 1: tu primer día como practicante");
+    showCut("DÍA 1", "Tu primer día como PRACTICANTE", "", 2.4);
     gameId = Math.random().toString(36).slice(2, 10) + "-" + Date.now().toString(36);
     track("start");
   }
@@ -1242,6 +1252,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
 
   el("start").addEventListener("click", function () { if (online && !asked) askName("start"); else start(); });
   el("again").addEventListener("click", start);
+  cv.addEventListener("pointerdown", skipCut);
   updateWho();
   loadBoard();
 

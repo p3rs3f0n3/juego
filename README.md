@@ -22,7 +22,7 @@ Juego de oficina en pixel art: eres la nueva de TI y tienes que resolver los tic
 
 ### Rangos
 
-Empiezas de practicante y asciendes resolviendo tickets. Cada ascenso da una vida y cambia lo que haces:
+Empiezas de practicante ("DÍA 1") y asciendes resolviendo tickets. Cada ascenso pasa el tiempo ("1 AÑO DESPUÉS", "5 AÑOS DESPUÉS", con la partida en pausa mientras se ve el cartel), da una vida y cambia lo que haces:
 
 | Rango | Desde | Botón | Te persigue | Ejemplo de ticket |
 |---|---|---|---|---|

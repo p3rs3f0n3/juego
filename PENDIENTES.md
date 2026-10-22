@@ -30,8 +30,8 @@ Cuando algo se termine, se marca con `[x]` y se anota el Pull Request o commit.
 
 Orden sugerido: frases + días → intro cómic → señora del aseo → comodines.
 
-- [ ] **Frases nuevas del jefe:** "Renunció Pepito y borró las BD", "No hay documentación".
-- [ ] **Los rangos son "días" con transición tipo película:** "Día 1" como practicante → cartel *"1 año después"* al pasar a Analista → *"5 años después"* al llegar a Jefe de TI ("cada día trae su afán", Alex). Reemplaza o acompaña el cartel de "¡ASCENSO!". No cambia la dificultad.
+- [x] **Frases nuevas del jefe:** "Renunció Pepito y borró las BD", "No hay documentación".
+- [x] **Los rangos son "días" con transición tipo película** (22 oct 2026: cartel a pantalla completa, pausa la partida, se salta con una tecla o un toque): "Día 1" como practicante → cartel *"1 año después"* al pasar a Analista → *"5 años después"* al llegar a Jefe de TI ("cada día trae su afán", Alex). Reemplaza o acompaña el cartel de "¡ASCENSO!". No cambia la dificultad.
 - [ ] **Intro tipo cómic:** 4 ilustraciones con slider (deslizar/flechas), botón "Saltar", se ve una sola vez (recordado en el navegador) y se puede volver a ver desde AYUDA. **Necesita las 4 ilustraciones de Manuel.** Cargarlas como archivos aparte (no dentro del HTML) para no hacer pesado el juego.
 - [ ] **Señora del aseo** 🧹: pasea por la oficina y "desconecta cosas"; los tickets aparecen en el puesto por donde ella pasó. Si los tickets salen con la misma frecuencia (solo cambia dónde), no toca la dificultad. **Necesita sprite de Manuel.**
 - [ ] **Comodines / excusas para defenderse del jefe:** "Tengo cita médica", "Voy por el boletín escolar", "Voy al baño", "Le dije que había que hacer un DRP", "Yo pedí otro servidor", "El proveedor de internet se cayó".
