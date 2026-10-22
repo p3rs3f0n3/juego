@@ -10,11 +10,11 @@ Cuando algo se termine, se marca con `[x]` y se anota el Pull Request o commit.
 ## 1. Primero (rápido y para todos)
 
 - [x] **Cerrar el PR #1 de Manuel (rama `design`)**: logo a 304×152 px e íconos en celular horizontal. Unido a `main` y publicado el 22 oct 2026 (merge `cf70b9d`).
-- [ ] **La ayuda se abre sola la primera vez** que alguien entra (y se recuerda en el navegador para que no vuelva a salir). Varios no vieron la cafetera ni leyeron instrucciones. *(Carlos, Manuel)*
+- [x] **La ayuda se abre sola la primera vez** que alguien entra (y se recuerda en el navegador para que no vuelva a salir). Varios no vieron la cafetera ni leyeron instrucciones. *(Carlos, Manuel)*
 - [x] **Reiniciar la tabla de líderes** *(Daniela)*: se hizo con **temporadas** (22 oct 2026). La Temporada 2 arrancó de cero; la Temporada 1 queda en la base y en un respaldo, y su campeón (AYES, 4174) sale en el salón de la fama. Para abrir otra temporada: botón en `/stats`.
 - [x] **Revisar el puntaje #1** *(Carlos, Daniela)*: 4174 pts con 227 tickets en 15 min (~4 s por ticket y ~18 pts por ticket con combos). Más rápido que el resto (5,5–6,6 s) pero posible; el servidor ya limita los puntajes imposibles.
-- [ ] **La compañera se llama "Dani"** (en frases y en la ayuda). *(Carlos)*
-- [ ] **Frases nuevas:**
+- [x] **La compañera se llama "Dani"** (en frases, tips y en la ayuda). *(Carlos)*
+- [x] **Frases nuevas** (excepto la de la chismosa, que espera a que exista el personaje):
   - Jefe: "Uy, venga le digo" *(Daniela)*, "Hoy te tienes que quedar conmigo hasta las 8 para terminar un informe" *(Daniela)*.
   - Contra los de TI (jefe o chismosa): "Usted es solo reiniciar el PC" *(Jesús)*, "Tanto que le pagan solo por reiniciar", "Los de TI no hacen nada", "La de TI entró por palanca" *(Daniela)*.
   - Chismosa al jefe: "Jefe, los de TI están jugando Minecraft" *(Daniela)*.

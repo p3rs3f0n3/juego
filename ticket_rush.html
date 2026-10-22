@@ -147,6 +147,20 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
 .board small { grid-column: 2 / 4; color: var(--muted); font-size: 0.8em; }
 .board .empty { display: block; color: var(--muted); text-align: center; border: 0; }
 .screen .fame { color: var(--warn); font-size: clamp(14px, 2.1vw, 18px); }
+/* Recuadro del juego bajito (celular vertical o teléfonos pequeños): pantallas compactas.
+   Mide el alto del recuadro, no el del celular. Las instrucciones completas están en AYUDA. */
+.stage { container-type: size; }
+@container (max-height: 270px) {
+  .screen { gap: 5px; padding: 6px 10px; }
+  .screen h2 { font-size: 13px; }
+  #menu > p:first-of-type { display: none; }
+  .screen p, .screen .tips, .screen .who, .screen .brag, .screen .err, .screen .fame { font-size: 15px; line-height: 1.15; }
+  .btn { padding: 9px 12px; font-size: 10px; }
+  #nameIn { font-size: 18px; padding: 4px 10px; }
+  .tab { padding: 5px 8px; font-size: 8px; }
+  .board li { padding: 1px 6px; font-size: 14px; }
+  .board small { display: none; }
+}
 .foot { align-items: center; }
 /* Pantallas bajas (celular horizontal): tabla compacta para que quepan más puestos */
 @media (max-height: 520px) {
@@ -188,11 +202,24 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
 .dpad [data-k="right"] { grid-column: 3; grid-row: 2; }
 .dpad [data-k="down"] { grid-column: 2; grid-row: 3; }
 .actbtn { width: 104px; height: 104px; border-radius: 50%; font-size: 10px !important; background: #3a2a6e !important; border-color: var(--accent) !important; }
-.rotate { display: none; color: var(--warn); }
-/* Celular vertical: aprovechar todo el ancho y sugerir girar */
+/* Celular vertical: el juego es horizontal, así que se pide girar el celular (pantalla completa).
+   "Jugar en vertical" lo quita y quedan las pantallas compactas. */
+.rotate-overlay {
+  display: none; position: fixed; inset: 0; z-index: 50;
+  flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+  padding: 24px; text-align: center; background: rgba(13, 12, 20, 0.96); color: var(--fg);
+}
+.rotate-overlay h2 { margin: 0; font: 16px/1.6 var(--display); color: var(--warn); }
+.rotate-overlay p { margin: 0; max-width: 28ch; font-size: 22px; }
+.rotate-overlay small { color: var(--muted); font-size: 18px; max-width: 30ch; }
+.rotate-phone { width: 64px; height: 104px; border: 6px solid var(--fg); border-radius: 10px; position: relative; animation: girar 2.4s ease-in-out infinite; }
+.rotate-phone::after { content: ""; position: absolute; left: 50%; bottom: 4px; width: 10px; height: 4px; margin-left: -5px; background: var(--fg); }
+@keyframes girar { 0%, 30% { transform: rotate(0deg); } 55%, 100% { transform: rotate(-90deg); } }
+@media (prefers-reduced-motion: reduce) { .rotate-phone { animation: none; transform: rotate(-90deg); } }
 @media (pointer: coarse) and (orientation: portrait) {
   body { padding-inline: 6px; }
-  .rotate { display: block; }
+  .rotate-overlay { display: flex; }
+  .rotate-overlay.dismissed { display: none; }
 }
 /* Celular horizontal: flechas a la izquierda, juego al centro lo más grande posible, ARREGLAR a la derecha */
 @media (pointer: coarse) and (orientation: landscape) {
@@ -273,13 +300,12 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   <div class="screen" id="menu">
     <h2>TICKET RUSH</h2>
     <p>Corre a cada <b style="color:var(--warn)">!</b>, mantén ARREGLAR (o ESPACIO) antes de que venza el SLA y esquiva al jefe. Asciende de practicante a jefe de TI.</p>
-    <p class="tips"><b style="color:var(--warn)">☕</b> La cafetera da turbo · <b style="color:#ff7eb6">♥</b> El jefe se distrae con la compañera</p>
+    <p class="tips"><b style="color:var(--warn)">☕</b> La cafetera da turbo · <b style="color:#ff7eb6">♥</b> El jefe se distrae con Dani</p>
     <div class="row">
       <button class="btn" id="start" type="button">EMPEZAR TURNO</button>
       <button class="btn alt" id="boardBtn" type="button" hidden>🏆 TABLA</button>
     </div>
     <p class="who" id="who" hidden></p>
-    <p class="rotate">Gira el celular para verlo más grande ↻</p>
   </div>
   <div class="screen" id="over" hidden>
     <h2 id="overTitle">TURNO TERMINADO</h2>
@@ -316,7 +342,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   </div>
 </div>
 
-<p class="hint">Flechas o WASD para moverte · mantén ESPACIO o E para arreglar · la cafetera da turbo · lleva al jefe donde la compañera ♥</p>
+<p class="hint">Flechas o WASD para moverte · mantén ESPACIO o E para arreglar · la cafetera da turbo · lleva al jefe donde Dani ♥</p>
 
 <div class="pad" aria-label="Controles táctiles">
   <div class="dpad">
@@ -334,11 +360,18 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     <section class="help-card"><div class="help-art"><div class="help-keys"><kbd aria-label="Arriba"><svg style="transform:rotate(0deg)" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M6 2h4v2h2v2h2v2h-4v6H6V8H2V6h2V4h2z"/></svg></kbd><kbd aria-label="Izquierda"><svg style="transform:rotate(-90deg)" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M6 2h4v2h2v2h2v2h-4v6H6V8H2V6h2V4h2z"/></svg></kbd><kbd aria-label="Abajo"><svg style="transform:rotate(180deg)" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M6 2h4v2h2v2h2v2h-4v6H6V8H2V6h2V4h2z"/></svg></kbd><kbd aria-label="Derecha"><svg style="transform:rotate(90deg)" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M6 2h4v2h2v2h2v2h-4v6H6V8H2V6h2V4h2z"/></svg></kbd></div></div><h3>MUÉVETE</h3><p>Usa las flechas o WASD.<br>En celular, toca las flechas.</p></section>
     <section class="help-card"><div class="help-art" style="flex-direction:column"><kbd class="help-space">ESPACIO</kbd><div class="help-progress" aria-hidden="true"></div></div><h3>RESUELVE TICKETS</h3><p>Acércate al <b style="color:#e3c35c">!</b> y mantén ESPACIO o E hasta llenar la barra. En celular, mantén el botón redondo.</p></section>
     <section class="help-card"><div class="help-art"><svg width="72" height="80" viewBox="0 0 48 54" shape-rendering="crispEdges" aria-hidden="true"><path fill="#d8d4e6" d="M18 1h3v4h-3zm9 3h3v4h-3z"/><path fill="#4c4c64" d="M8 10h32v44H8z"/><path fill="#22222e" d="M12 16h24v10H12z"/><path fill="#5fd6a1" d="M14 20h16v3H14zm19-2h3v3h-3z"/><path fill="#171525" d="M12 29h24v20H12z"/><path fill="#d8d4e6" d="M15 34h17v13H15zm17 2h5v8h-5z"/><path fill="#5a3a28" d="M17 37h13v8H17z"/></svg></div><h3>CAFÉ = TURBO</h3><p>Si la luz está verde, acércate y pulsa la acción. Camina y repara más rápido durante 6 segundos.</p></section>
-    <section class="help-card"><div class="help-art"><img class="help-sprite" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACO0lEQVR4nGNgGAWjYBSMglEwkgEjNQ0T4hH4T6zad18+UMVuRmo6/sKCKqLVGyS0UcUTLAw0ArLaJnD246tnaGUNAyO1Qx/mcGIcbUCFWKB6DNAytLEBJoYhDpiokXyqGloYVj3gAvMDyiaBMTaALAdSX9XQQlLJRZcktKErD0zDHAriI7OHRBKSDS5lOHv3MdzBIBrEB4kPmTwgzCuIlz+oPfB4bTcDeqUG4oPEh1wpdOfWPZqaz0INQ4x+XWFQUVMiSU+YwjeqeI7qNTEI1E1ahFNtU17c4K6J6yYtQnEkqfKDIgZgYFrRPDg7qy8JQ96ACjEw5JvTjORqJNQEWFMVgSEW0rYCp/p3ZHqGkVxHK2kYMVAT3LtxjizPMJLieGIdvWvXMgY3tyiGB0IhcDGFd2vg4sR45h2RnqBZRQZyLD4+tQALAw2BiJEbA60BC6UGTClDGJHT9YeB3oCJYYgDJoYhDlgoNWAgks2wigEmhiEOmGhp+LEyHhR6wPPAugoPFL5LFe62DS7w6dMHDLE9bajtJoMERLOCppmYj08Aoy4AgVt7EO39BUYgPkJuUYsIVQsAFmo0wGKq5MjS/+7FIygLNWZp2hoFtflBbXmwA758YASJCUng9sC3b18YuLh4cHrgHdQMFHFatEZhAGQZsgXU8AADPUshas2sDJt6QIjCwV1GSi1n4oCMSuMCbGwcDL9+/cCr5t+Pb2THLM1j4Mend8M7CVEKKKoHwEUgAwPeNEysGnIdAQCA6+2WNEgHfQAAAABJRU5ErkJggg==" alt="El jefe"><svg width="24" height="24" viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="#fc1d64" d="M1 2h3v1h2V2h3v1h2v4H9v2H7v2H5V9H3V7H1z"/></svg><img class="help-sprite" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACzUlEQVR4nGNgGAWjYBQMacBITcM0BeT/E6v2+oeHVLGbhZoOd9XiJl7TNYie6xR6hJEajkd3uJmaCJx96tYbvPp3X/tKkSeoEgPoDsfn6CsvOFD4n37/oMhOJgYqA0IhTm3ARK3kAwp9chwfrM9BUuanWQzQO+RpkgfQQUNTAYSumwAX05H4gZIfrrzgoCgfsFDbscMqBvB57taFdwxV01YxUAqoWgo5JPRRVR3dPXBgQRGDoHMqTgfC5EDqqAWYGKgM9GU1yZIbNB4Y8pn4AJ7kQc2kQ9UY6JhkBKb/HfmEtbRBBzB1W1ZpDQ4PVOSdgxhmwwcXu1S3B0yrGQih8JHV+YRdG7z1gF6TC4qjQfwhV5Hp0cjRNCmFkNs7xABq1MJUjwFkT0QFxWHIL1u3CImH2rEhF4zMeiBQye7/zy/fwewCGWsGCTMZFPkXp54wCEBLH2RQcMoNwYFqSTlzCEyb8Rv9P/XxHMl9Y0ZyHL80yw/sSBgAeQCZDwMCaYhy/sMsSJG578EXnGbPunmOgVRPkJyEQCGP7lhsjkd2NIymBWBioDGgpeOHRSZmYhjigIlhpHsg58BRMCYGIJdAoBJn1k1II3BExwALqRpYxflQynfW65cZfr/E7AcQA/iEuRl0wlQQ/Gk3GRg+DkBb6OyvfwxhT/APTn149QKF/+7PTwYjBhKG46nlgY2X9zImFjL8R+aLCxiTNba5595hRoZpCLPAfHrPD4AcL6tlSlAdegyAwLvntxnefb3KOCQysYCYBE3MZaJH6OMCQpKqDELc2mQPrQ+LYpSRUgNgGdhCVoBhfn84XDyxcCXDiccfwGxdIS6GlixvuFzNtK0M515ChlveUZgHKC5GX344C3GArPN/XHK6QrYYcpQ6HAaoYogOt9p/H0kpDPEtz5+BaVxyV77eotj+IZ8HWKhhCDgknyMqJBRxEMAnRyEAACbyBYthXwj8AAAAAElFTkSuQmCC" alt="La compañera"></div><h3>DISTRAE AL JEFE</h3><p>Llévalo cerca de la compañera. Se quedará embobado unos segundos: ¡aprovecha para escapar!</p></section>
+    <section class="help-card"><div class="help-art"><img class="help-sprite" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACO0lEQVR4nGNgGAWjYBSMglEwkgEjNQ0T4hH4T6zad18+UMVuRmo6/sKCKqLVGyS0UcUTLAw0ArLaJnD246tnaGUNAyO1Qx/mcGIcbUCFWKB6DNAytLEBJoYhDpiokXyqGloYVj3gAvMDyiaBMTaALAdSX9XQQlLJRZcktKErD0zDHAriI7OHRBKSDS5lOHv3MdzBIBrEB4kPmTwgzCuIlz+oPfB4bTcDeqUG4oPEh1wpdOfWPZqaz0INQ4x+XWFQUVMiSU+YwjeqeI7qNTEI1E1ahFNtU17c4K6J6yYtQnEkqfKDIgZgYFrRPDg7qy8JQ96ACjEw5JvTjORqJNQEWFMVgSEW0rYCp/p3ZHqGkVxHK2kYMVAT3LtxjizPMJLieGIdvWvXMgY3tyiGB0IhcDGFd2vg4sR45h2RnqBZRQZyLD4+tQALAw2BiJEbA60BC6UGTClDGJHT9YeB3oCJYYgDJoYhDlgoNWAgks2wigEmhiEOmGhp+LEyHhR6wPPAugoPFL5LFe62DS7w6dMHDLE9bajtJoMERLOCppmYj08Aoy4AgVt7EO39BUYgPkJuUYsIVQsAFmo0wGKq5MjS/+7FIygLNWZp2hoFtflBbXmwA758YASJCUng9sC3b18YuLh4cHrgHdQMFHFatEZhAGQZsgXU8AADPUshas2sDJt6QIjCwV1GSi1n4oCMSuMCbGwcDL9+/cCr5t+Pb2THLM1j4Mend8M7CVEKKKoHwEUgAwPeNEysGnIdAQCA6+2WNEgHfQAAAABJRU5ErkJggg==" alt="El jefe"><svg width="24" height="24" viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="#fc1d64" d="M1 2h3v1h2V2h3v1h2v4H9v2H7v2H5V9H3V7H1z"/></svg><img class="help-sprite" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACzUlEQVR4nGNgGAWjYBQMacBITcM0BeT/E6v2+oeHVLGbhZoOd9XiJl7TNYie6xR6hJEajkd3uJmaCJx96tYbvPp3X/tKkSeoEgPoDsfn6CsvOFD4n37/oMhOJgYqA0IhTm3ARK3kAwp9chwfrM9BUuanWQzQO+RpkgfQQUNTAYSumwAX05H4gZIfrrzgoCgfsFDbscMqBvB57taFdwxV01YxUAqoWgo5JPRRVR3dPXBgQRGDoHMqTgfC5EDqqAWYGKgM9GU1yZIbNB4Y8pn4AJ7kQc2kQ9UY6JhkBKb/HfmEtbRBBzB1W1ZpDQ4PVOSdgxhmwwcXu1S3B0yrGQih8JHV+YRdG7z1gF6TC4qjQfwhV5Hp0cjRNCmFkNs7xABq1MJUjwFkT0QFxWHIL1u3CImH2rEhF4zMeiBQye7/zy/fwewCGWsGCTMZFPkXp54wCEBLH2RQcMoNwYFqSTlzCEyb8Rv9P/XxHMl9Y0ZyHL80yw/sSBgAeQCZDwMCaYhy/sMsSJG578EXnGbPunmOgVRPkJyEQCGP7lhsjkd2NIymBWBioDGgpeOHRSZmYhjigIlhpHsg58BRMCYGIJdAoBJn1k1II3BExwALqRpYxflQynfW65cZfr/E7AcQA/iEuRl0wlQQ/Gk3GRg+DkBb6OyvfwxhT/APTn149QKF/+7PTwYjBhKG46nlgY2X9zImFjL8R+aLCxiTNba5595hRoZpCLPAfHrPD4AcL6tlSlAdegyAwLvntxnefb3KOCQysYCYBE3MZaJH6OMCQpKqDELc2mQPrQ+LYpSRUgNgGdhCVoBhfn84XDyxcCXDiccfwGxdIS6GlixvuFzNtK0M515ChlveUZgHKC5GX344C3GArPN/XHK6QrYYcpQ6HAaoYogOt9p/H0kpDPEtz5+BaVxyV77eotj+IZ8HWKhhCDgknyMqJBRxEMAnRyEAACbyBYthXwj8AAAAAElFTkSuQmCC" alt="Dani"></div><h3>DISTRAE AL JEFE</h3><p>Llévalo cerca de Dani. Se quedará embobado unos segundos: ¡aprovecha para escapar!</p></section>
   </div>
   <p class="help-footer">Evita al jefe y resuelve cada ticket antes de que venza el SLA.<br>La partida queda en pausa mientras consultas esta ayuda.</p>
 </dialog>
 
+<div class="rotate-overlay" id="rotateOverlay" role="dialog" aria-labelledby="rotateTitle">
+  <div class="rotate-phone" aria-hidden="true"></div>
+  <h2 id="rotateTitle">GIRA EL CELULAR</h2>
+  <p>Ticket Rush se juega en horizontal.</p>
+  <small>Si no gira, activa la rotación automática del celular.</small>
+  <button class="btn alt" id="rotateSkip" type="button">JUGAR EN VERTICAL</button>
+</div>
 <p class="sr" id="live" aria-live="polite"></p>
 
 <script>
@@ -363,6 +396,12 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     ArrowUp: "up", w: "up", W: "up", ArrowDown: "down", s: "down", S: "down", " ": "act", e: "act", E: "act" };
   var state = "menu";
   var helpDialog = document.getElementById("helpDialog");
+  // Aviso de girar el celular: mientras se ve, la partida queda en pausa.
+  var rotateOverlay = document.getElementById("rotateOverlay");
+  function rotateShown() { return getComputedStyle(rotateOverlay).display !== "none"; }
+  document.getElementById("rotateSkip").addEventListener("click", function () {
+    rotateOverlay.classList.add("dismissed"); keys = {}; vk = {};
+  });
   var helpBtn = document.getElementById("helpBtn");
   helpBtn.addEventListener("click", function () {
     keys = {}; vk = {};
@@ -372,7 +411,18 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   helpDialog.addEventListener("close", function () {
     keys = {}; vk = {};
     helpBtn.focus();
+    try { localStorage.setItem("ticketrush-help-seen", "1"); } catch (e) {}
   });
+  // La primera vez que alguien entra, la guía se abre sola (muchos no leen las instrucciones).
+  var helpSeen = false;
+  try { helpSeen = localStorage.getItem("ticketrush-help-seen") === "1"; } catch (e) {}
+  if (!helpSeen && helpDialog.showModal) {
+    setTimeout(function () {
+      if (helpDialog.open) return;
+      keys = {}; vk = {}; helpDialog.showModal();
+      try { localStorage.setItem("ticketrush-help-seen", "1"); } catch (e) {}  // ya la vio, aunque cierre la pestaña
+    }, 400);
+  }
   window.addEventListener("keydown", function (e) {
     if (helpDialog.open) return;
     if (e.target && e.target.tagName === "INPUT") return;  // escribiendo el apodo
@@ -546,10 +596,12 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   var BASE = { desk: { t: 26, fix: 1.0, pts: 10 }, printer: { t: 22, fix: 1.6, pts: 20 }, server: { t: 19, fix: 2.6, pts: 40 } };
   /* Quien te persigue: el jefe, y desde JEFE DE TI el gerente (tu nuevo jefe). */
   var BOSSES = [
-    { name: "jefe", says: ["¡Para ayer!", "¿Ya quedó?", "Es urgente", "¿Y eso por qué?", "Una cosita rápida"],
-      love: ["¿Un tintico?", "¡Qué linda hoy!", "¿Almorzamos?", "Hola, hola...", "¿Bailamos el viernes?"] },
-    { name: "gerente", says: ["¿Y el presupuesto?", "Necesito un informe ya", "¿Por qué TI cuesta tanto?", "¿Eso no lo hace la IA?", "Para la junta de mañana"],
-      love: ["¿Le gustaría un café, señorita?", "¿Almorzamos en el club?", "Qué buen informe el suyo", "¿Viene a la fiesta de fin de año?"] }
+    { name: "jefe", says: ["¡Para ayer!", "¿Ya quedó?", "Es urgente", "¿Y eso por qué?", "Una cosita rápida",
+        "Uy, venga le digo", "Hoy se queda conmigo hasta las 8", "Usted es solo reiniciar el PC", "Tanto que le pagan por reiniciar"],
+      love: ["¿Un tintico, Dani?", "¡Qué linda hoy, Dani!", "¿Almorzamos?", "Hola, hola, Dani...", "¿Bailamos el viernes?"] },
+    { name: "gerente", says: ["¿Y el presupuesto?", "Necesito un informe ya", "¿Por qué TI cuesta tanto?", "¿Eso no lo hace la IA?", "Para la junta de mañana",
+        "Los de TI no hacen nada", "La de TI entró por palanca", "Hoy hay informe hasta las 8"],
+      love: ["¿Un café, Dani?", "¿Almorzamos en el club?", "Qué buen informe el suyo", "Dani, ¿viene a la fiesta?"] }
   ];
   function boss() { return BOSSES[rank >= 2 ? 1 : 0]; }
   function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
@@ -712,7 +764,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       M.pause = LOVE_TIME;
       pop(B.x, B.y - 100, "¡DISTRAÍDO!", "#ff7eb6");
       beep(880, 0.1, "triangle", 0.04); setTimeout(function () { beep(1100, 0.16, "triangle", 0.04); }, 110);
-      say("El " + boss().name + " se distrajo con la compañera");
+      say("El " + boss().name + " se distrajo con Dani");
     }
     if (B.state === "love") {
       B.love -= dt;
@@ -920,8 +972,9 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     else R(B.x - 10, B.y - 36, 20, 36, "#34343e");
     if (B.sayT > 0) {
       ctx.font = "20px " + F_B; var w = ctx.measureText(B.say).width + 14;
-      var bx = Math.round(B.x - w / 2), by = Math.round(B.y - 80);
-      R(bx, by, w, 24, "#f2f0f8"); R(bx + w / 2 - 4, by + 24, 8, 6, "#f2f0f8");
+      var bx = Math.round(Math.max(4, Math.min(W - w - 4, B.x - w / 2))), by = Math.round(B.y - 80);
+      var tail = Math.round(Math.max(bx + 4, Math.min(bx + w - 12, B.x - 4)));
+      R(bx, by, w, 24, "#f2f0f8"); R(tail, by + 24, 8, 6, "#f2f0f8");
       ctx.fillStyle = "#2b2840"; ctx.textAlign = "center"; ctx.fillText(B.say, bx + w / 2, by + 18);
     }
   }
@@ -1008,7 +1061,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   var last = 0;
   function frame(ts) {
     var dt = Math.min(0.05, (ts - last) / 1000 || 0); last = ts; anim = ts / 1000;
-    if (state === "play" && !helpDialog.open) update(dt);
+    if (state === "play" && !helpDialog.open && !rotateShown()) update(dt);
     render();
     requestAnimationFrame(frame);
   }

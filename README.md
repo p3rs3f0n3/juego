@@ -16,7 +16,8 @@ Juego de oficina en pixel art: eres la nueva de TI y tienes que resolver los tic
 - Cada **!** amarillo es un ticket. Quédate al lado y mantén el botón hasta que se llene la barra morada. La barra de abajo es el tiempo que queda antes de que se venza el **SLA**.
 - Si se vence un SLA o **el jefe te alcanza**, pierdes una vida (empiezas con 3, máximo 5).
 - **☕ La cafetera** (pared del fondo) da turbo por 6 s: caminas y arreglas más rápido. Cuando tiene vapor y luz verde está lista.
-- **♥ La compañera** pasea por la oficina. Si el jefe pasa cerca de ella, se queda embobado unos segundos con corazones y deja de perseguirte. Truco: llévale el jefe.
+- **♥ Dani**, la compañera, pasea por la oficina. Si el jefe pasa cerca de ella, se queda embobado unos segundos con corazones y deja de perseguirte. Truco: llévale el jefe.
+- **🆘 Ayuda:** el botón AYUDA abre la Guía del turno (y pausa la partida). La primera vez que alguien entra, la guía se abre sola.
 - **Combos:** resolver tickets seguidos (menos de 5 s entre uno y otro) da más puntos.
 
 ### Rangos
