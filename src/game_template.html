@@ -156,11 +156,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   .board small { display: none; }
   .foot .btn { padding: 8px 14px; }
 }
-.support { width: 100%; max-width: 768px; color: #424957; font-size: 20px; text-align: center; padding-block: 8px; }
-.support-icon { display: inline-block; width: 22px; height: 22px; vertical-align: middle; margin-inline: 5px; shape-rendering: crispEdges; }
-.support a { color: #76233d; text-underline-offset: 4px; }
-.support a:hover { color: #451426; }
-.support a:focus-visible { outline: 3px solid #76233d; outline-offset: 4px; }
+.hint { width: 100%; max-width: 768px; color: #424957; font-size: 20px; text-align: center; }
 .pad {
   display: none;
   width: 100%;
@@ -174,7 +170,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
 }
 @media (pointer: coarse) {
   .pad { display: flex; }
-  .support { display: none; }
+  .hint { display: none; }
 }
 .dpad { display: grid; grid-template-columns: repeat(3, 56px); grid-template-rows: repeat(3, 56px); gap: 4px; }
 .pad button {
@@ -250,6 +246,16 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   .help-grid { grid-template-columns: 1fr; }
 }
 
+/* En horizontal, los controles caben en el espacio lateral de ARREGLAR. */
+@media (pointer: coarse) and (orientation: landscape) {
+  header { width: 92px; justify-content: center; }
+  .header-actions { gap: 6px; justify-content: center; width: 100%; }
+  .header-actions .chip { width: 36px; height: 36px; min-height: 36px; padding: 6px; gap: 0; }
+  .header-actions .chip > span {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0;
+  }
+}
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 </style>
 
@@ -308,7 +314,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   </div>
 </div>
 
-<footer class="support">¿Te gustó el juego? <a id="kofiSupport" href="https://ko-fi.com/" target="_blank" rel="noopener noreferrer"><svg class="support-icon" viewBox="0 0 12 12" aria-hidden="true"><path fill="#fc1d64" d="M1 2h3v1h2V2h3v1h2v4H9v2H7v2H5V9H3V7H1z"/></svg>Invítanos a un café en Ko-fi<svg class="support-icon" viewBox="0 0 16 16" aria-hidden="true"><path fill="#59656b" d="M4 0h1v2H4zm4 1h1v2H8z"/><path fill="#29303c" d="M2 5h10v2h3v6h-3v2H2zm10 4v2h1V9z" fill-rule="evenodd"/><path fill="#f7f2df" d="M3 6h8v7H3z"/><path fill="#785139" d="M4 7h6v2H4z"/><path fill="#29303c" d="M1 15h12v1H1z"/></svg><span class="sr"> (abre en otra pestaña)</span></a></footer>
+<p class="hint">Flechas o WASD para moverte · mantén ESPACIO o E para arreglar · la cafetera da turbo · lleva al jefe donde la compañera ♥</p>
 
 <div class="pad" aria-label="Controles táctiles">
   <div class="dpad">
