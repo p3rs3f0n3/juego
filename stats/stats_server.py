@@ -20,6 +20,7 @@ STATS_STATIC (solo para probar en local: carpeta desde donde servir el juego).
 """
 import html
 import json
+import mimetypes
 import os
 import re
 import sqlite3
@@ -255,7 +256,10 @@ class Handler(BaseHTTPRequestHandler):
             f = os.path.abspath(os.path.join(root, name))
             if f.startswith(root) and os.path.isfile(f):
                 with open(f, "rb") as fh:
-                    return self.send(200, fh.read(), "text/html; charset=utf-8")
+                    ctype = mimetypes.guess_type(f)[0] or "application/octet-stream"
+                    if ctype.startswith("text/"):
+                        ctype += "; charset=utf-8"
+                    return self.send(200, fh.read(), ctype)
         self.send(404)
 
     def hide(self):

@@ -41,6 +41,10 @@ La dificultad sube poco a poco, ticket a ticket, y se estabiliza a los 45 ticket
 
 \* Tú caminas a 125, así que el jefe nunca es más rápido que tú.
 
+### Intro
+
+La primera vez que alguien entra ve una **intro tipo cómic** de 4 viñetas (la mañana de la nueva de TI: la alarma, el bus, el café… y "¡se cayó el internet!"). Se pasa con las flechas, deslizando con el dedo o con el teclado, se puede saltar, y se vuelve a ver desde AYUDA → "VER LA INTRO". Las viñetas son archivos aparte (`intro/1.webp` … `4.webp`, recortadas de `arte/intro/comic.jpg` con `scripts/preparar_intro.py`) para no hacer pesado el juego; al publicar hay que subir también la carpeta `intro/`.
+
 ### Competencia
 
 - Al jugar por primera vez se pide un **apodo opcional** (se puede jugar como anónimo).

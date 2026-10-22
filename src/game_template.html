@@ -160,6 +160,10 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   .tab { padding: 5px 8px; font-size: 8px; }
   .board li { padding: 1px 6px; font-size: 14px; }
   .board small { display: none; }
+  .intro-cap { font-size: 14px; padding: 16px 48px 20px; }
+  .intro-nav { height: 40px; min-width: 32px; font-size: 16px; }
+  .intro-nav.last { font-size: 9px; height: 32px; bottom: 6px; }
+  .intro.at-last .intro-cap { padding-right: 118px; padding-left: 40px; }
 }
 .foot { align-items: center; }
 /* Pantallas bajas (celular horizontal): tabla compacta para que quepan más puestos */
@@ -267,6 +271,23 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
 .help-progress { width: 112px; height: 10px; border: 2px solid #e3c35c; padding: 1px; }
 .help-progress::before { content: ""; display: block; background: #fc1d64; height: 100%; width: 70%; }
 .help-footer { margin: 16px 0 0; text-align: center; color: var(--muted); font-size: 18px; }
+/* Intro tipo cómic: 4 viñetas dentro del recuadro del juego */
+.intro { position: absolute; inset: 0; z-index: 5; background: #0d0c14; overflow: hidden; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.intro img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.intro-cap { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; padding: 22px 56px 24px; text-align: center;
+  color: var(--fg); font-size: clamp(16px, 2.6vw, 24px); background: linear-gradient(rgba(13, 12, 20, 0), rgba(13, 12, 20, 0.92) 45%); }
+.intro-skip { position: absolute; top: 8px; right: 8px; }
+.intro-nav { position: absolute; top: 50%; transform: translateY(-50%); min-width: 40px; height: 52px; padding: 0 8px;
+  font: 22px var(--display); color: #fff; background: rgba(13, 12, 20, 0.75); border: 2px solid var(--line); cursor: pointer; }
+.intro-nav.prev { left: 8px; }
+.intro-nav.next { right: 8px; }
+.intro-nav.last { top: auto; bottom: 10px; transform: none; height: 40px; font-size: 11px; color: #160911; background: var(--accent); border-color: var(--accent); }
+.intro-nav[disabled] { visibility: hidden; }
+.intro-nav:focus-visible, .intro-skip:focus-visible { outline: 3px solid var(--warn); outline-offset: 2px; }
+.intro.at-last .intro-cap { padding-right: 150px; }
+.intro-dots { position: absolute; left: 0; right: 0; bottom: 8px; display: flex; gap: 6px; justify-content: center; }
+.intro-dots i { width: 8px; height: 8px; background: var(--muted); }
+.intro-dots i.on { background: var(--warn); }
 @media (max-width: 440px) {
   .header-actions { gap: 4px; }
   .header-actions .chip { padding: 8px; font-size: 8px; gap: 5px; }
@@ -327,6 +348,14 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       <button class="btn alt" id="nameAnon" type="button">JUGAR ANÓNIMO</button>
     </div>
   </div>
+  <div class="intro" id="intro" hidden role="dialog" aria-label="Intro: el primer día de la nueva de TI">
+    <img id="introImg" alt="">
+    <p class="intro-cap" id="introCap" aria-live="polite"></p>
+    <button class="chip intro-skip" id="introSkip" type="button">SALTAR ›</button>
+    <button class="intro-nav prev" id="introPrev" type="button" aria-label="Viñeta anterior">‹</button>
+    <button class="intro-nav next" id="introNext" type="button" aria-label="Siguiente viñeta">›</button>
+    <div class="intro-dots" id="introDots" aria-hidden="true"></div>
+  </div>
   <div class="screen" id="boardScr" hidden>
     <h2>TABLA DE LÍDERES</h2>
     <div class="tabs" role="tablist">
@@ -363,6 +392,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     <section class="help-card"><div class="help-art"><img class="help-sprite" src="__JEFE_FRENTE__" alt="El jefe"><svg width="24" height="24" viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="#fc1d64" d="M1 2h3v1h2V2h3v1h2v4H9v2H7v2H5V9H3V7H1z"/></svg><img class="help-sprite" src="__DANI_FRENTE__" alt="Dani"></div><h3>DISTRAE AL JEFE</h3><p>Llévalo cerca de Dani. Se quedará embobado unos segundos: ¡aprovecha para escapar!</p></section>
   </div>
   <p class="help-footer">Evita al jefe y resuelve cada ticket antes de que venza el SLA.<br>La partida queda en pausa mientras consultas esta ayuda.</p>
+  <p class="help-footer"><button class="chip" id="helpIntro" type="button">VER LA INTRO</button></p>
 </dialog>
 
 <div class="rotate-overlay" id="rotateOverlay" role="dialog" aria-labelledby="rotateTitle">
@@ -439,14 +469,74 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   // La primera vez que alguien entra, la guía se abre sola (muchos no leen las instrucciones).
   var helpSeen = false;
   try { helpSeen = localStorage.getItem("ticketrush-help-seen") === "1"; } catch (e) {}
-  if (!helpSeen && helpDialog.showModal) {
+  function maybeHelp() {
+    if (helpSeen || !helpDialog.showModal) return;
     setTimeout(function () {
       if (helpDialog.open) return;
-      keys = {}; vk = {}; helpDialog.showModal();
+      keys = {}; vk = {}; helpDialog.showModal(); helpSeen = true;
       try { localStorage.setItem("ticketrush-help-seen", "1"); } catch (e) {}  // ya la vio, aunque cierre la pestaña
     }, 400);
   }
+
+  /* ---------- intro tipo cómic: 4 viñetas (intro/1.webp ... 4.webp, archivos aparte) ----------
+     Se ve la primera vez que alguien entra (y luego la guía de ayuda); se puede repetir desde AYUDA. */
+  var INTRO = [
+    "8:45 a. m. … ¡A la nueva de TI se le pegaron las cobijas!",
+    "Bus lleno, como siempre. Pero hoy nada la detiene.",
+    "Por fin en la oficina. Un cafecito, todo en calma…",
+    "…hasta que empezaron los tickets."
+  ];
+  var introEl = document.getElementById("intro"), introImg = document.getElementById("introImg");
+  var introNext = document.getElementById("introNext"), introPrev = document.getElementById("introPrev");
+  var introI = 0, introSeen = false;
+  try { introSeen = localStorage.getItem("ticketrush-intro-seen") === "1"; } catch (e) {}
+  document.getElementById("introDots").innerHTML = INTRO.map(function () { return "<i></i>"; }).join("");
+  function introShow(i) {
+    introI = Math.max(0, Math.min(INTRO.length - 1, i));
+    introImg.src = "intro/" + (introI + 1) + ".webp";
+    introImg.alt = "Viñeta " + (introI + 1) + " de " + INTRO.length + ": " + INTRO[introI];
+    document.getElementById("introCap").textContent = INTRO[introI];
+    Array.prototype.forEach.call(document.querySelectorAll("#introDots i"), function (d, n) { d.classList.toggle("on", n === introI); });
+    introPrev.disabled = introI === 0;
+    var last = introI === INTRO.length - 1;
+    introNext.textContent = last ? "¡A TRABAJAR!" : "›";
+    introNext.setAttribute("aria-label", last ? "Terminar la intro" : "Siguiente viñeta");
+    introNext.classList.toggle("last", last);
+    document.getElementById("introSkip").hidden = last;
+    introEl.classList.toggle("at-last", last);  // en la última sobra: ya está "¡A TRABAJAR!"
+  }
+  function openIntro() {
+    INTRO.forEach(function (_, n) { new Image().src = "intro/" + (n + 1) + ".webp"; });  // precargar
+    introShow(0); introEl.hidden = false; keys = {}; vk = {};
+    try { localStorage.setItem("ticketrush-intro-seen", "1"); } catch (e) {}
+    setTimeout(function () { try { introNext.focus(); } catch (e) {} }, 50);
+  }
+  function closeIntro() {
+    if (introEl.hidden) return;
+    introEl.hidden = true;
+    maybeHelp();
+  }
+  introImg.addEventListener("error", closeIntro);  // sin las imágenes (p. ej. abierto como archivo suelto) no se muestra
+  introNext.addEventListener("click", function () { if (introI === INTRO.length - 1) closeIntro(); else introShow(introI + 1); });
+  introPrev.addEventListener("click", function () { introShow(introI - 1); });
+  document.getElementById("introSkip").addEventListener("click", closeIntro);
+  document.getElementById("helpIntro").addEventListener("click", function () { helpDialog.close(); openIntro(); });
+  // deslizar con el dedo
+  var swipeX = null;
+  introEl.addEventListener("pointerdown", function (e) { swipeX = e.clientX; });
+  introEl.addEventListener("pointerup", function (e) {
+    if (swipeX === null) return;
+    var dx = e.clientX - swipeX; swipeX = null;
+    if (Math.abs(dx) > 40) { if (dx < 0) { if (introI === INTRO.length - 1) closeIntro(); else introShow(introI + 1); } else introShow(introI - 1); }
+  });
+  if (!introSeen) openIntro(); else maybeHelp();
   window.addEventListener("keydown", function (e) {
+    if (!introEl.hidden) {
+      if (e.key === "ArrowRight" || e.key === "Enter" || e.key === " ") { e.preventDefault(); introNext.click(); }
+      else if (e.key === "ArrowLeft") { e.preventDefault(); introShow(introI - 1); }
+      else if (e.key === "Escape") closeIntro();
+      return;
+    }
     if (cut && state === "play") { if (!e.repeat) skipCut(); return; }
     if (helpDialog.open) return;
     if (e.target && e.target.tagName === "INPUT") return;  // escribiendo el apodo

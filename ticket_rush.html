@@ -160,6 +160,10 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   .tab { padding: 5px 8px; font-size: 8px; }
   .board li { padding: 1px 6px; font-size: 14px; }
   .board small { display: none; }
+  .intro-cap { font-size: 14px; padding: 16px 48px 20px; }
+  .intro-nav { height: 40px; min-width: 32px; font-size: 16px; }
+  .intro-nav.last { font-size: 9px; height: 32px; bottom: 6px; }
+  .intro.at-last .intro-cap { padding-right: 118px; padding-left: 40px; }
 }
 .foot { align-items: center; }
 /* Pantallas bajas (celular horizontal): tabla compacta para que quepan más puestos */
@@ -267,6 +271,23 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
 .help-progress { width: 112px; height: 10px; border: 2px solid #e3c35c; padding: 1px; }
 .help-progress::before { content: ""; display: block; background: #fc1d64; height: 100%; width: 70%; }
 .help-footer { margin: 16px 0 0; text-align: center; color: var(--muted); font-size: 18px; }
+/* Intro tipo cómic: 4 viñetas dentro del recuadro del juego */
+.intro { position: absolute; inset: 0; z-index: 5; background: #0d0c14; overflow: hidden; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.intro img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.intro-cap { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; padding: 22px 56px 24px; text-align: center;
+  color: var(--fg); font-size: clamp(16px, 2.6vw, 24px); background: linear-gradient(rgba(13, 12, 20, 0), rgba(13, 12, 20, 0.92) 45%); }
+.intro-skip { position: absolute; top: 8px; right: 8px; }
+.intro-nav { position: absolute; top: 50%; transform: translateY(-50%); min-width: 40px; height: 52px; padding: 0 8px;
+  font: 22px var(--display); color: #fff; background: rgba(13, 12, 20, 0.75); border: 2px solid var(--line); cursor: pointer; }
+.intro-nav.prev { left: 8px; }
+.intro-nav.next { right: 8px; }
+.intro-nav.last { top: auto; bottom: 10px; transform: none; height: 40px; font-size: 11px; color: #160911; background: var(--accent); border-color: var(--accent); }
+.intro-nav[disabled] { visibility: hidden; }
+.intro-nav:focus-visible, .intro-skip:focus-visible { outline: 3px solid var(--warn); outline-offset: 2px; }
+.intro.at-last .intro-cap { padding-right: 150px; }
+.intro-dots { position: absolute; left: 0; right: 0; bottom: 8px; display: flex; gap: 6px; justify-content: center; }
+.intro-dots i { width: 8px; height: 8px; background: var(--muted); }
+.intro-dots i.on { background: var(--warn); }
 @media (max-width: 440px) {
   .header-actions { gap: 4px; }
   .header-actions .chip { padding: 8px; font-size: 8px; gap: 5px; }
@@ -327,6 +348,14 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       <button class="btn alt" id="nameAnon" type="button">JUGAR ANÓNIMO</button>
     </div>
   </div>
+  <div class="intro" id="intro" hidden role="dialog" aria-label="Intro: el primer día de la nueva de TI">
+    <img id="introImg" alt="">
+    <p class="intro-cap" id="introCap" aria-live="polite"></p>
+    <button class="chip intro-skip" id="introSkip" type="button">SALTAR ›</button>
+    <button class="intro-nav prev" id="introPrev" type="button" aria-label="Viñeta anterior">‹</button>
+    <button class="intro-nav next" id="introNext" type="button" aria-label="Siguiente viñeta">›</button>
+    <div class="intro-dots" id="introDots" aria-hidden="true"></div>
+  </div>
   <div class="screen" id="boardScr" hidden>
     <h2>TABLA DE LÍDERES</h2>
     <div class="tabs" role="tablist">
@@ -363,6 +392,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     <section class="help-card"><div class="help-art"><img class="help-sprite" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAArCAYAAAAQVipNAAAHWElEQVR42q2YbWhb1xnHf+dc3UkRSqzIpnWN0TQrjtOtIWtJRQyFtit4HrMpZFtJloYsGSNsDphk2aexL9n2Yax4NbM3yqBdaLqkWzcY9sDkixMYJFW9eCPNGtexcYXxUpAdJbn1pMi6dx/u+9WL7WQPiKtz7z3n+d/n9X+OYBMipTQMXUdI6dwLjr33bRFSouu62IgOwebE4CFEmBP/L4AMz4IMDxznUO9T/H05smEwzzUXeWfiQwZH33DWaaQ31GixjmSXb3yo9yni27fSt30z9lFpSqcIbUuSjG8BYGFx1qjnQtHIMsMDxxk42E3hzn0AYtEIIaOyaZetCQVtteis8cWjrzGfm6mpP1QrcFPtnSRa22hKpwCIb1FBUUDXQQj7RXPsn2xe7fuGAUIQkhCPWW5WVQb7X2B4rLalRBAMwJuv/ZxXM09AuVy1uE/5eoC892zRdQiHKdy5z2MvD1q3XFBV+ap7FjNKZQ90j2VsMDXSvQpko4zRdZ8+B5AwY8ZItXeyN/MifZ0xE0NI+kHYCu1FgsqDlqkFWEoolYhFI7w+cJyOZBcCDNs70i5cUkoSrW2cONBjTiyXXat4QdSumNUAgsADYENGhaZ0isxLfb7CKm3LvHLkJDu+9AwT1/NO8DnKwmHzJyVGuVI7NoIxY13XdNz5ug4Va76icHduAYBXjpwk1d4JYEiARGsbvbtbnN/4rMb4rbKpXFUZPX+FfafOcm46j4hF/aDquaVSgXCYUFhl36mz7Dt1lsLqA4hEKGhFxj+BpnSK7qhG7+6W6rSPJ1oorOSdB4WVPHebY8St8VR2khEAetwM9MZN0F2RCIU793ln4kOmspPWg/0AjM9qgEY80eLoTrS2MZ+bqV2p7Reh6KvaU9lJjk1dpu+vw8RjEYxSGaEqLggr+9aQaHfu0/vTvzCVnURKyTN7n3di0/54rwHqpr0LBppUBYpFBg528++3TtOR7ELXdR57eZDR96YoJ3eZ9ckWy00AmYERB8yvvv89rg4dMdezLBpPtPh0VbnMRltYyTvBVtm/l5AESiWUcoXs6Annq4fHLgHwg/49ppUMAyIRRs9f4e0PPmY+N4OU0iyyT7dgaKtmGZHS0dGUTjm6Vm4vuYBWbi+52WV2HLqjGtpq0S35QHz7Vq4OHWH0/E4GR9/g5G9nOdQ7TDysmu4D3v7gY6ayk3Qkuxg6c5q+HSqGtuoWVyt7r6zG4HoesK/uK0aQ6Bw4+kO6o5rZ3e1YiUU5l/0PZ17/PYnWNg4/u5OmdIoDe1pMK1YqoCiMf2JaeeTCRVZuL5F5qY9z393tWkhRODedZ+J6nvf+/CfW7uWcHiakJGSxOTqSXQz2v2BB0mhKp3w+B7g7t8B8boaFxVkmfrKf+PatUCyCLszmW6nQ93kFdjzByAWYz82QuNEG7HarviXdUY3uw18Dj1UFELIamwEwcLDbTMtbZQoreSqqSgg9yAbcQbnsT3UhrMxTq9/19kPMGvTq0y08eDxN08T7fMcqDf4ZpRIUizzXXCSeaNkY9xHC1zqClqglfZ0xM/W1Ip/7dK4BH7IqbDwWoS8GoFhN1vCxAefLVdX8iDqi16En9vpGSVmHwqqq+SuXnSD1mropnWJv5kWfy4xyxQfYlsPP7vRdnTolhFkiFAURi/IgkQTyfoImpTRkrJ1vfuNbvuyqohZSuk3Xjh977AVpZaUjxaKf3Hlq1pXVGLduXOPa1GU/YxSempsf+7WZQd6gtUEZBsaajgirFLRiTVfFYxG3q3vjLMA+dx4dsrm1gyXkYfXCJklexugEqRD+NqGqgLnFCe5MUFWoVEzg9nwvQEUBVSXR2sbC4qyPwopGJP/qL74dAGC5yvrvVOBg4oXVuoH+4PE0vxt9l+GxS+QK/6VyL+fbRIZqZIaYz80YQMAl1f/jW1TXHR7ARqnM3XKdkqHdcHpdLYOIRvv4RrUk1d7J0JnT9GTSzr2L2Tl6Mmn+OPE+x07/uGEtqrdRDK0zwQEV2pZ0n2mLfLoWpSeT5mJ2jguXb5o98PldDrWQsXb/ZvHeIrhV/+G20ngCPRxr5sl2kz9+tOj+98qFyzcdi3nfB7g2tYihr3/osN5DQ9mWJBxrrvm8/6tf4c0ffZ1jv/ybz0I/+80fnHc+Wiz45qwuTTcEJRvFkJCy6kuBmtbxShCEd46yLdkwPmU9ywBsad3jKPhsaZqStrwumFry2dK0AzIca7bjy9hwDBnAF9o7GezPOOzu3bemeVgRloXsvjY8don5e5t0mc2PBg52M7I/VfPYzmGYVux4S0DwA08c6HHWS7S2sekY2myM2KDsEvAo1qybXV/e5X7xP7KTNMq4xjH0LzqSnY5lVm4vbb5SBw85pZROkPtIprbsG9cCXNKWHTK/nu7QRizYKE3X7uUQgZTxgnqyPc4/by4jN3g0vKEY0nW9qhW41pF2oRMg0bXFmvFmUV/jkc+pbRYk62SZxZuFt37VykgPvxaPenBubCI5jEc9G/8fHZQkXIbEiZQAAAAASUVORK5CYII=" alt="El jefe"><svg width="24" height="24" viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="#fc1d64" d="M1 2h3v1h2V2h3v1h2v4H9v2H7v2H5V9H3V7H1z"/></svg><img class="help-sprite" src="data:image/png;base64,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" alt="Dani"></div><h3>DISTRAE AL JEFE</h3><p>Llévalo cerca de Dani. Se quedará embobado unos segundos: ¡aprovecha para escapar!</p></section>
   </div>
   <p class="help-footer">Evita al jefe y resuelve cada ticket antes de que venza el SLA.<br>La partida queda en pausa mientras consultas esta ayuda.</p>
+  <p class="help-footer"><button class="chip" id="helpIntro" type="button">VER LA INTRO</button></p>
 </dialog>
 
 <div class="rotate-overlay" id="rotateOverlay" role="dialog" aria-labelledby="rotateTitle">
@@ -439,14 +469,74 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   // La primera vez que alguien entra, la guía se abre sola (muchos no leen las instrucciones).
   var helpSeen = false;
   try { helpSeen = localStorage.getItem("ticketrush-help-seen") === "1"; } catch (e) {}
-  if (!helpSeen && helpDialog.showModal) {
+  function maybeHelp() {
+    if (helpSeen || !helpDialog.showModal) return;
     setTimeout(function () {
       if (helpDialog.open) return;
-      keys = {}; vk = {}; helpDialog.showModal();
+      keys = {}; vk = {}; helpDialog.showModal(); helpSeen = true;
       try { localStorage.setItem("ticketrush-help-seen", "1"); } catch (e) {}  // ya la vio, aunque cierre la pestaña
     }, 400);
   }
+
+  /* ---------- intro tipo cómic: 4 viñetas (intro/1.webp ... 4.webp, archivos aparte) ----------
+     Se ve la primera vez que alguien entra (y luego la guía de ayuda); se puede repetir desde AYUDA. */
+  var INTRO = [
+    "8:45 a. m. … ¡A la nueva de TI se le pegaron las cobijas!",
+    "Bus lleno, como siempre. Pero hoy nada la detiene.",
+    "Por fin en la oficina. Un cafecito, todo en calma…",
+    "…hasta que empezaron los tickets."
+  ];
+  var introEl = document.getElementById("intro"), introImg = document.getElementById("introImg");
+  var introNext = document.getElementById("introNext"), introPrev = document.getElementById("introPrev");
+  var introI = 0, introSeen = false;
+  try { introSeen = localStorage.getItem("ticketrush-intro-seen") === "1"; } catch (e) {}
+  document.getElementById("introDots").innerHTML = INTRO.map(function () { return "<i></i>"; }).join("");
+  function introShow(i) {
+    introI = Math.max(0, Math.min(INTRO.length - 1, i));
+    introImg.src = "intro/" + (introI + 1) + ".webp";
+    introImg.alt = "Viñeta " + (introI + 1) + " de " + INTRO.length + ": " + INTRO[introI];
+    document.getElementById("introCap").textContent = INTRO[introI];
+    Array.prototype.forEach.call(document.querySelectorAll("#introDots i"), function (d, n) { d.classList.toggle("on", n === introI); });
+    introPrev.disabled = introI === 0;
+    var last = introI === INTRO.length - 1;
+    introNext.textContent = last ? "¡A TRABAJAR!" : "›";
+    introNext.setAttribute("aria-label", last ? "Terminar la intro" : "Siguiente viñeta");
+    introNext.classList.toggle("last", last);
+    document.getElementById("introSkip").hidden = last;
+    introEl.classList.toggle("at-last", last);  // en la última sobra: ya está "¡A TRABAJAR!"
+  }
+  function openIntro() {
+    INTRO.forEach(function (_, n) { new Image().src = "intro/" + (n + 1) + ".webp"; });  // precargar
+    introShow(0); introEl.hidden = false; keys = {}; vk = {};
+    try { localStorage.setItem("ticketrush-intro-seen", "1"); } catch (e) {}
+    setTimeout(function () { try { introNext.focus(); } catch (e) {} }, 50);
+  }
+  function closeIntro() {
+    if (introEl.hidden) return;
+    introEl.hidden = true;
+    maybeHelp();
+  }
+  introImg.addEventListener("error", closeIntro);  // sin las imágenes (p. ej. abierto como archivo suelto) no se muestra
+  introNext.addEventListener("click", function () { if (introI === INTRO.length - 1) closeIntro(); else introShow(introI + 1); });
+  introPrev.addEventListener("click", function () { introShow(introI - 1); });
+  document.getElementById("introSkip").addEventListener("click", closeIntro);
+  document.getElementById("helpIntro").addEventListener("click", function () { helpDialog.close(); openIntro(); });
+  // deslizar con el dedo
+  var swipeX = null;
+  introEl.addEventListener("pointerdown", function (e) { swipeX = e.clientX; });
+  introEl.addEventListener("pointerup", function (e) {
+    if (swipeX === null) return;
+    var dx = e.clientX - swipeX; swipeX = null;
+    if (Math.abs(dx) > 40) { if (dx < 0) { if (introI === INTRO.length - 1) closeIntro(); else introShow(introI + 1); } else introShow(introI - 1); }
+  });
+  if (!introSeen) openIntro(); else maybeHelp();
   window.addEventListener("keydown", function (e) {
+    if (!introEl.hidden) {
+      if (e.key === "ArrowRight" || e.key === "Enter" || e.key === " ") { e.preventDefault(); introNext.click(); }
+      else if (e.key === "ArrowLeft") { e.preventDefault(); introShow(introI - 1); }
+      else if (e.key === "Escape") closeIntro();
+      return;
+    }
     if (cut && state === "play") { if (!e.repeat) skipCut(); return; }
     if (helpDialog.open) return;
     if (e.target && e.target.tagName === "INPUT") return;  // escribiendo el apodo
