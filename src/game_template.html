@@ -779,7 +779,10 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     if (state === "play") beep(660, 0.08, "triangle", 0.05);
   }
   function removeTicket(t) { t.st.ticket = null; tickets.splice(tickets.indexOf(t), 1); }
-  function pop(x, y, txt, col) { pops.push({ x: x, y: y, txt: txt, col: col, t: 1.3 }); }
+  function pop(x, y, txt, col) { pops.push({ x: x, y: y, txt: txt, col: col, t: 1.8 }); }
+  // tiempo de lectura (guías de subtítulos): ~1 s para notar el globo + 15 letras por segundo, entre 2 y 3,5 s.
+  // Solo cambia cuánto se ve el globo, no lo que hace el jefe.
+  function talk(txt) { B.say = txt; B.sayT = Math.max(2, Math.min(3.5, 1 + txt.length / 15)); }
   function say(msg) { var l = document.getElementById("live"); if (l) l.textContent = msg; }
 
   function nearestTicket() {
@@ -804,8 +807,8 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     if (nr > rank) {
       rank = nr;
       P.party = 1.6;
-      if (rank >= 2) showCut("5 AÑOS DESPUÉS", "Ahora eres JEFE DE TI", "Tu nuevo jefe: EL GERENTE", 3.6);
-      else showCut("1 AÑO DESPUÉS", "Ahora eres ANALISTA", "+1 vida", 3.2);
+      if (rank >= 2) showCut("5 AÑOS DESPUÉS", "Ahora eres JEFE DE TI", "Tu nuevo jefe: EL GERENTE", 5.5);
+      else showCut("1 AÑO DESPUÉS", "Ahora eres ANALISTA", "+1 vida", 4.5);
       if (rank >= 2) pop(B.x, B.y - 60, "¡GERENTE!", "#e8b840");
       setActLabel();
       if (lives < MAX_LIVES) { lives++; pop(P.x, P.y - 60, "+VIDA", "#ef5b6b"); }
@@ -875,7 +878,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     var range = diff("range");
     if (B.state !== "love" && B.state !== "flee" && M.cool <= 0 && Math.hypot(M.x - B.x, M.y - B.y) < 46) {
       B.state = "love"; B.love = LOVE_TIME; dists++;
-      B.say = pick(boss().love); B.sayT = 2.2;
+      talk(pick(boss().love));
       M.pause = LOVE_TIME;
       pop(B.x, B.y - 100, "¡DISTRAÍDO!", "#ff7eb6");
       beep(880, 0.1, "triangle", 0.04); setTimeout(function () { beep(1100, 0.16, "triangle", 0.04); }, 110);
@@ -890,7 +893,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       B.flee -= dt;
       if (B.flee <= 0) { B.state = "wander"; pickWaypoint(B); }
     } else if (dist < range && P.inv <= 0) {
-      if (B.state !== "chase") { B.say = pick(boss().says); B.sayT = 1.6; }
+      if (B.state !== "chase") talk(pick(boss().says));
       B.state = "chase";
     } else if (B.state === "chase" && (dist > range * 1.4 || P.inv > 0)) { B.state = "wander"; pickWaypoint(B); }
 
@@ -905,7 +908,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     else B.stuckT = 0;
     if (dist < 26 && P.inv <= 0 && P.stun <= 0) {
       P.inv = 2.4; P.stun = 0.8; B.angry = 1.2;
-      B.say = pick(boss().says); B.sayT = 1.8;
+      talk(pick(boss().says));
       B.state = "flee"; B.flee = 3;
       B.tx = P.x < W / 2 ? 14 * T : 2 * T; B.ty = P.y < H / 2 ? 7 * T : 2 * T;
       if (blocked(B.tx, B.ty, 12, 12)) { B.tx = 8 * T + 24; B.ty = 3 * T + 24; }
@@ -966,7 +969,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     updateMate(dt);
     updateBoss(dt);
     updateHearts(dt);
-    for (var m = pops.length - 1; m >= 0; m--) { pops[m].t -= dt; pops[m].y -= 22 * dt; if (pops[m].t <= 0) pops.splice(m, 1); }
+    for (var m = pops.length - 1; m >= 0; m--) { pops[m].t -= dt; pops[m].y -= 16 * dt; if (pops[m].t <= 0) pops.splice(m, 1); }
   }
 
   /* ---------- dibujo ---------- */
@@ -1321,7 +1324,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     showScreen(null);
     beep(440, 0.1, "square", 0.04);
     say("Día 1: tu primer día como practicante");
-    showCut("DÍA 1", "Tu primer día como PRACTICANTE", "", 2.4);
+    showCut("DÍA 1", "Tu primer día como PRACTICANTE", "", 4);
     gameId = Math.random().toString(36).slice(2, 10) + "-" + Date.now().toString(36);
     track("start");
   }
