@@ -50,7 +50,9 @@ Orden sugerido: frases + días → intro cómic → señora del aseo → comodin
 
 ## 4. Ambientación
 
-- [ ] **Temporadas**: Halloween en octubre (brujas, calabazas) y Navidad en diciembre (decoración, gorros). Para Halloween el tiempo está justo; quizás apuntarle a Navidad. *(Jesús)*
+- [ ] **Temporadas**: Halloween en octubre (brujas, calabazas) y Navidad en diciembre (decoración, gorros). *(Jesús)*
+  - [x] **Halloween** (23 oct 2026): se prende solo del 23 oct al 1 nov, adornos distintos en los 3 escenarios y disfraces (jefe vampiro, gerente diablo, Dani bruja). Probar con `?tema=halloween`.
+  - [ ] **Navidad**: misma idea (`HALLOWEEN` en el código sirve de modelo).
 - [ ] **Puertas con letreros chistosos** en la oficina (Il Palazzo, Condoricosas, cuarto de las escobas). *(Manuel)*
 
 ## Decisiones pendientes

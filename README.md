@@ -32,6 +32,8 @@ Empiezas de practicante ("DÍA 1") y asciendes resolviendo tickets. Cada ascenso
 
 Con cada ascenso también **cambia el escenario** (sin mover los muebles): la oficina de siempre → el área de TI moderna (portátiles, tablero de sprint, atardecer) → el piso ejecutivo (madera, monitores anchos, ciudad de noche).
 
+**Edición Halloween** 🎃: del 23 de octubre al 1 de noviembre (según la fecha del celular o PC) los tres escenarios se decoran solos: guirnalda de luces, telarañas, lunas naranjas con murciélagos, calabazas en los escritorios y un adorno distinto por rango (calabaza sobre el cuadro del SLA · calabaza en la máquina de snacks y fantasma en el agua · candelabro en la biblioteca y gato negro). El jefe se disfraza de vampiro, el gerente de diablo y Dani de bruja. Es solo decoración: no cambia los choques ni la dificultad. Para verla en otra fecha: `?tema=halloween` (o `?tema=normal` para apagarla).
+
 La dificultad sube poco a poco, ticket a ticket, y se estabiliza a los 45 tickets (tabla `CURVE` en `src/game_template.html`):
 
 | Tickets | El jefe te ve a | Velocidad del jefe* | Tiempo de los tickets | Nuevo ticket cada | Máx. abiertos | Avance que conservas si te alcanza |
