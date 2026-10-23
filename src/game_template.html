@@ -1489,12 +1489,12 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   }
   function drawExcuse() {
     if (!excuse || (excuse.t < 3 && Math.floor(anim * 8) % 2)) return;
-    var g = 0.5 + Math.sin(anim * 5) * 0.25, fy = Math.round(excuse.y - 30 + Math.sin(anim * 4) * 3);
-    ctx.globalAlpha = g;
-    R(excuse.x - 16, excuse.y - 4, 32, 6, "#5fd6a1");
-    R(excuse.x - 17, fy - 3, 34, 3, "#5fd6a1"); R(excuse.x - 17, fy + 28, 34, 3, "#5fd6a1");
-    R(excuse.x - 17, fy, 3, 28, "#5fd6a1"); R(excuse.x + 14, fy, 3, 28, "#5fd6a1");
-    ctx.globalAlpha = 1;
+    // marco oscuro + brillo verde: se ve tanto en el piso claro de la oficina como en los oscuros
+    var g = 0.55 + Math.sin(anim * 5) * 0.3, fy = Math.round(excuse.y - 30 + Math.sin(anim * 4) * 3);
+    shadow(excuse.x, excuse.y - 1, 12);
+    R(excuse.x - 19, fy - 5, 38, 38, "#0d0c14");
+    R(excuse.x - 17, fy - 3, 34, 34, "#1b6e4f");
+    ctx.globalAlpha = g; R(excuse.x - 17, fy - 3, 34, 34, "#5fd6a1"); ctx.globalAlpha = 1;
     ctx.save(); ctx.translate(excuse.x - 12, fy); ctx.scale(2, 2); drawNote(0, 0); ctx.restore();
   }
   function drawPlayerSay() {

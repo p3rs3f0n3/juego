@@ -35,11 +35,11 @@ Orden sugerido: frases + días → intro cómic → señora del aseo → comodin
 - [x] **Intro tipo cómic** (22 oct 2026, viñetas de Manuel en `arte/intro/comic.jpg`, recortadas con `scripts/preparar_intro.py`): 4 ilustraciones con slider (deslizar/flechas), botón "Saltar", se ve una sola vez (recordado en el navegador) y se puede volver a ver desde AYUDA. **Necesita las 4 ilustraciones de Manuel.** Cargarlas como archivos aparte (no dentro del HTML) para no hacer pesado el juego.
 - [x] **El escenario cambia con cada ascenso** (22 oct 2026): Practicante = la oficina de siempre · Analista = área de TI moderna (alfombra azul, portátiles, tablero de sprint, atardecer, máquina de snacks y agua) · Jefe de TI = piso ejecutivo (madera, alfombras vinotinto, monitores anchos, ciudad de noche, cuadro, biblioteca). Los muebles no se mueven, así que la dificultad no cambia.
 - [ ] **Señora del aseo** 🧹: pasea por la oficina y "desconecta cosas"; los tickets aparecen en el puesto por donde ella pasó. Si los tickets salen con la misma frecuencia (solo cambia dónde), no toca la dificultad. **Necesita sprite de Manuel.**
-- [ ] **Comodines / excusas para defenderse del jefe:** "Tengo cita médica", "Voy por el boletín escolar", "Voy al baño", "Le dije que había que hacer un DRP", "Yo pedí otro servidor", "El proveedor de internet se cayó".
+- [x] **Comodines / excusas para defenderse del jefe:** "Tengo cita médica", "Voy por el boletín escolar", "Voy al baño", "Le dije que había que hacer un DRP", "Yo pedí otro servidor", "El proveedor de internet se cayó".
   - Propuesta: se **compran con puntos** en la transición entre días (mini tienda en el cartel de "1 año después").
   - Propuesta para no agregar botones: si tienes un comodín y el jefe te alcanza, **se usa solo**: la jugadora dice la excusa, el jefe se va y no pierdes la vida.
   - **Ojo: cambia la dificultad** (hace más fácil al jefe). Probarlo y aprobarlo antes, como la curva.
-  - **En prueba (23 oct 2026, rama `excusas`)**: se decidió que se **recogen en el mapa** (una hojita que brilla en el piso, lejos de la jugadora y del jefe), máximo **1** guardada, se usa sola al ser alcanzada (no pierdes vida ni avance). Números a aprobar: primera a los 40 s, luego cada 60 s, dura 10 s en el piso (`EXCUSE` en el código). Copia de prueba en `/prueba-excusas.html`. Al lanzarla: pasar a `main`, abrir **temporada nueva** y borrar la copia de prueba.
+  - **Lanzado el 23 oct 2026 con la Temporada 3**: se decidió que se **recogen en el mapa** (una hojita que brilla en el piso, lejos de la jugadora y del jefe), máximo **1** guardada, se usa sola al ser alcanzada (no pierdes vida ni avance). Tiempos: primera a los 40 s, luego cada 60 s, dura 10 s en el piso (`EXCUSE` en el código; ajustarlos ahí si se siente muy fácil o muy difícil).
 
 ## 3. Personajes nuevos (cambian la jugabilidad)
 
@@ -53,7 +53,7 @@ Orden sugerido: frases + días → intro cómic → señora del aseo → comodin
 
 - [x] **Oficina cálida de día** (23 oct 2026, PR #3 de Manuel): paredes crema, persianas, cubículos con sillas, archivadores, tablón; muebles desde `sprites/oficina.png` (`scripts/crear_oficina.py`). Sin cambios en choques ni dificultad.
   - [ ] Ajustes pedidos a Manuel en el PR #3: diferenciar más **Analista** de Practicante · cafetera más visible (destello y vapor como antes) · **matas que crezcan** por rango · *(opcional)* Halloween más oscuro.
-  - [ ] Al lanzar las **excusas**: la hojita blanca se ve poco sobre el piso claro, darle más contraste.
+  - [x] Excusas: la hojita lleva marco oscuro y brillo verde para verse sobre el piso claro.
 
 - [ ] **Temporadas**: Halloween en octubre (brujas, calabazas) y Navidad en diciembre (decoración, gorros). *(Jesús)*
   - [x] **Halloween** (23 oct 2026): se prende solo del 23 oct al 1 nov, adornos distintos en los 3 escenarios y disfraces (jefe vampiro, gerente diablo, Dani bruja). Probar con `?tema=halloween`.
