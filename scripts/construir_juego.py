@@ -10,6 +10,7 @@ def uri(ruta):
 with open("../src/game_template.html", encoding="utf-8") as f:
     html = f.read()
 
+html = html.replace("__OFFICE__", uri("../sprites/oficina.png"))
 html = html.replace("__LOGO__", uri("../sprites/ticket-rush-logo.png"))
 html = html.replace("__PLAYER__", uri("../sprites/avatar_48.png"))
 html = html.replace("__BOSS__", uri("../sprites/boss_48.png"))
@@ -23,4 +24,5 @@ html = html.replace("__DANI_FRENTE__", uri("../sprites/chibi_dani_frente.png"))
 with open("../ticket_rush.html", "w", encoding="utf-8") as f:
     f.write(html)
 print("Listo: ticket_rush.html generado")
+
 

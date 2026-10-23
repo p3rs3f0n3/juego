@@ -32,6 +32,8 @@ Empiezas de practicante ("DÍA 1") y asciendes resolviendo tickets. Cada ascenso
 
 Con cada ascenso también **cambia el escenario** (sin mover los muebles): la oficina de siempre → el área de TI moderna (portátiles, tablero de sprint, atardecer) → el piso ejecutivo (madera, monitores anchos, ciudad de noche).
 
+**Edición Halloween** 🎃: del 23 de octubre al 1 de noviembre (según la fecha del celular o PC) los tres escenarios se decoran solos: guirnalda de luces, telarañas, lunas naranjas con murciélagos, calabazas en los escritorios y un adorno distinto por rango (calabaza sobre el cuadro del SLA · calabaza en la máquina de snacks y fantasma en el agua · candelabro en la biblioteca y gato negro). El jefe se disfraza de vampiro, el gerente de diablo y Dani de bruja. Es solo decoración: no cambia los choques ni la dificultad. Para verla en otra fecha: `?tema=halloween` (o `?tema=normal` para apagarla).
+
 La dificultad sube poco a poco, ticket a ticket, y se estabiliza a los 45 tickets (tabla `CURVE` en `src/game_template.html`):
 
 | Tickets | El jefe te ve a | Velocidad del jefe* | Tiempo de los tickets | Nuevo ticket cada | Máx. abiertos | Avance que conservas si te alcanza |
@@ -97,6 +99,14 @@ Los sprites se **dibujan con código** (Python + Pillow), píxel por píxel, sin
 | `construir_juego.py` | `ticket_rush.html` | Mete los sprites (en base64) dentro del template |
 
 Los `*_preview.png` son versiones grandes para ver el dibujo.
+
+**Ambientación de oficina.** `scripts/crear_oficina.py` dibuja el atlas transparente `sprites/oficina.png`
+(384×384 px, tres filas de 128 px: oficina de día, TI y ejecutivo). Contiene escritorios con
+divisiones bajas y sillas recogidas, servidores, impresora, cafetera y plantas. Se regenera con
+`python crear_oficina.py` desde `scripts/`, antes de `python construir_juego.py`. El generador
+integra el atlas en el HTML como el resto de sprites: no añade descargas ni archivos de despliegue.
+Las pantallas, indicadores, vapor y adornos de Halloween siguen dibujándose de forma dinámica.
+La ubicación de los muebles, sus cajas de choque y la dificultad no cambian.
 
 **Animaciones chibi (de Manuel).** Los personajes del juego hoy usan las hojas de `arte/chibi/` (generadas con IA por Manuel: 4 columnas × 3 filas, caminar, correr y acción especial). `scripts/preparar_chibi.py` las limpia (bordes nítidos, sin transparencias a medias, paleta reducida, pies alineados, misma escala para todos) y genera `sprites/chibi_<nombre>.png`: una tira de 12 cuadros de 56 px. El Gerente sale del jefe cambiando colores. Los sprites de 48 px de arriba quedan de respaldo por si las tiras no cargan.
 
@@ -169,3 +179,4 @@ Abre http://127.0.0.1:8095 para jugar y http://127.0.0.1:8095/stats para ver las
 **Estilo:** el juego debe seguir siendo **simple y divertido**: nada de controles nuevos complicados. El humor es de oficina de TI. Código en el mismo estilo que el que ya existe (JavaScript sin librerías, comentarios cortos en español).
 
 **Publicar** en la VPS lo hace quien administra el juego; las llaves y claves no están en el repositorio.
+

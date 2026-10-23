@@ -51,8 +51,26 @@ Orden sugerido: frases + días → intro cómic → señora del aseo → comodin
 
 ## 4. Ambientación
 
-- [ ] **Temporadas**: Halloween en octubre (brujas, calabazas) y Navidad en diciembre (decoración, gorros). Para Halloween el tiempo está justo; quizás apuntarle a Navidad. *(Jesús)*
+- [x] **Oficina cálida de día** (23 oct 2026, PR #3 de Manuel): paredes crema, persianas, cubículos con sillas, archivadores, tablón; muebles desde `sprites/oficina.png` (`scripts/crear_oficina.py`). Sin cambios en choques ni dificultad.
+  - [ ] Ajustes pedidos a Manuel en el PR #3: diferenciar más **Analista** de Practicante · cafetera más visible (destello y vapor como antes) · **matas que crezcan** por rango · *(opcional)* Halloween más oscuro.
+  - [ ] Al lanzar las **excusas**: la hojita blanca se ve poco sobre el piso claro, darle más contraste.
+
+- [ ] **Temporadas**: Halloween en octubre (brujas, calabazas) y Navidad en diciembre (decoración, gorros). *(Jesús)*
+  - [x] **Halloween** (23 oct 2026): se prende solo del 23 oct al 1 nov, adornos distintos en los 3 escenarios y disfraces (jefe vampiro, gerente diablo, Dani bruja). Probar con `?tema=halloween`.
+  - [ ] **Navidad**: misma idea (`HALLOWEEN` en el código sirve de modelo).
 - [ ] **Puertas con letreros chistosos** en la oficina (Il Palazzo, Condoricosas, cuarto de las escobas). *(Manuel)*
+
+## 5. Música y sonido 🎵 *(Alex, con su Claude — 23 oct 2026)*
+
+Música 8 bits estilo NES, generada con Web Audio en el mismo HTML (2 canales de onda cuadrada, triangular de bajo, ruido de batería), melodías **originales**. Alex trabaja en su rama y abre PR (pendiente: que cree su cuenta de GitHub y agregarlo como colaborador).
+
+- [ ] **Música del nivel 1** (alegre, bucle de 30–45 s) con **variaciones** para Analista (más rápida, segunda voz) y Jefe de TI (tono menor, más intensa).
+- [ ] **Botón MÚSICA: SI/NO** aparte del de sonido, recordado en el navegador. Arranca con el primer toque; se pausa con la ayuda, el aviso de girar el celular o la pestaña oculta.
+- [ ] **Fanfarrias**: "DÍA 1" (~3 s), ascenso "1 año / 5 años después" (4–5 s, lo que dura el cartel), fin del juego (3–7 s), nuevo récord / empleado de la semana (~5 s).
+- [ ] **Intro cómic**: una pista por viñeta (despertador, bus apurado, cafecito en calma, golpe tenso al final).
+- [ ] **Menú**: música de ascensor en 8 bits (bossa nova cursi).
+- [ ] **Música que reacciona**: se acelera cuando un ticket está por vencerse ("¡apúrate!" a lo Mario), capa de batería cuando el jefe persigue, versión romántica cuando Dani lo distrae, versión tenebrosa en Halloween.
+- **Ojo:** la música no cambia la dificultad (no tocar `CURVE`, tiempos ni velocidades). Revisar el PR antes del merge.
 
 ## Decisiones pendientes
 
@@ -60,8 +78,8 @@ Orden sugerido: frases + días → intro cómic → señora del aseo → comodin
 
 ## Detalles menores
 
-- [ ] El color de la chaqueta de la jugadora cambia un poco al empezar a arreglar (las hojas de Manuel tienen tonos distintos). Igualar en el script o pedir a Manuel el mismo tono.
-- [ ] Animaciones caminando hacia arriba/abajo, si Manuel las hace.
+- [ ] El color de la chaqueta de la jugadora cambia un poco al empezar a arreglar (las hojas de Manuel tienen tonos distintos). Igualar en el script o pedir a Manuel el mismo tono. *(Pedido a Manuel en la tarea #2.)*
+- [ ] Animaciones caminando hacia arriba/abajo, si Manuel las hace. *(Pedido a Manuel en la tarea #2.)*
 
 ## Ya decidido
 
