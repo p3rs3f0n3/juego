@@ -50,6 +50,10 @@ Orden sugerido: frases + días → intro cómic → señora del aseo → comodin
 
 ## 4. Ambientación
 
+- [x] **Oficina cálida de día** (23 oct 2026, PR #3 de Manuel): paredes crema, persianas, cubículos con sillas, archivadores, tablón; muebles desde `sprites/oficina.png` (`scripts/crear_oficina.py`). Sin cambios en choques ni dificultad.
+  - [ ] Ajustes pedidos a Manuel en el PR #3: diferenciar más **Analista** de Practicante · cafetera más visible (destello y vapor como antes) · **matas que crezcan** por rango · *(opcional)* Halloween más oscuro.
+  - [ ] Al lanzar las **excusas**: la hojita blanca se ve poco sobre el piso claro, darle más contraste.
+
 - [ ] **Temporadas**: Halloween en octubre (brujas, calabazas) y Navidad en diciembre (decoración, gorros). *(Jesús)*
   - [x] **Halloween** (23 oct 2026): se prende solo del 23 oct al 1 nov, adornos distintos en los 3 escenarios y disfraces (jefe vampiro, gerente diablo, Dani bruja). Probar con `?tema=halloween`.
   - [ ] **Navidad**: misma idea (`HALLOWEEN` en el código sirve de modelo).
