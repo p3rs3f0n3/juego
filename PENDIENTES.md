@@ -39,6 +39,7 @@ Orden sugerido: frases + días → intro cómic → señora del aseo → comodin
   - Propuesta: se **compran con puntos** en la transición entre días (mini tienda en el cartel de "1 año después").
   - Propuesta para no agregar botones: si tienes un comodín y el jefe te alcanza, **se usa solo**: la jugadora dice la excusa, el jefe se va y no pierdes la vida.
   - **Ojo: cambia la dificultad** (hace más fácil al jefe). Probarlo y aprobarlo antes, como la curva.
+  - **En prueba (23 oct 2026, rama `excusas`)**: se decidió que se **recogen en el mapa** (una hojita que brilla en el piso, lejos de la jugadora y del jefe), máximo **1** guardada, se usa sola al ser alcanzada (no pierdes vida ni avance). Números a aprobar: primera a los 40 s, luego cada 60 s, dura 10 s en el piso (`EXCUSE` en el código). Copia de prueba en `/prueba-excusas.html`. Al lanzarla: pasar a `main`, abrir **temporada nueva** y borrar la copia de prueba.
 
 ## 3. Personajes nuevos (cambian la jugabilidad)
 

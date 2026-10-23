@@ -256,6 +256,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
 .help-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px; }
 .help-heading h2 { font: 14px var(--display); color: #e3c35c; margin: 0; line-height: 1.7; }
 .help-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.help-wide { grid-column: 1 / -1; }
 .help-card { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 16px 12px; border: 2px solid #38334d; background: #211d31; gap: 10px; }
 .help-card h3 { font: 10px var(--display); line-height: 1.6; margin: 0; color: #e3c35c; }
 .help-card p { margin: 0; font-size: 20px; line-height: 1.2; }
@@ -390,6 +391,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     <section class="help-card"><div class="help-art" style="flex-direction:column"><kbd class="help-space">ESPACIO</kbd><div class="help-progress" aria-hidden="true"></div></div><h3>RESUELVE TICKETS</h3><p>Acércate al <b style="color:#e3c35c">!</b> y mantén ESPACIO o E hasta llenar la barra. En celular, mantén el botón redondo.</p></section>
     <section class="help-card"><div class="help-art"><svg width="72" height="80" viewBox="0 0 48 54" shape-rendering="crispEdges" aria-hidden="true"><path fill="#d8d4e6" d="M18 1h3v4h-3zm9 3h3v4h-3z"/><path fill="#4c4c64" d="M8 10h32v44H8z"/><path fill="#22222e" d="M12 16h24v10H12z"/><path fill="#5fd6a1" d="M14 20h16v3H14zm19-2h3v3h-3z"/><path fill="#171525" d="M12 29h24v20H12z"/><path fill="#d8d4e6" d="M15 34h17v13H15zm17 2h5v8h-5z"/><path fill="#5a3a28" d="M17 37h13v8H17z"/></svg></div><h3>CAFÉ = TURBO</h3><p>Si la luz está verde, acércate y pulsa la acción. Camina y repara más rápido durante 6 segundos.</p></section>
     <section class="help-card"><div class="help-art"><img class="help-sprite" src="data:image/png;base64,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" alt="El jefe"><svg width="24" height="24" viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="#fc1d64" d="M1 2h3v1h2V2h3v1h2v4H9v2H7v2H5V9H3V7H1z"/></svg><img class="help-sprite" src="data:image/png;base64,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" alt="Dani"></div><h3>DISTRAE AL JEFE</h3><p>Llévalo cerca de Dani. Se quedará embobado unos segundos: ¡aprovecha para escapar!</p></section>
+    <section class="help-card help-wide"><div class="help-art"><svg width="48" height="56" viewBox="0 0 12 14" shape-rendering="crispEdges" aria-hidden="true"><path fill="#0d0c14" d="M0 0h12v14H0z"/><path fill="#f2f0f8" d="M1 1h10v12H1z"/><path fill="#c9c4dc" d="M8 1h3v3H8z"/><path fill="#6a8cf0" d="M3 4h5v1H3zm0 2h6v1H3zm0 2h4v1H3z"/><path fill="#ef5b6b" d="M7 9h3v3H7z"/></svg></div><h3>EXCUSA = SALVAVIDAS</h3><p>A veces aparece una hojita en el piso. Recógela caminando: la próxima vez que el jefe te alcance, sueltas la excusa ("¡Tengo cita médica!") y no pierdes vida. Solo puedes guardar una.</p></section>
   </div>
   <p class="help-footer">Evita al jefe y resuelve cada ticket antes de que venza el SLA.<br>La partida queda en pausa mientras consultas esta ayuda.</p>
   <p class="help-footer"><button class="chip" id="helpIntro" type="button">VER LA INTRO</button></p>
@@ -721,6 +723,12 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   function boss() { return BOSSES[rank >= 2 ? 1 : 0]; }
   function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
   var LOVE_TIME = 4.5, LOVE_COOL = 12;
+  /* Comodín: una excusa que aparece de vez en cuando en el piso. Se recoge caminando (máximo 1 guardada)
+     y se usa sola cuando el jefe te alcanza: no pierdes vida ni el avance de los tickets.
+     EXCUSE.first/every/life son la perilla de dificultad de los comodines. */
+  var EXCUSE = { first: 40, every: 60, life: 10 };
+  var EXCUSES = ["Tengo cita médica", "Voy por el boletín escolar", "Voy al baño", "Le dije que había que hacer un DRP",
+    "Yo pedí otro servidor", "Se cayó el proveedor de internet"];
 
   /* ---------- dificultad: rangos que se ganan resolviendo tickets ---------- */
   var RANKS = [
@@ -750,14 +758,15 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   function rankOf(n) { var r = 0; for (var i = 0; i < RANKS.length; i++) if (n >= RANKS[i].from) r = i; return r; }
 
   var dists = 0;
-  var P, B, M, hearts, tickets, pops, score, done, rank, lives, combo, lastDone, spawnT, shake, clock, actPrev, best = 0, whyOver, cut = null;
+  var P, B, M, hearts, tickets, pops, score, done, rank, lives, combo, lastDone, spawnT, shake, clock, actPrev, best = 0, whyOver, cut = null, excuse, excuseT;
   try { best = parseInt(localStorage.getItem("ticketrush-best") || "0", 10) || 0; } catch (e) {}
 
   function reset() {
-    P = { x: 360, y: 410, boost: 0, stun: 0, inv: 0, moving: false };
+    P = { x: 360, y: 410, boost: 0, stun: 0, inv: 0, moving: false, excuse: false, say: "", sayT: 0 };
     B = { x: 650, y: 140, tx: 650, ty: 140, state: "wander", say: "", sayT: 0, flee: 0, love: 0, stuckT: 0, lx: 650, ly: 140 };
     M = { x: 170, y: 420, tx: 170, ty: 420, cool: 3, pause: 0, stuckT: 0, lx: 170, ly: 420 };
     hearts = []; dists = 0;
+    excuse = null; excuseT = EXCUSE.first;
     tickets = []; pops = []; score = 0; done = 0; rank = 0; lives = 3; combo = 0; lastDone = -99;
     shake = 0; clock = 0; actPrev = false; coffee.cool = 0;
     stations.forEach(function (s) { s.ticket = null; });
@@ -906,7 +915,16 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
 
     if (B.state !== "chase") unstick(B, dt);
     else B.stuckT = 0;
-    if (dist < 26 && P.inv <= 0 && P.stun <= 0) {
+    if (dist < 26 && P.inv <= 0 && P.stun <= 0 && P.excuse) {
+      P.excuse = false; P.inv = 2.4;
+      P.say = pick(EXCUSES); P.sayT = Math.max(2, Math.min(3.5, 1 + P.say.length / 15)); B.sayT = 0;
+      B.state = "flee"; B.flee = 3;
+      B.tx = P.x < W / 2 ? 14 * T : 2 * T; B.ty = P.y < H / 2 ? 7 * T : 2 * T;
+      if (blocked(B.tx, B.ty, 12, 12)) { B.tx = 8 * T + 24; B.ty = 3 * T + 24; }
+      pop(P.x, P.y - 96, "¡SALVADA!", "#5fd6a1");
+      beep(660, 0.08, "triangle", 0.05); setTimeout(function () { beep(990, 0.14, "triangle", 0.05); }, 90);
+      say("Usaste una excusa: " + P.say);
+    } else if (dist < 26 && P.inv <= 0 && P.stun <= 0) {
       P.inv = 2.4; P.stun = 0.8; B.angry = 1.2;
       talk(pick(boss().says));
       B.state = "flee"; B.flee = 3;
@@ -915,6 +933,29 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       var keep = diff("keep");
       tickets.forEach(function (t) { t.p *= keep; });
       hurt(rank >= 2 ? "El gerente (tu nuevo jefe) te alcanzó con \"un informe para ya\"." : "El jefe te alcanzó con \"una cosita rápida\".");
+    }
+  }
+
+  function updateExcuse(dt) {
+    if (P.sayT > 0) P.sayT -= dt;
+    if (excuse) {
+      excuse.t -= dt;
+      if (Math.hypot(P.x - excuse.x, P.y - excuse.y) < 24) {
+        excuse = null; P.excuse = true; excuseT = EXCUSE.every;
+        pop(P.x, P.y - 60, "¡EXCUSA!", "#5fd6a1");
+        beep(520, 0.07, "triangle", 0.05); setTimeout(function () { beep(880, 0.1, "triangle", 0.05); }, 70);
+        say("Recogiste una excusa: te salva la próxima vez que te alcance el " + boss().name);
+      } else if (excuse.t <= 0) { excuse = null; excuseT = EXCUSE.every; }
+      return;
+    }
+    if (P.excuse) return;  // máximo 1 guardada: no aparece otra hasta usarla
+    excuseT -= dt;
+    if (excuseT > 0) return;
+    for (var n = 0; n < 40; n++) {  // un sitio libre, lejos de la jugadora y del jefe
+      var x = T + 20 + Math.random() * (14 * T - 40), y = T + 30 + Math.random() * (8 * T - 40);
+      if (blocked(x, y, 12, 10) || Math.hypot(x - P.x, y - P.y) < 150 || Math.hypot(x - B.x, y - B.y) < 90) continue;
+      excuse = { x: x, y: y, t: EXCUSE.life };
+      return;
     }
   }
 
@@ -964,6 +1005,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       }
     }
     if (state !== "play") return;
+    updateExcuse(dt);
     spawnT -= dt;
     if (spawnT <= 0) { spawnTicket(); spawnT = spawnEvery(); }
     updateMate(dt);
@@ -1267,6 +1309,30 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       if (t.p > 0) { R(cx - 16, top - 10, 32, 6, "#0d0c14"); R(cx - 14, top - 8, 28 * Math.min(1, t.p / t.fix), 2, "#a285f5"); }
     });
   }
+  // La excusa: una hojita (constancia) que flota sobre un brillo verde; parpadea cuando está por irse.
+  function drawNote(x, y) {
+    R(x, y, 12, 14, "#0d0c14"); R(x + 1, y + 1, 10, 12, "#f2f0f8"); R(x + 8, y + 1, 3, 3, "#c9c4dc");
+    R(x + 3, y + 4, 5, 1, "#6a8cf0"); R(x + 3, y + 6, 6, 1, "#6a8cf0"); R(x + 3, y + 8, 4, 1, "#6a8cf0");
+    R(x + 7, y + 9, 3, 3, "#ef5b6b");
+  }
+  function drawExcuse() {
+    if (!excuse || (excuse.t < 3 && Math.floor(anim * 8) % 2)) return;
+    var g = 0.5 + Math.sin(anim * 5) * 0.25, fy = Math.round(excuse.y - 30 + Math.sin(anim * 4) * 3);
+    ctx.globalAlpha = g;
+    R(excuse.x - 16, excuse.y - 4, 32, 6, "#5fd6a1");
+    R(excuse.x - 17, fy - 3, 34, 3, "#5fd6a1"); R(excuse.x - 17, fy + 28, 34, 3, "#5fd6a1");
+    R(excuse.x - 17, fy, 3, 28, "#5fd6a1"); R(excuse.x + 14, fy, 3, 28, "#5fd6a1");
+    ctx.globalAlpha = 1;
+    ctx.save(); ctx.translate(excuse.x - 12, fy); ctx.scale(2, 2); drawNote(0, 0); ctx.restore();
+  }
+  function drawPlayerSay() {
+    if (!(P.sayT > 0)) return;
+    ctx.font = "20px " + F_B; var w = ctx.measureText(P.say).width + 14;
+    var bx = Math.round(Math.max(4, Math.min(W - w - 4, P.x - w / 2))), by = Math.round(P.y - 80);
+    var tail = Math.round(Math.max(bx + 4, Math.min(bx + w - 12, P.x - 4)));
+    R(bx, by, w, 24, "#dff7ec"); R(tail, by + 24, 8, 6, "#dff7ec");
+    ctx.fillStyle = "#1d4a39"; ctx.textAlign = "center"; ctx.fillText(P.say, bx + w / 2, by + 18);
+  }
   function drawPops() {
     ctx.textAlign = "center";
     pops.forEach(function (p) { ctx.globalAlpha = Math.min(1, p.t * 1.5); ctx.font = "12px " + F_D; ctx.fillStyle = "#0d0c14"; ctx.fillText(p.txt, p.x + 1, p.y + 1); ctx.fillStyle = p.col; ctx.fillText(p.txt, p.x, p.y); });
@@ -1280,6 +1346,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     R(0, 9 * T, W, T, "#12101c"); R(0, 9 * T, W, 3, "#2c2840");
     for (var i = 0; i < MAX_LIVES; i++) drawHeart(12 + i * 22, 9 * T + 15, i < lives);
     ctx.textAlign = "left"; ctx.font = "8px " + F_D; ctx.fillStyle = "#a285f5"; ctx.fillText(RANKS[rank].name, 128, 9 * T + 28);
+    if (P.excuse) { drawNote(128, 9 * T + 32); ctx.font = "8px " + F_D; ctx.fillStyle = "#5fd6a1"; ctx.fillText("EXCUSA", 144, 9 * T + 43); }
     var msg, col = "#9d96b8", tk = (state === "play") ? nearestTicket() : null;
     if (state !== "play") msg = "Tickets abiertos: " + tickets.length;
     else if (tk) { msg = ACT_HUD[rank] + ": " + tk.text; col = "#ece8f7"; }
@@ -1296,10 +1363,11 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     if (shake > 0 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) ctx.translate(Math.round((Math.random() - 0.5) * 8), Math.round((Math.random() - 0.5) * 8));
     drawFloor();
     var items = solids.map(function (s) { return { b: s.y + s.h, f: function () { drawStation(s); } }; });
+    if (excuse) items.push({ b: excuse.y, f: drawExcuse });
     items.push({ b: P.y, f: drawPlayer }); items.push({ b: B.y, f: drawBoss }); items.push({ b: M.y, f: drawMate });
     items.sort(function (a, b) { return a.b - b.b; });
     items.forEach(function (it) { it.f(); });
-    drawBubbles(); drawHearts(); drawPops();
+    drawBubbles(); drawHearts(); drawPlayerSay(); drawPops();
     ctx.restore();
     drawHUD();
     drawCut();  // el cartel tapa todo, también la barra de abajo
