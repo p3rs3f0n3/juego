@@ -16,10 +16,12 @@ html = html.replace("__PLAYER__", uri("../sprites/avatar_48.png"))
 html = html.replace("__BOSS__", uri("../sprites/boss_48.png"))
 html = html.replace("__MATE__", uri("../sprites/companera_48.png"))
 html = html.replace("__GERENTE__", uri("../sprites/gerente_48.png"))
-for nombre in ("jugadora", "jugadora_arreglando", "jefe", "gerente", "dani"):
+for nombre in ("jugadora", "jugadora_arreglando", "jefe", "gerente", "dani", "aseo", "sapo", "pasante"):
     html = html.replace("__CHIBI_%s__" % nombre.upper(), uri("../sprites/chibi_%s.png" % nombre))
 html = html.replace("__JEFE_FRENTE__", uri("../sprites/chibi_jefe_frente.png"))
 html = html.replace("__DANI_FRENTE__", uri("../sprites/chibi_dani_frente.png"))
+for nombre in ("aseo", "sapo", "pasante"):
+    html = html.replace("__%s_FRENTE__" % nombre.upper(), uri("../sprites/chibi_%s_frente.png" % nombre))
 
 with open("../ticket_rush.html", "w", encoding="utf-8") as f:
     f.write(html)

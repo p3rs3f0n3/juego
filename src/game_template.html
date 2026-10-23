@@ -392,6 +392,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     <section class="help-card"><div class="help-art"><svg width="72" height="80" viewBox="0 0 48 54" shape-rendering="crispEdges" aria-hidden="true"><path fill="#d8d4e6" d="M18 1h3v4h-3zm9 3h3v4h-3z"/><path fill="#4c4c64" d="M8 10h32v44H8z"/><path fill="#22222e" d="M12 16h24v10H12z"/><path fill="#5fd6a1" d="M14 20h16v3H14zm19-2h3v3h-3z"/><path fill="#171525" d="M12 29h24v20H12z"/><path fill="#d8d4e6" d="M15 34h17v13H15zm17 2h5v8h-5z"/><path fill="#5a3a28" d="M17 37h13v8H17z"/></svg></div><h3>CAFÉ = TURBO</h3><p>Si la luz está verde, acércate y pulsa la acción. Camina y repara más rápido durante 6 segundos.</p></section>
     <section class="help-card"><div class="help-art"><img class="help-sprite" src="__JEFE_FRENTE__" alt="El jefe"><svg width="24" height="24" viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="#fc1d64" d="M1 2h3v1h2V2h3v1h2v4H9v2H7v2H5V9H3V7H1z"/></svg><img class="help-sprite" src="__DANI_FRENTE__" alt="Dani"></div><h3>DISTRAE AL JEFE</h3><p>Llévalo cerca de Dani. Se quedará embobado unos segundos: ¡aprovecha para escapar!</p></section>
     <section class="help-card help-wide"><div class="help-art"><svg width="48" height="56" viewBox="0 0 12 14" shape-rendering="crispEdges" aria-hidden="true"><path fill="#0d0c14" d="M0 0h12v14H0z"/><path fill="#f2f0f8" d="M1 1h10v12H1z"/><path fill="#c9c4dc" d="M8 1h3v3H8z"/><path fill="#6a8cf0" d="M3 4h5v1H3zm0 2h6v1H3zm0 2h4v1H3z"/><path fill="#ef5b6b" d="M7 9h3v3H7z"/></svg></div><h3>EXCUSA = SALVAVIDAS</h3><p>A veces aparece una hojita en el piso. Recógela caminando: la próxima vez que el jefe te alcance, sueltas la excusa ("¡Tengo cita médica!") y no pierdes vida. Solo puedes guardar una.</p></section>
+    <section class="help-card help-wide"><div class="help-art"><img class="help-sprite" src="__ASEO_FRENTE__" alt="Señora del aseo"><img class="help-sprite" src="__SAPO_FRENTE__" alt="El sapo"><img class="help-sprite" src="__PASANTE_FRENTE__" alt="El pasante"></div><h3>COMPAÑEROS DE OFICINA</h3><p><b>Señora del aseo:</b> donde pasa, algo se desconecta y ahí sale el próximo ticket. <b>Sapo</b> (desde Analista): si te ve cerca, le cuenta al jefe y el jefe va directo hacia ti. <b>Pasante</b> (Jefe de TI): arregla tickets solo, despacio.</p></section>
   </div>
   <p class="help-footer">Evita al jefe y resuelve cada ticket antes de que venza el SLA.<br>La partida queda en pausa mientras consultas esta ayuda.</p>
   <p class="help-footer"><button class="chip" id="helpIntro" type="button">VER LA INTRO</button></p>
@@ -427,6 +428,8 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   var shP = sheet("__CHIBI_JUGADORA__"), shB = sheet("__CHIBI_JEFE__"), shG = sheet("__CHIBI_GERENTE__"), shM = sheet("__CHIBI_DANI__");
   var officeArt = sheet("__OFFICE__");  // atlas de muebles, tres paletas por rango
   var shPA = sheet("__CHIBI_JUGADORA_ARREGLANDO__");  // 8 cuadros de frente: arreglando un ticket
+  // Compañeros de oficina (aseo y pasante: muñequitos provisionales hasta que lleguen los de Manuel)
+  var shA = sheet("__CHIBI_ASEO__"), shS = sheet("__CHIBI_SAPO__"), shN = sheet("__CHIBI_PASANTE__");
   function ready(i) { return i.complete && i.naturalWidth; }
   function facing(e) {
     if (e.fx === undefined) { e.fx = e.x; e.face = 1; }
@@ -728,6 +731,23 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
      y se usa sola cuando el jefe te alcanza: no pierdes vida ni el avance de los tickets.
      EXCUSE.first/every/life son la perilla de dificultad de los comodines. */
   var EXCUSE = { first: 40, every: 60, life: 10 };
+  /* Compañeros de oficina:
+     - Señora del aseo (siempre): donde pasa "desconecta" algo y ahí salen los tickets. Salen igual de seguido
+       que siempre; solo cambia DÓNDE salen.
+     - Sapo (desde Analista): si te ve cerca un rato, le cuenta al jefe y el jefe va directo hacia ti unos segundos.
+     - Pasante (en Jefe de TI): camina a un ticket y lo arregla solo, más despacio que tú (no da puntos).
+     SAPO y PASANTE son las perillas de dificultad de estos dos. */
+  var SAPO = { from: 1, see: 110, seeT: 1.5, alert: 4, cool: 15 };
+  var PASANTE = { from: 2, speed: 0.35 };
+  var ASEO_SAYS = ["Uy, ¿esto se desconecta?", "Yo no toqué nada", "Ese cable estaba sucio", "Permiso, voy a trapear",
+    "¿Esto prende o qué?", "Le quité el polvo al cable"];
+  var PASANTE_SAYS = ["¡Jefa, ya quedó!", "¡Lo reinicié y sirvió!", "Esto lo vi en el SENA", "¿Era el cable? ¡Era el cable!"];
+  function sapoSays() {
+    var n = rank >= 2 ? "Gerente" : "Jefe";
+    return ["¡" + n + ", los de TI están jugando Minecraft!", "¡" + n + ", la de TI está en TikTok!",
+      n + ", yo no digo nada, pero...", "¡" + n + ", llegó tarde otra vez!"];
+  }
+  var A, S, N;
   var EXCUSES = ["Tengo cita médica", "Voy por el boletín escolar", "Voy al baño", "Le dije que había que hacer un DRP",
     "Yo pedí otro servidor", "Se cayó el proveedor de internet"];
 
@@ -767,6 +787,9 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     B = { x: 650, y: 140, tx: 650, ty: 140, state: "wander", say: "", sayT: 0, flee: 0, love: 0, stuckT: 0, lx: 650, ly: 140 };
     M = { x: 170, y: 420, tx: 170, ty: 420, cool: 3, pause: 0, stuckT: 0, lx: 170, ly: 420 };
     hearts = []; dists = 0;
+    A = { x: 620, y: 420, tx: 620, ty: 420, pause: 2, stuckT: 0, lx: 620, ly: 420, say: "", sayT: 0, sayCool: 6, passed: [], unplug: 0 };
+    S = { on: false, x: 0, y: 0, tx: 0, ty: 0, pause: 0, stuckT: 0, lx: 0, ly: 0, say: "", sayT: 0, seen: 0, cool: 6, gossip: 0 };
+    N = { on: false, x: 0, y: 0, tx: 0, ty: 0, pause: 0, stuckT: 0, lx: 0, ly: 0, say: "", sayT: 0, job: null, working: false };
     excuse = null; excuseT = EXCUSE.first;
     tickets = []; pops = []; score = 0; done = 0; rank = 0; lives = 3; combo = 0; lastDone = -99;
     shake = 0; clock = 0; actPrev = false; coffee.cool = 0;
@@ -781,7 +804,9 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     if (tickets.length >= maxTickets()) return;
     var free = stations.filter(function (s) { return !s.ticket; });
     if (!free.length) return;
-    var s = free[Math.floor(Math.random() * free.length)];
+    var dirty = A ? free.filter(function (st) { return A.passed.indexOf(st) >= 0; }) : [];
+    var s = dirty.length && Math.random() < 0.75 ? dirty[Math.floor(Math.random() * dirty.length)] : free[Math.floor(Math.random() * free.length)];
+    if (A && A.passed.indexOf(s) >= 0) A.passed.splice(A.passed.indexOf(s), 1);
     var base = BASE[s.type], list = TEXTS[rank][s.type];
     var k = diff("sla");
     var t = { st: s, text: list[Math.floor(Math.random() * list.length)], t: base.t * k, total: base.t * k, fix: base.fix, pts: base.pts, p: 0 };
@@ -792,7 +817,8 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   function pop(x, y, txt, col) { pops.push({ x: x, y: y, txt: txt, col: col, t: 1.8 }); }
   // tiempo de lectura (guías de subtítulos): ~1 s para notar el globo + 15 letras por segundo, entre 2 y 3,5 s.
   // Solo cambia cuánto se ve el globo, no lo que hace el jefe.
-  function talk(txt) { B.say = txt; B.sayT = Math.max(2, Math.min(3.5, 1 + txt.length / 15)); }
+  function sayOf(e, txt) { e.say = txt; e.sayT = Math.max(2, Math.min(3.5, 1 + txt.length / 15)); }
+  function talk(txt) { sayOf(B, txt); }
   function say(msg) { var l = document.getElementById("live"); if (l) l.textContent = msg; }
 
   function nearestTicket() {
@@ -822,6 +848,8 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       if (rank >= 2) pop(B.x, B.y - 60, "¡GERENTE!", "#e8b840");
       setActLabel();
       if (lives < MAX_LIVES) { lives++; pop(P.x, P.y - 60, "+VIDA", "#ef5b6b"); }
+      if (rank >= SAPO.from && !S.on) appear(S, "¡EL SAPO!", "#c58bff");
+      if (rank >= PASANTE.from && !N.on) appear(N, "¡TU PASANTE!", "#5fd6a1");
       beep(523, 0.1, "square", 0.05); setTimeout(function () { beep(659, 0.1, "square", 0.05); }, 110);
       setTimeout(function () { beep(784, 0.2, "square", 0.05); }, 220);
       say((rank >= 2 ? "Cinco años después" : "Un año después") + ": ahora eres " + RANKS[rank].name.toLowerCase());
@@ -860,6 +888,102 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     }
   }
 
+  /* ---------- compañeros de oficina: señora del aseo, sapo y pasante ---------- */
+  function appear(e, label, col) {
+    for (var i = 0; i < 40; i++) {  // un sitio libre lejos de la jugadora
+      var x = T + 20 + Math.random() * (14 * T - 40), y = T + 30 + Math.random() * (8 * T - 40);
+      if (blocked(x, y, 12, 12) || Math.hypot(x - P.x, y - P.y) < 200) continue;
+      e.x = e.lx = e.tx = x; e.y = e.ly = e.ty = y; break;
+    }
+    e.on = true; e.pause = 1;
+    pop(e.x, e.y - 70, label, col);
+  }
+  // Un punto para pararse junto a un puesto (abajo, arriba o a los lados), donde no se choca.
+  function standSpot(st) {
+    var cx = st.x + st.w / 2, c = [[cx, st.y + st.h + 8], [cx, st.y + 10], [st.x - 12, st.y + 34], [st.x + st.w + 12, st.y + 34]];
+    for (var i = 0; i < c.length; i++) if (!blocked(c[i][0], c[i][1], HW, HH)) return { x: c[i][0], y: c[i][1] };
+    return null;
+  }
+  function walk(e, sp, dt) {
+    var dx = e.tx - e.x, dy = e.ty - e.y, d = Math.hypot(dx, dy);
+    if (d < 6) return true;
+    move(e, dx / d * sp * dt, dy / d * sp * dt);
+    return false;
+  }
+  function updateAseo(dt) {
+    if (A.sayT > 0) A.sayT -= dt;
+    if (A.sayCool > 0) A.sayCool -= dt;
+    if (A.unplug > 0) A.unplug -= dt;
+    stations.forEach(function (st) {  // va "desconectando" los puestos por donde pasa
+      if (!st.ticket && distRect(A.x, A.y - 6, st) < 30 && A.passed.indexOf(st) < 0) {
+        A.passed.unshift(st); if (A.passed.length > 4) A.passed.pop();
+        if (A.sayCool <= 0) { sayOf(A, pick(ASEO_SAYS)); A.sayCool = 9; }
+        A.unplug = 1.2; A.pause = Math.max(A.pause, 1.2);  // se queda desconectando el cable
+      }
+    });
+    if (A.pause > 0) { A.pause -= dt; return; }
+    if (walk(A, 30, dt)) {
+      A.pause = 1.5 + Math.random() * 2;  // se queda barriendo un rato
+      var sp = Math.random() < 0.7 ? standSpot(pick(stations)) : null;  // casi siempre va a un puesto
+      if (sp) { A.tx = sp.x; A.ty = sp.y; } else pickWaypoint(A);
+    } else unstick(A, dt);
+  }
+  function updateSapo(dt) {
+    if (!S.on) return;
+    if (S.sayT > 0) S.sayT -= dt;
+    if (S.cool > 0) S.cool -= dt;
+    if (S.gossip > 0) { S.gossip -= dt; return; }  // quieto, chismeando
+    var busy = B.state === "love" || B.state === "flee" || B.state === "chase";
+    if (Math.hypot(P.x - S.x, P.y - S.y) < SAPO.see && S.cool <= 0 && !busy && P.inv <= 0) S.seen += dt;
+    else S.seen = Math.max(0, S.seen - dt);
+    if (S.seen >= SAPO.seeT) {
+      S.seen = 0; S.cool = SAPO.cool; S.gossip = 1.4; B.alert = SAPO.alert;
+      sayOf(S, pick(sapoSays()));
+      pop(S.x, S.y - 96, "¡CHISME!", "#c58bff");
+      beep(500, 0.08, "square", 0.04); setTimeout(function () { beep(380, 0.12, "square", 0.04); }, 90);
+      say("El sapo le contó al " + boss().name + " dónde estás");
+      return;
+    }
+    if (S.pause > 0) { S.pause -= dt; return; }
+    if (walk(S, 38, dt)) { S.pause = 0.8 + Math.random() * 1.5; pickWaypoint(S); } else unstick(S, dt);
+  }
+  function updatePasante(dt) {
+    if (!N.on) return;
+    if (N.sayT > 0) N.sayT -= dt;
+    N.working = false;
+    if (N.pause > 0) { N.pause -= dt; return; }
+    if (N.job && tickets.indexOf(N.job) < 0) N.job = null;  // ya lo resolvieron
+    if (!N.job) {
+      var mine = nearestTicket();  // no se mete en el que está arreglando la jugadora
+      var opts = tickets.filter(function (t) { return t !== mine && standSpot(t.st); });
+      if (!opts.length) {
+        if (walk(N, 40, dt)) { N.pause = 1; pickWaypoint(N); } else unstick(N, dt);
+        return;
+      }
+      // el que esté más lejos de la jugadora: así se reparten el trabajo
+      N.job = opts.reduce(function (a, b) { return Math.hypot(a.st.x - P.x, a.st.y - P.y) > Math.hypot(b.st.x - P.x, b.st.y - P.y) ? a : b; });
+      var sp = standSpot(N.job.st); N.tx = sp.x; N.ty = sp.y; N.stuckT = 0; N.lx = N.x; N.ly = N.y;
+    }
+    if (distRect(N.x, N.y - 6, N.job.st) < 38) {
+      N.working = true;
+      N.job.p += dt * PASANTE.speed;
+      if (N.job.p >= N.job.fix) {
+        pop(N.job.st.x + N.job.st.w / 2, N.job.st.y - 10, "¡LISTO!", "#5fd6a1");
+        say("El pasante resolvió: " + N.job.text);
+        removeTicket(N.job); N.job = null; N.pause = 1.5;
+        sayOf(N, pick(PASANTE_SAYS));
+        beep(620, 0.08, "triangle", 0.04);
+      }
+      return;
+    }
+    walk(N, 44, dt);
+    N.stuckT += dt;  // si se atasca, suelta ese ticket y busca otro
+    if (N.stuckT > 1.2) {
+      if (Math.hypot(N.x - N.lx, N.y - N.ly) < 10) { N.job = null; N.pause = 0.5; }
+      N.lx = N.x; N.ly = N.y; N.stuckT = 0;
+    }
+  }
+
   /* ---------- compañera: pasea por la oficina y distrae al jefe ---------- */
   function updateMate(dt) {
     if (M.cool > 0) M.cool -= dt;
@@ -884,6 +1008,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
 
   function updateBoss(dt) {
     if (B.sayT > 0) B.sayT -= dt;
+    if (B.alert > 0) { B.alert -= dt; if (B.state === "flee" || B.state === "love") B.alert = 0; }
     var dxp = P.x - B.x, dyp = P.y - B.y, dist = Math.hypot(dxp, dyp);
     var range = diff("range");
     if (B.state !== "love" && B.state !== "flee" && M.cool <= 0 && Math.hypot(M.x - B.x, M.y - B.y) < 46) {
@@ -902,10 +1027,10 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     if (B.state === "flee") {
       B.flee -= dt;
       if (B.flee <= 0) { B.state = "wander"; pickWaypoint(B); }
-    } else if (dist < range && P.inv <= 0) {
+    } else if ((dist < range || B.alert > 0) && P.inv <= 0) {
       if (B.state !== "chase") talk(pick(boss().says));
       B.state = "chase";
-    } else if (B.state === "chase" && (dist > range * 1.4 || P.inv > 0)) { B.state = "wander"; pickWaypoint(B); }
+    } else if (B.state === "chase" && ((dist > range * 1.4 && !(B.alert > 0)) || P.inv > 0)) { B.state = "wander"; pickWaypoint(B); }
 
     var tx = B.tx, ty = B.ty, sp = 40;
     if (B.state === "chase") { tx = P.x; ty = P.y; sp = diff("bossSp"); }
@@ -985,7 +1110,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     for (var i = 0; i < tickets.length; i++) {
       var t = tickets[i];
       if (t === tk && fixing) t.p += dt * (P.boost > 0 ? 1.5 : 1);
-      else t.p = Math.max(0, t.p - dt * 1.5);
+      else if (!(N.working && N.job === t)) t.p = Math.max(0, t.p - dt * 1.5);
     }
     if (tk && fixing && tk.p >= tk.fix) complete(tk);
 
@@ -1010,6 +1135,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     spawnT -= dt;
     if (spawnT <= 0) { spawnTicket(); spawnT = spawnEvery(); }
     updateMate(dt);
+    updateAseo(dt); updateSapo(dt); updatePasante(dt);
     updateBoss(dt);
     updateHearts(dt);
     for (var m = pops.length - 1; m >= 0; m--) { pops[m].t -= dt; pops[m].y -= 16 * dt; if (pops[m].t <= 0) pops.splice(m, 1); }
@@ -1497,13 +1623,44 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     ctx.globalAlpha = g; R(excuse.x - 17, fy - 3, 34, 34, "#5fd6a1"); ctx.globalAlpha = 1;
     ctx.save(); ctx.translate(excuse.x - 12, fy); ctx.scale(2, 2); drawNote(0, 0); ctx.restore();
   }
+  function drawSayOf(e, bg, fg) {
+    if (!(e.sayT > 0)) return;
+    ctx.font = "20px " + F_B; var w = ctx.measureText(e.say).width + 14;
+    var bx = Math.round(Math.max(4, Math.min(W - w - 4, e.x - w / 2))), by = Math.round(e.y - 80);
+    var tail = Math.round(Math.max(bx + 4, Math.min(bx + w - 12, e.x - 4)));
+    R(bx, by, w, 24, bg); R(tail, by + 24, 8, 6, bg);
+    ctx.fillStyle = fg; ctx.textAlign = "center"; ctx.fillText(e.say, bx + w / 2, by + 18);
+  }
   function drawPlayerSay() {
-    if (!(P.sayT > 0)) return;
-    ctx.font = "20px " + F_B; var w = ctx.measureText(P.say).width + 14;
-    var bx = Math.round(Math.max(4, Math.min(W - w - 4, P.x - w / 2))), by = Math.round(P.y - 80);
-    var tail = Math.round(Math.max(bx + 4, Math.min(bx + w - 12, P.x - 4)));
-    R(bx, by, w, 24, "#dff7ec"); R(tail, by + 24, 8, 6, "#dff7ec");
-    ctx.fillStyle = "#1d4a39"; ctx.textAlign = "center"; ctx.fillText(P.say, bx + w / 2, by + 18);
+    drawSayOf(P, "#dff7ec", "#1d4a39");
+    drawSayOf(A, "#e3f1fa", "#24465e");
+    if (S.on) drawSayOf(S, "#f1e6ff", "#4a2a6e");
+    if (N.on) drawSayOf(N, "#e3f6dc", "#245a1c");
+  }
+  function drawAseo() {
+    shadow(A.x, A.y - 1, 14);
+    // hoja de Manuel: camina con la escoba (0-3) · barre (4-7) · desconecta un cable de frente (8-11)
+    if (ready(shA)) drawChibi(shA, A, A.unplug > 0 ? 8 + Math.min(3, Math.floor((1.2 - A.unplug) * 3.4)) : A.pause > 0 ? cycle(4, 6) : cycle(0, 6), A.unplug > 0);
+    else R(A.x - 10, A.y - 36, 20, 36, "#8fc3e0");
+  }
+  function drawSapo() {
+    shadow(S.x, S.y - 1, 14);
+    var moving = S.pause <= 0 && S.gossip <= 0;
+    if (ready(shS)) drawChibi(shS, S, S.gossip > 0 ? 9 + Math.floor(anim * 5) % 3 : moving ? cycle(0, 7) : 8, !moving);
+    else R(S.x - 10, S.y - 36, 20, 36, "#9b7fc4");
+    // te está mirando: puntitos que se llenan antes de ir a chismear
+    if (S.seen > 0.1) for (var i = 0; i < 3; i++) R(S.x - 9 + i * 7, S.y - 64, 5, 5, i < Math.ceil(S.seen / SAPO.seeT * 3) ? "#c58bff" : "#3a3550");
+  }
+  function drawPasante() {
+    shadow(N.x, N.y - 1, 14);
+    var moving = !N.working && N.pause <= 0;
+    if (ready(shN)) drawChibi(shN, N, moving ? cycle(0, 7) : 8, !moving);
+    else R(N.x - 10, N.y - 36, 20, 36, "#3fa34d");
+    // gorra (provisional, en gris como el muñequito mientras llega la figura final)
+    var x = Math.round(N.x), y = Math.round(N.y) - 50, f = N.face || 1;
+    R(x - 12, y - 1, 24, 8, "#0d0c14"); R(x - 11, y, 22, 6, "#9a9a9a"); R(x - 11, y + 5, 22, 2, "#5e5e5e");
+    R(f > 0 ? x + 6 : x - 20, y + 5, 14, 3, "#5e5e5e");
+    if (N.working && Math.floor(anim * 6) % 2) R(N.x + 14 * f, N.y - 30, 3, 3, "#f2d76b");  // chispita de trabajo
   }
   function drawPops() {
     ctx.textAlign = "center";
@@ -1536,6 +1693,9 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     drawFloor();
     var items = solids.map(function (s) { return { b: s.y + s.h, f: function () { drawStation(s); } }; });
     if (excuse) items.push({ b: excuse.y, f: drawExcuse });
+    items.push({ b: A.y, f: drawAseo });
+    if (S.on) items.push({ b: S.y, f: drawSapo });
+    if (N.on) items.push({ b: N.y, f: drawPasante });
     items.push({ b: P.y, f: drawPlayer }); items.push({ b: B.y, f: drawBoss }); items.push({ b: M.y, f: drawMate });
     items.sort(function (a, b) { return a.b - b.b; });
     items.forEach(function (it) { it.f(); });

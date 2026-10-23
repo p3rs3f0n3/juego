@@ -19,7 +19,7 @@ SP = "../sprites/"
 CELDA = 56          # tamano de cada cuadro en el juego
 ALTO = 50           # alto de la jugadora caminando (la mas alta); los demas, a la misma escala
 COLORES = 20        # paleta por personaje
-NOMBRES = ["jugadora", "jefe", "dani", "sapo"]
+NOMBRES = ["jugadora", "jefe", "dani", "sapo", "aseo"]  # aseo: camina con escoba · barre · desconecta un cable
 # Hojas extra (de frente, una sola animacion): nombre -> (personaje, columnas, filas, extension).
 # Salen a la misma estatura que ese personaje quieto de frente.
 EXTRAS = {
@@ -73,8 +73,30 @@ def limpiar_celda(cell):
     return limpio, grande  # grande: la figura principal (para alinear los pies)
 
 
+def sin_fondo(im):
+    """Hojas que llegan con fondo blanco (sin transparencia): quita el blanco que toca el borde,
+    no el de adentro (delantal, ojos)."""
+    im = im.convert("RGBA"); px = im.load(); w, h = im.size
+    claro = lambda x, y: min(px[x, y][:3]) >= 232
+    visto = bytearray(w * h); q = deque()
+    for x in range(w):
+        q.append((x, 0)); q.append((x, h - 1))
+    for y in range(h):
+        q.append((0, y)); q.append((w - 1, y))
+    while q:
+        x, y = q.popleft()
+        if visto[y * w + x] or not claro(x, y):
+            continue
+        visto[y * w + x] = 1; px[x, y] = (0, 0, 0, 0)
+        for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+            if 0 <= nx < w and 0 <= ny < h and not visto[ny * w + nx]:
+                q.append((nx, ny))
+    return im
+
+
 def hoja(nombre, cols=4, filas=3, ext=".png"):
-    im = Image.open(ARTE + nombre + ext).convert("RGBA")
+    im = Image.open(ARTE + nombre + ext)
+    im = im.convert("RGBA") if "A" in im.getbands() else sin_fondo(im)
     cw, ch = im.width // cols, im.height // filas
     celdas, pies = [], []
     for fila in range(filas):

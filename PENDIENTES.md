@@ -34,7 +34,8 @@ Orden sugerido: frases + días → intro cómic → señora del aseo → comodin
 - [x] **Los rangos son "días" con transición tipo película** (22 oct 2026: cartel a pantalla completa, pausa la partida, se salta con una tecla o un toque): "Día 1" como practicante → cartel *"1 año después"* al pasar a Analista → *"5 años después"* al llegar a Jefe de TI ("cada día trae su afán", Alex). Reemplaza o acompaña el cartel de "¡ASCENSO!". No cambia la dificultad.
 - [x] **Intro tipo cómic** (22 oct 2026, viñetas de Manuel en `arte/intro/comic.jpg`, recortadas con `scripts/preparar_intro.py`): 4 ilustraciones con slider (deslizar/flechas), botón "Saltar", se ve una sola vez (recordado en el navegador) y se puede volver a ver desde AYUDA. **Necesita las 4 ilustraciones de Manuel.** Cargarlas como archivos aparte (no dentro del HTML) para no hacer pesado el juego.
 - [x] **El escenario cambia con cada ascenso** (22 oct 2026): Practicante = la oficina de siempre · Analista = área de TI moderna (alfombra azul, portátiles, tablero de sprint, atardecer, máquina de snacks y agua) · Jefe de TI = piso ejecutivo (madera, alfombras vinotinto, monitores anchos, ciudad de noche, cuadro, biblioteca). Los muebles no se mueven, así que la dificultad no cambia.
-- [ ] **Señora del aseo** 🧹: pasea por la oficina y "desconecta cosas"; los tickets aparecen en el puesto por donde ella pasó. Si los tickets salen con la misma frecuencia (solo cambia dónde), no toca la dificultad. **Necesita sprite de Manuel.**
+- [ ] **Señora del aseo** 🧹: pasea por la oficina y "desconecta cosas"; los tickets aparecen en el puesto por donde ella pasó. Si los tickets salen con la misma frecuencia (solo cambia dónde), no toca la dificultad.
+  - **En prueba (23 oct 2026, rama `personajes`, copia en `/prueba-personajes.html`)**: hoja de ejemplo de Manuel (`arte/chibi/aseo.png`: camina con escoba · barre · desconecta un cable), **en gris** hasta que Manuel confirme la figura final.
 - [x] **Comodines / excusas para defenderse del jefe:** "Tengo cita médica", "Voy por el boletín escolar", "Voy al baño", "Le dije que había que hacer un DRP", "Yo pedí otro servidor", "El proveedor de internet se cayó".
   - Propuesta: se **compran con puntos** en la transición entre días (mini tienda en el cartel de "1 año después").
   - Propuesta para no agregar botones: si tienes un comodín y el jefe te alcanza, **se usa solo**: la jugadora dice la excusa, el jefe se va y no pierdes la vida.
@@ -44,9 +45,9 @@ Orden sugerido: frases + días → intro cómic → señora del aseo → comodin
 ## 3. Personajes nuevos (cambian la jugabilidad)
 
 - [ ] **Compañera chismosa / coordinadora / "sapo lambón"** que perjudica a la de TI. Aparecería **en un rango alto**. Su sprite es la "compañera chismosa" de `spritesheets-chibi-v2.zip` (moño, gafas, cárdigan lila; acción especial: chismear). *(Jesús, Daniela, Carlos)*
-  - Decidir qué hace: le cuenta al jefe dónde estás y él va directo · le da turbo al jefe · te distrae con frases · o es "bipolar" (un día ayuda y otro perjudica).
+  - **Decidido y en prueba (rama `personajes`)**: aparece desde **Analista**; si te ve cerca 1,5 s (3 puntitos morados) grita "¡Jefe, los de TI están jugando Minecraft!" y el jefe va directo hacia ti 4 s; espera 15 s entre chismes (`SAPO` en el código). En gris hasta la figura final.
 - [ ] **Pasante del SENA / auxiliar** que ayuda a la de TI. *(Daniela, Carlos)*
-  - Decidir qué hace: te da turbo · resuelve tickets solo · otra cosa. Ya existe un sprite sin usar (`scripts/crear_companero.py`).
+  - **Decidido y en prueba (rama `personajes`)**: aparece en **Jefe de TI**; va al ticket más lejano de la jugadora y lo arregla solo a 0,35 de su velocidad, sin dar puntos (`PASANTE` en el código). Muñequito **provisional en gris** (el jefe rejuvenecido + gorra, `scripts/crear_provisionales.py`); **falta la hoja de Manuel** (`arte/chibi/pasante.png`).
 - [ ] *(Opcional)* **Variedad de jefes**: que no siempre sea calvo (más gordo, más joven…). *(Esposito, Carlos)*
 
 ## 4. Ambientación
