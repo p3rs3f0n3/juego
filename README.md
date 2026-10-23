@@ -100,6 +100,14 @@ Los sprites se **dibujan con código** (Python + Pillow), píxel por píxel, sin
 
 Los `*_preview.png` son versiones grandes para ver el dibujo.
 
+**Ambientación de oficina.** `scripts/crear_oficina.py` dibuja el atlas transparente `sprites/oficina.png`
+(384×384 px, tres filas de 128 px: oficina de día, TI y ejecutivo). Contiene escritorios con
+divisiones bajas y sillas recogidas, servidores, impresora, cafetera y plantas. Se regenera con
+`python crear_oficina.py` desde `scripts/`, antes de `python construir_juego.py`. El generador
+integra el atlas en el HTML como el resto de sprites: no añade descargas ni archivos de despliegue.
+Las pantallas, indicadores, vapor y adornos de Halloween siguen dibujándose de forma dinámica.
+La ubicación de los muebles, sus cajas de choque y la dificultad no cambian.
+
 **Animaciones chibi (de Manuel).** Los personajes del juego hoy usan las hojas de `arte/chibi/` (generadas con IA por Manuel: 4 columnas × 3 filas, caminar, correr y acción especial). `scripts/preparar_chibi.py` las limpia (bordes nítidos, sin transparencias a medias, paleta reducida, pies alineados, misma escala para todos) y genera `sprites/chibi_<nombre>.png`: una tira de 12 cuadros de 56 px. El Gerente sale del jefe cambiando colores. Los sprites de 48 px de arriba quedan de respaldo por si las tiras no cargan.
 
 | Personaje | Camina | Corre | Acción especial |
@@ -171,3 +179,4 @@ Abre http://127.0.0.1:8095 para jugar y http://127.0.0.1:8095/stats para ver las
 **Estilo:** el juego debe seguir siendo **simple y divertido**: nada de controles nuevos complicados. El humor es de oficina de TI. Código en el mismo estilo que el que ya existe (JavaScript sin librerías, comentarios cortos en español).
 
 **Publicar** en la VPS lo hace quien administra el juego; las llaves y claves no están en el repositorio.
+
