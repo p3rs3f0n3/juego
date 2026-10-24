@@ -77,6 +77,7 @@ h1 {
 }
 .chip:hover { border-color: var(--accent); }
 .chip:focus-visible, .btn:focus-visible, .pad button:focus-visible { outline: 3px solid var(--warn); outline-offset: 2px; }
+.pad-sel { outline: 3px solid var(--warn) !important; outline-offset: 3px; }  /* botón elegido con el control */
 .stage {
   position: relative;
   width: 100%;
@@ -342,6 +343,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     <h2>TICKET RUSH</h2>
     <p>Corre a cada <b style="color:var(--warn)">!</b>, mantén ARREGLAR (o ESPACIO) antes de que venza el SLA y esquiva al jefe. Asciende de practicante a jefe de TI.</p>
     <p class="tips"><b style="color:var(--warn)">☕</b> La cafetera da turbo · <b style="color:#ff7eb6">♥</b> El jefe se distrae con Dani</p>
+    <p class="tips" id="padMsg" hidden>🎮 Control conectado: A para arreglar · + para empezar</p>
     <div class="row">
       <button class="btn" id="start" type="button">EMPEZAR TURNO</button>
       <button class="btn alt" id="boardBtn" type="button" hidden>🏆 TABLA</button>
@@ -419,7 +421,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     <section class="help-card help-wide"><div class="help-art"><svg width="48" height="56" viewBox="0 0 12 14" shape-rendering="crispEdges" aria-hidden="true"><path fill="#0d0c14" d="M0 0h12v14H0z"/><path fill="#f2f0f8" d="M1 1h10v12H1z"/><path fill="#c9c4dc" d="M8 1h3v3H8z"/><path fill="#6a8cf0" d="M3 4h5v1H3zm0 2h6v1H3zm0 2h4v1H3z"/><path fill="#ef5b6b" d="M7 9h3v3H7z"/></svg></div><h3>EXCUSA = SALVAVIDAS</h3><p>Se compra con puntos en la <b>tienda</b>, que se abre cada vez que asciendes. La próxima vez que el jefe te alcance, sueltas la excusa ("¡Tengo cita médica!") y no pierdes vida. Solo puedes guardar una.</p></section>
     <section class="help-card help-wide"><div class="help-art"><img class="help-sprite" src="data:image/png;base64,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" alt="Señora del aseo"><img class="help-sprite" src="data:image/png;base64,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" alt="El sapo"><img class="help-sprite" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAArCAYAAAAQVipNAAAEMElEQVR42r1YTWvyQBB+dlFCQ4iIFzGgvdn0VigluUnRW/+xofSmF9tbozcbsHiRkiC1oZB9D+3uu8bNl7Z9IJCP2d1nZ2ZnJkNQAZRSxhgDIUS8Sz/L7zkIIUiShJRZg6AaGI4AIQSMsR8hxKQJ4TgOoiiCaZqlyXD56XQq5slbN5eQbdssvdNjYJom1us1zs7OAACLxSLThDRHM6zRaIAQIq5jEUURdF0X8/T7/UzzE5Xj9vt9WJaF7XaLKIrw0zBNE2EYKjVVS5MBgEajgdfXV/wWoigSGqeUMplULS2cJAn+CoyxvfAgTEYIYYwx2LYNy7J+VTsq083ncxGravz0EEKE3/wl+MGRNcRs20aj0diz8V9piCMMQ/i+/3XsLcs6EJSFTdNEp9OpFBBldDoddDqdTDKZpyyNx8dHaJoG13XheR6GwyEAYDKZlCISxzEGgwE8zwMAfHx8iPnSsCwLvu/nE0pFbXieB0op4jiGpmmFZO7u7jCdTkEpxe3tbbkEnveRLzqZTPD8/AzbtpEkCXRdV+5SxtXVldjAzc0NxuNx4SYKCaXx9PSE4XCIJEkQhqGSlOu6GI1GXw76TaaMiVer1X8fWq1We6dMVru8K03TMB6P4bquMEVaxjAMeJ4HfnLL+ptwakII5vP5XsR0HEcp7LouwjCEZVlCJm2G7XYLx3FgGAZWqxVc180ktV6vsVwuRSVBKf0ilCQJ0rFItRgA+L6PxWKB9/d35Xe+ODcbP5kqtNtttNttoVVCCGrfiY3Jk+U5LKXl3a5IVrWecsTDw8OvRmg+fxzH5QKjpmmZdk+SpLSWsiqHvPlrVXeX5xNp5x4Oh5WTNeFFUrfbRbvdFiotE8ROBfcdwzBwf3+/X8LymkjOOWVyVV6EL8Ll5SV8399TTk2q3ggvYatgMBgcfSAsyzqoq3OL/PF4/GumCsMQu90OLy8vez+Rqpqa+L7P8kxSxjR5Yw3DwHQ6rfbnTClleZdt28xxHCaDPzuOw4rGZ+aynBhC5J+58/Nz8S0IAui6jslkkhnVu93u3nMQBHJcIpUJ8YF8N61WC81mE+n7LKRlgiAo1XQgBV0L1uv10Gq1lN/r9bpSS4ZhiPu3t7eDsjiPFM3zIUKIUhtF2kmTkMf0ej3k+RDN0gwvQ/kCs9kMm82mkIwKs9lMkGy1Wty/WGkfYozh4uIC9Xr95FYMH9tsNkVe422Zyk7NM3Icx9B1vXDhrFPHGMN2uz0o3k4u8vN85KdQy1LxbrfDaDQ6aGLKZD4/P3F9fS2e5XtZjlKKMAzFfPwP4+geI5+UO7mMzWZzEH9UMryYL1q7VrZeyhJYLpdyM/OAVLPZxGazAaW0VGuYli1F06mA75xSygMdoZQiCAKlv32XvuzkPjUv3LLq6O/8ROT4pQoRZfJY2fTPKvS72am98X/r7CtiXPb1FQAAAABJRU5ErkJggg==" alt="El pasante"></div><h3>COMPAÑEROS DE OFICINA</h3><p><b>Señora del aseo:</b> donde pasa, algo se desconecta y ahí sale el próximo ticket. <b>Sapo</b> (desde Analista): si te ve cerca, le cuenta al jefe y el jefe va directo hacia ti. <b>Pasante</b>: lo contratas en la tienda al llegar a Jefe de TI y arregla tickets solo, despacio.</p></section>
   </div>
-  <p class="help-footer">Evita al jefe y resuelve cada ticket antes de que venza el SLA.<br>La partida queda en pausa mientras consultas esta ayuda.</p>
+  <p class="help-footer">Evita al jefe y resuelve cada ticket antes de que venza el SLA.<br>La partida queda en pausa mientras consultas esta ayuda.<br>🎮 ¿Tienes control (Joy-Con, Xbox, PlayStation)? Conéctalo por Bluetooth y oprime un botón: cruceta para moverte, A para arreglar, + para empezar.</p>
   <p class="help-footer"><button class="chip" id="helpIntro" type="button">VER LA INTRO</button></p>
 </dialog>
 
@@ -578,7 +580,70 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   });
   window.addEventListener("keyup", function (e) { var k = KEYMAP[e.key]; if (k) keys[k] = false; });
   window.addEventListener("blur", function () { keys = {}; vk = {}; });
-  function inp(k) { return !!(keys[k] || vk[k]); }
+  function inp(k) { return !!(keys[k] || vk[k] || pk[k]); }
+
+  /* ---------- controles: Joy-Con, control Pro, Xbox, PlayStation... (Gamepad API) ----------
+     Por privacidad el navegador solo muestra el control después de oprimir un botón con la página abierta.
+     Jugando: cruceta o palanca = moverse; A/B/X/Y = arreglar. En las pantallas: cruceta = elegir botón,
+     A o + = aceptar. Carteles, intro y ayuda también se pasan con el control. */
+  var pk = {}, padPrev = {}, padOn = false, padSel = null;
+  var PAD_DEFAULT = { nameScr: "nameAnon" };  // con control no se puede escribir el apodo
+  function padRead() {
+    var st = { left: false, right: false, up: false, down: false, a: false, start: false, back: false };
+    var list = navigator.getGamepads ? navigator.getGamepads() : [];
+    for (var i = 0; i < list.length; i++) {
+      var g = list[i];
+      if (!g || g.connected === false) continue;
+      var b = function (n) { return !!(g.buttons[n] && g.buttons[n].pressed); };
+      var ax = g.axes[0] || 0, ay = g.axes[1] || 0;
+      st.left = st.left || ax < -0.5 || b(14); st.right = st.right || ax > 0.5 || b(15);
+      st.up = st.up || ay < -0.5 || b(12); st.down = st.down || ay > 0.5 || b(13);
+      st.a = st.a || b(0) || b(1) || b(2) || b(3);
+      st.start = st.start || b(9);
+      st.back = st.back || b(8);
+    }
+    return st;
+  }
+  function padButtons(scr) {
+    return [].slice.call(scr.querySelectorAll("button")).filter(function (x) { return !x.disabled && !x.hidden && x.offsetParent; });
+  }
+  function padSelect(x) {
+    if (padSel) padSel.classList.remove("pad-sel");
+    padSel = x;
+    if (x) { x.classList.add("pad-sel"); try { x.focus({ preventScroll: true }); } catch (e) {} }
+  }
+  function pollPad() {
+    var st = padRead(), pv = padPrev; padPrev = st;
+    var hit = function (n) { return st[n] && !pv[n]; };
+    var any = st.left || st.right || st.up || st.down || st.a || st.start || st.back;
+    if (any && !padOn) {
+      padOn = true;
+      var m = document.getElementById("padMsg"); if (m) m.hidden = false;
+      say("Control conectado");
+    }
+    var playing = state === "play" && !cut && !helpDialog.open && introEl.hidden && !rotateShown();
+    pk = playing ? { left: st.left, right: st.right, up: st.up, down: st.down, act: st.a } : {};
+    if (!any && !(pv.left || pv.right || pv.up || pv.down || pv.a || pv.start || pv.back)) return;
+    var dir = hit("right") || hit("down") ? 1 : hit("left") || hit("up") ? -1 : 0;
+    var ok = hit("a") || hit("start");
+    if (!introEl.hidden) {  // intro cómic
+      if (ok || dir > 0) introNext.click(); else if (dir < 0) introShow(introI - 1); else if (hit("back")) closeIntro();
+      return;
+    }
+    if (helpDialog.open) { if (ok || hit("back")) helpDialog.close(); return; }
+    if (rotateShown()) { if (ok) document.getElementById("rotateSkip").click(); return; }
+    if (cut && state === "play") { if (ok) skipCut(); return; }
+    var scr = [].slice.call(document.querySelectorAll(".screen")).filter(function (x) { return !x.hidden; })[0];
+    if (!scr) { if (padSel) padSelect(null); return; }
+    var btns = padButtons(scr), i = btns.indexOf(padSel);
+    if (dir) padSelect(btns[i < 0 ? 0 : (i + dir + btns.length) % btns.length]);
+    else if (ok) {
+      var target = i >= 0 ? padSel : (PAD_DEFAULT[scr.id] && document.getElementById(PAD_DEFAULT[scr.id])) || btns[0];
+      padSelect(null);
+      if (target) target.click();
+    }
+  }
+  window.addEventListener("gamepadconnected", function () { var m = document.getElementById("padMsg"); if (m) m.hidden = false; padOn = true; });
 
   Array.prototype.forEach.call(document.querySelectorAll(".pad button"), function (b) {
     var k = b.getAttribute("data-k");
@@ -1708,6 +1773,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   var last = 0;
   function frame(ts) {
     var dt = Math.min(0.05, (ts - last) / 1000 || 0); last = ts; anim = ts / 1000;
+    pollPad();
     if (cut && now() - cut.start >= cut.dur) endCut();
     if (state === "play" && !helpDialog.open && !rotateShown() && !cut && shopEl.hidden) update(dt);
     render();
