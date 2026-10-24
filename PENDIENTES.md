@@ -41,13 +41,14 @@ Orden sugerido: frases + días → intro cómic → señora del aseo → comodin
   - Propuesta para no agregar botones: si tienes un comodín y el jefe te alcanza, **se usa solo**: la jugadora dice la excusa, el jefe se va y no pierdes la vida.
   - **Ojo: cambia la dificultad** (hace más fácil al jefe). Probarlo y aprobarlo antes, como la curva.
   - **Lanzado el 23 oct 2026 con la Temporada 3**: se decidió que se **recogen en el mapa** (una hojita que brilla en el piso, lejos de la jugadora y del jefe), máximo **1** guardada, se usa sola al ser alcanzada (no pierdes vida ni avance). Tiempos: primera a los 40 s, luego cada 60 s, dura 10 s en el piso (`EXCUSE` en el código; ajustarlos ahí si se siente muy fácil o muy difícil).
+  - **Cambio en prueba (24 oct 2026, rama `personajes`, idea de Alex)**: las excusas **ya no salen en el piso: se compran** con puntos en la **tienda de la oficina**, que se abre al ascender (después del cartel de "1 año / 5 años después"). Lo comprado se descuenta del puntaje. Excusa 100 pts (desde Analista, máximo 1) · Contratar pasante 250 pts (en Jefe de TI). Precios en `SHOP`. Al lanzarlo, decidir si arranca temporada nueva.
 
 ## 3. Personajes nuevos (cambian la jugabilidad)
 
 - [ ] **Compañera chismosa / coordinadora / "sapo lambón"** que perjudica a la de TI. Aparecería **en un rango alto**. Su sprite es la "compañera chismosa" de `spritesheets-chibi-v2.zip` (moño, gafas, cárdigan lila; acción especial: chismear). *(Jesús, Daniela, Carlos)*
   - **Decidido y en prueba (rama `personajes`)**: aparece desde **Analista**; si te ve cerca 1,5 s (3 puntitos morados) grita "¡Jefe, los de TI están jugando Minecraft!" y el jefe va directo hacia ti 4 s; espera 15 s entre chismes (`SAPO` en el código). En gris hasta la figura final.
 - [ ] **Pasante del SENA / auxiliar** que ayuda a la de TI. *(Daniela, Carlos)*
-  - **Decidido y en prueba (rama `personajes`)**: aparece en **Jefe de TI**; va al ticket más lejano de la jugadora y lo arregla solo a 0,35 de su velocidad, sin dar puntos (`PASANTE` en el código). Muñequito **provisional en gris** (el jefe rejuvenecido + gorra, `scripts/crear_provisionales.py`); **falta la hoja de Manuel** (`arte/chibi/pasante.png`).
+  - **Decidido y en prueba (rama `personajes`)**: se **contrata en la tienda** (250 pts) al llegar a **Jefe de TI**; va al ticket más lejano de la jugadora y lo arregla solo a 0,35 de su velocidad, sin dar puntos (`PASANTE` en el código). Muñequito **provisional en gris** (el jefe rejuvenecido + gorra, `scripts/crear_provisionales.py`); **falta la hoja de Manuel** (`arte/chibi/pasante.png`).
 - [ ] *(Opcional)* **Variedad de jefes**: que no siempre sea calvo (más gordo, más joven…). *(Esposito, Carlos)*
 
 ## 4. Ambientación

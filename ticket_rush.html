@@ -147,15 +147,34 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
 .board small { grid-column: 2 / 4; color: var(--muted); font-size: 0.8em; }
 .board .empty { display: block; color: var(--muted); text-align: center; border: 0; }
 .screen .fame { color: var(--warn); font-size: clamp(14px, 2.1vw, 18px); }
+#shop h2 { font-size: clamp(12px, 2.6vw, 20px); }
+.shop-items { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: 100%; }
+.shop-item { display: flex; flex-direction: column; gap: 4px; width: min(250px, 46%); padding: 10px 12px; text-align: left;
+  font: inherit; color: var(--fg); background: var(--panel); border: 2px solid var(--line); cursor: pointer; }
+.shop-item b { font: 400 clamp(9px, 1.6vw, 11px) var(--display); color: var(--warn); }
+.shop-item span { font-size: clamp(14px, 2vw, 18px); color: var(--muted); line-height: 1.15; }
+.shop-item .price { color: var(--good); }
+.shop-item:hover:not([disabled]) { border-color: var(--warn); }
+.shop-item:focus-visible { outline: 3px solid var(--warn); outline-offset: 2px; }
+.shop-item[disabled] { opacity: 0.5; cursor: default; }
+.shop-item[disabled] .price { color: var(--bad); }
 /* Recuadro del juego bajito (celular vertical o teléfonos pequeños): pantallas compactas.
    Mide el alto del recuadro, no el del celular. Las instrucciones completas están en AYUDA. */
 .stage { container-type: size; }
+@container (max-height: 340px) {  /* la tienda necesita compactarse antes que las demás pantallas */
+  #shop { gap: 6px; padding: 6px 10px; }
+  #shop h2 { font-size: 13px; }
+  #shop .btn { padding: 9px 12px; font-size: 10px; }
+  .shop-item { padding: 5px 8px; gap: 2px; }
+  .shop-item span { font-size: 14px; }
+}
 @container (max-height: 270px) {
   .screen { gap: 5px; padding: 6px 10px; }
   .screen h2 { font-size: 13px; }
   #menu > p:first-of-type { display: none; }
   .screen p, .screen .tips, .screen .who, .screen .brag, .screen .err, .screen .fame { font-size: 15px; line-height: 1.15; }
   .btn { padding: 9px 12px; font-size: 10px; }
+
   #nameIn { font-size: 18px; padding: 4px 10px; }
   .tab { padding: 5px 8px; font-size: 8px; }
   .board li { padding: 1px 6px; font-size: 14px; }
@@ -339,6 +358,12 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       <button class="btn alt" id="boardBtn2" type="button" hidden>🏆 TABLA</button>
     </div>
   </div>
+  <div class="screen" id="shop" hidden role="dialog" aria-labelledby="shopTitle">
+    <h2 id="shopTitle">TIENDA DE LA OFICINA</h2>
+    <p class="stats" id="shopPts"></p>
+    <div class="shop-items" id="shopItems"></div>
+    <button class="btn" id="shopGo" type="button">SEGUIR TRABAJANDO</button>
+  </div>
   <div class="screen" id="nameScr" hidden>
     <h2>¿CÓMO TE LLAMAS?</h2>
     <p>Tu apodo sale en la tabla de líderes. Es opcional.</p>
@@ -391,8 +416,8 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     <section class="help-card"><div class="help-art" style="flex-direction:column"><kbd class="help-space">ESPACIO</kbd><div class="help-progress" aria-hidden="true"></div></div><h3>RESUELVE TICKETS</h3><p>Acércate al <b style="color:#e3c35c">!</b> y mantén ESPACIO o E hasta llenar la barra. En celular, mantén el botón redondo.</p></section>
     <section class="help-card"><div class="help-art"><svg width="72" height="80" viewBox="0 0 48 54" shape-rendering="crispEdges" aria-hidden="true"><path fill="#d8d4e6" d="M18 1h3v4h-3zm9 3h3v4h-3z"/><path fill="#4c4c64" d="M8 10h32v44H8z"/><path fill="#22222e" d="M12 16h24v10H12z"/><path fill="#5fd6a1" d="M14 20h16v3H14zm19-2h3v3h-3z"/><path fill="#171525" d="M12 29h24v20H12z"/><path fill="#d8d4e6" d="M15 34h17v13H15zm17 2h5v8h-5z"/><path fill="#5a3a28" d="M17 37h13v8H17z"/></svg></div><h3>CAFÉ = TURBO</h3><p>Si la luz está verde, acércate y pulsa la acción. Camina y repara más rápido durante 6 segundos.</p></section>
     <section class="help-card"><div class="help-art"><img class="help-sprite" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAArCAYAAAAQVipNAAAHWElEQVR42q2YbWhb1xnHf+dc3UkRSqzIpnWN0TQrjtOtIWtJRQyFtit4HrMpZFtJloYsGSNsDphk2aexL9n2Yax4NbM3yqBdaLqkWzcY9sDkixMYJFW9eCPNGtexcYXxUpAdJbn1pMi6dx/u+9WL7WQPiKtz7z3n+d/n9X+OYBMipTQMXUdI6dwLjr33bRFSouu62IgOwebE4CFEmBP/L4AMz4IMDxznUO9T/H05smEwzzUXeWfiQwZH33DWaaQ31GixjmSXb3yo9yni27fSt30z9lFpSqcIbUuSjG8BYGFx1qjnQtHIMsMDxxk42E3hzn0AYtEIIaOyaZetCQVtteis8cWjrzGfm6mpP1QrcFPtnSRa22hKpwCIb1FBUUDXQQj7RXPsn2xe7fuGAUIQkhCPWW5WVQb7X2B4rLalRBAMwJuv/ZxXM09AuVy1uE/5eoC892zRdQiHKdy5z2MvD1q3XFBV+ap7FjNKZQ90j2VsMDXSvQpko4zRdZ8+B5AwY8ZItXeyN/MifZ0xE0NI+kHYCu1FgsqDlqkFWEoolYhFI7w+cJyOZBcCDNs70i5cUkoSrW2cONBjTiyXXat4QdSumNUAgsADYENGhaZ0isxLfb7CKm3LvHLkJDu+9AwT1/NO8DnKwmHzJyVGuVI7NoIxY13XdNz5ug4Va76icHduAYBXjpwk1d4JYEiARGsbvbtbnN/4rMb4rbKpXFUZPX+FfafOcm46j4hF/aDquaVSgXCYUFhl36mz7Dt1lsLqA4hEKGhFxj+BpnSK7qhG7+6W6rSPJ1oorOSdB4WVPHebY8St8VR2khEAetwM9MZN0F2RCIU793ln4kOmspPWg/0AjM9qgEY80eLoTrS2MZ+bqV2p7Reh6KvaU9lJjk1dpu+vw8RjEYxSGaEqLggr+9aQaHfu0/vTvzCVnURKyTN7n3di0/54rwHqpr0LBppUBYpFBg528++3TtOR7ELXdR57eZDR96YoJ3eZ9ckWy00AmYERB8yvvv89rg4dMdezLBpPtPh0VbnMRltYyTvBVtm/l5AESiWUcoXs6Annq4fHLgHwg/49ppUMAyIRRs9f4e0PPmY+N4OU0iyyT7dgaKtmGZHS0dGUTjm6Vm4vuYBWbi+52WV2HLqjGtpq0S35QHz7Vq4OHWH0/E4GR9/g5G9nOdQ7TDysmu4D3v7gY6ayk3Qkuxg6c5q+HSqGtuoWVyt7r6zG4HoesK/uK0aQ6Bw4+kO6o5rZ3e1YiUU5l/0PZ17/PYnWNg4/u5OmdIoDe1pMK1YqoCiMf2JaeeTCRVZuL5F5qY9z393tWkhRODedZ+J6nvf+/CfW7uWcHiakJGSxOTqSXQz2v2BB0mhKp3w+B7g7t8B8boaFxVkmfrKf+PatUCyCLszmW6nQ93kFdjzByAWYz82QuNEG7HarviXdUY3uw18Dj1UFELIamwEwcLDbTMtbZQoreSqqSgg9yAbcQbnsT3UhrMxTq9/19kPMGvTq0y08eDxN08T7fMcqDf4ZpRIUizzXXCSeaNkY9xHC1zqClqglfZ0xM/W1Ip/7dK4BH7IqbDwWoS8GoFhN1vCxAefLVdX8iDqi16En9vpGSVmHwqqq+SuXnSD1mropnWJv5kWfy4xyxQfYlsPP7vRdnTolhFkiFAURi/IgkQTyfoImpTRkrJ1vfuNbvuyqohZSuk3Xjh977AVpZaUjxaKf3Hlq1pXVGLduXOPa1GU/YxSempsf+7WZQd6gtUEZBsaajgirFLRiTVfFYxG3q3vjLMA+dx4dsrm1gyXkYfXCJklexugEqRD+NqGqgLnFCe5MUFWoVEzg9nwvQEUBVSXR2sbC4qyPwopGJP/qL74dAGC5yvrvVOBg4oXVuoH+4PE0vxt9l+GxS+QK/6VyL+fbRIZqZIaYz80YQMAl1f/jW1TXHR7ARqnM3XKdkqHdcHpdLYOIRvv4RrUk1d7J0JnT9GTSzr2L2Tl6Mmn+OPE+x07/uGEtqrdRDK0zwQEV2pZ0n2mLfLoWpSeT5mJ2jguXb5o98PldDrWQsXb/ZvHeIrhV/+G20ngCPRxr5sl2kz9+tOj+98qFyzcdi3nfB7g2tYihr3/osN5DQ9mWJBxrrvm8/6tf4c0ffZ1jv/ybz0I/+80fnHc+Wiz45qwuTTcEJRvFkJCy6kuBmtbxShCEd46yLdkwPmU9ywBsad3jKPhsaZqStrwumFry2dK0AzIca7bjy9hwDBnAF9o7GezPOOzu3bemeVgRloXsvjY8don5e5t0mc2PBg52M7I/VfPYzmGYVux4S0DwA08c6HHWS7S2sekY2myM2KDsEvAo1qybXV/e5X7xP7KTNMq4xjH0LzqSnY5lVm4vbb5SBw85pZROkPtIprbsG9cCXNKWHTK/nu7QRizYKE3X7uUQgZTxgnqyPc4/by4jN3g0vKEY0nW9qhW41pF2oRMg0bXFmvFmUV/jkc+pbRYk62SZxZuFt37VykgPvxaPenBubCI5jEc9G/8fHZQkXIbEiZQAAAAASUVORK5CYII=" alt="El jefe"><svg width="24" height="24" viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="#fc1d64" d="M1 2h3v1h2V2h3v1h2v4H9v2H7v2H5V9H3V7H1z"/></svg><img class="help-sprite" src="data:image/png;base64,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" alt="Dani"></div><h3>DISTRAE AL JEFE</h3><p>Llévalo cerca de Dani. Se quedará embobado unos segundos: ¡aprovecha para escapar!</p></section>
-    <section class="help-card help-wide"><div class="help-art"><svg width="48" height="56" viewBox="0 0 12 14" shape-rendering="crispEdges" aria-hidden="true"><path fill="#0d0c14" d="M0 0h12v14H0z"/><path fill="#f2f0f8" d="M1 1h10v12H1z"/><path fill="#c9c4dc" d="M8 1h3v3H8z"/><path fill="#6a8cf0" d="M3 4h5v1H3zm0 2h6v1H3zm0 2h4v1H3z"/><path fill="#ef5b6b" d="M7 9h3v3H7z"/></svg></div><h3>EXCUSA = SALVAVIDAS</h3><p>A veces aparece una hojita en el piso. Recógela caminando: la próxima vez que el jefe te alcance, sueltas la excusa ("¡Tengo cita médica!") y no pierdes vida. Solo puedes guardar una.</p></section>
-    <section class="help-card help-wide"><div class="help-art"><img class="help-sprite" src="data:image/png;base64,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" alt="Señora del aseo"><img class="help-sprite" src="data:image/png;base64,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" alt="El sapo"><img class="help-sprite" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAArCAYAAAAQVipNAAAEMElEQVR42r1YTWvyQBB+dlFCQ4iIFzGgvdn0VigluUnRW/+xofSmF9tbozcbsHiRkiC1oZB9D+3uu8bNl7Z9IJCP2d1nZ2ZnJkNQAZRSxhgDIUS8Sz/L7zkIIUiShJRZg6AaGI4AIQSMsR8hxKQJ4TgOoiiCaZqlyXD56XQq5slbN5eQbdssvdNjYJom1us1zs7OAACLxSLThDRHM6zRaIAQIq5jEUURdF0X8/T7/UzzE5Xj9vt9WJaF7XaLKIrw0zBNE2EYKjVVS5MBgEajgdfXV/wWoigSGqeUMplULS2cJAn+CoyxvfAgTEYIYYwx2LYNy7J+VTsq083ncxGravz0EEKE3/wl+MGRNcRs20aj0diz8V9piCMMQ/i+/3XsLcs6EJSFTdNEp9OpFBBldDoddDqdTDKZpyyNx8dHaJoG13XheR6GwyEAYDKZlCISxzEGgwE8zwMAfHx8iPnSsCwLvu/nE0pFbXieB0op4jiGpmmFZO7u7jCdTkEpxe3tbbkEnveRLzqZTPD8/AzbtpEkCXRdV+5SxtXVldjAzc0NxuNx4SYKCaXx9PSE4XCIJEkQhqGSlOu6GI1GXw76TaaMiVer1X8fWq1We6dMVru8K03TMB6P4bquMEVaxjAMeJ4HfnLL+ptwakII5vP5XsR0HEcp7LouwjCEZVlCJm2G7XYLx3FgGAZWqxVc180ktV6vsVwuRSVBKf0ilCQJ0rFItRgA+L6PxWKB9/d35Xe+ODcbP5kqtNtttNttoVVCCGrfiY3Jk+U5LKXl3a5IVrWecsTDw8OvRmg+fxzH5QKjpmmZdk+SpLSWsiqHvPlrVXeX5xNp5x4Oh5WTNeFFUrfbRbvdFiotE8ROBfcdwzBwf3+/X8LymkjOOWVyVV6EL8Ll5SV8399TTk2q3ggvYatgMBgcfSAsyzqoq3OL/PF4/GumCsMQu90OLy8vez+Rqpqa+L7P8kxSxjR5Yw3DwHQ6rfbnTClleZdt28xxHCaDPzuOw4rGZ+aynBhC5J+58/Nz8S0IAui6jslkkhnVu93u3nMQBHJcIpUJ8YF8N61WC81mE+n7LKRlgiAo1XQgBV0L1uv10Gq1lN/r9bpSS4ZhiPu3t7eDsjiPFM3zIUKIUhtF2kmTkMf0ej3k+RDN0gwvQ/kCs9kMm82mkIwKs9lMkGy1Wty/WGkfYozh4uIC9Xr95FYMH9tsNkVe422Zyk7NM3Icx9B1vXDhrFPHGMN2uz0o3k4u8vN85KdQy1LxbrfDaDQ6aGLKZD4/P3F9fS2e5XtZjlKKMAzFfPwP4+geI5+UO7mMzWZzEH9UMryYL1q7VrZeyhJYLpdyM/OAVLPZxGazAaW0VGuYli1F06mA75xSygMdoZQiCAKlv32XvuzkPjUv3LLq6O/8ROT4pQoRZfJY2fTPKvS72am98X/r7CtiXPb1FQAAAABJRU5ErkJggg==" alt="El pasante"></div><h3>COMPAÑEROS DE OFICINA</h3><p><b>Señora del aseo:</b> donde pasa, algo se desconecta y ahí sale el próximo ticket. <b>Sapo</b> (desde Analista): si te ve cerca, le cuenta al jefe y el jefe va directo hacia ti. <b>Pasante</b> (Jefe de TI): arregla tickets solo, despacio.</p></section>
+    <section class="help-card help-wide"><div class="help-art"><svg width="48" height="56" viewBox="0 0 12 14" shape-rendering="crispEdges" aria-hidden="true"><path fill="#0d0c14" d="M0 0h12v14H0z"/><path fill="#f2f0f8" d="M1 1h10v12H1z"/><path fill="#c9c4dc" d="M8 1h3v3H8z"/><path fill="#6a8cf0" d="M3 4h5v1H3zm0 2h6v1H3zm0 2h4v1H3z"/><path fill="#ef5b6b" d="M7 9h3v3H7z"/></svg></div><h3>EXCUSA = SALVAVIDAS</h3><p>Se compra con puntos en la <b>tienda</b>, que se abre cada vez que asciendes. La próxima vez que el jefe te alcance, sueltas la excusa ("¡Tengo cita médica!") y no pierdes vida. Solo puedes guardar una.</p></section>
+    <section class="help-card help-wide"><div class="help-art"><img class="help-sprite" src="data:image/png;base64,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" alt="Señora del aseo"><img class="help-sprite" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAxCAYAAAC/BXv3AAAHHklEQVR42q1ZT2gTzRt+JpsG1yQNSaxRuqGCULchoJBLyEVzWA9Scip4rOSivQhePIiH34fgoRePvRU9Cj1VyMEcAh4kEIsIod0GFEITJMZsaGlcTd283+HnzLebP21SOxDY7M7OPPO8z/tnZhkmbzRGHzbpoBO/IEnSOEBgWdZEY7snAWBZFq5du4aLFy/i9+/fQ/t5PB5UKhXUajWaZKHjAqFz584hGAwiFAphamoKAOByuRyder0eJElCJBIBAHz9+pXGZWZsRubm5jA7OwvLsmBZ1gAIDsyyLAQCAfj9frTbbfz48YOIiP2tRsjr9WJubg6hUAiSJMGyrJGdTdMU1z6fDwDw+fNn1Gq1E+c6kZFgMIjZ2Vl0u10AgGEYODg4OJFBWZYhyzKmp6fPTiOGYYjV8glkWR5gg98zTROGYQDAWKDHAtJut8X19PQ0ZFmG2+0GEUGSJIe32NkwDAONRgPtdpv3O1a4x9mNJEnCjRs3EAgE7PHhv5fZ4OtEJJ5xF5ckCR8+fECn0xk55yggpCgKIpEIQqEQLMtCr9cTXmFZlmCDg3G5XOj1egIMY8zhWfv7+2g0GiOFO2Aar9dLAHDlyhXIsixA8HZ4eOjwDD6pvQ8ABxsAEAqFIMsyNzV1Oh0HGNewPJJKpQSIvrDtpJMxsXK+epfLBcYYTNOEaZqwLAuMMeF1yWRyaM5y97GBYDDoMAUffH9/HwAQCAQcgLhJuDZ4P7/fL1jhrLndbrhcLgSDQQDgmhnQCCUSCaEJHrL5BIeHh5BlGR6PRzznbNi9JxqNAgAqlYrwLntfy7Lg8XhgGAa2trYEhmPd186Ez+eDJEkin/DJDcPA9evXsbKy4ni3UCggn8/DMAz4/X6xsGEmHgmEd7QsSwSpfu/gNr979y7i8fjAGOl0GrquwzRNh0cxxhwMjhKrQ+k8mno8HqGXbreLqakpzM/PY35+Hul0GjMzM0MZXVlZQSaTEaxyM42KI47ExjXA3dTv9zt0YJomMpkM0un02EVPoVDA5uamw6TdbhemaULXdXQ6nf8zwhNbP4hh2XVSEAAQj8dhmqYwb6/Xg8fjQSgUcpqm3W6LiGlPbD6fD1NTU0IPT548webmJpaXl/HgwQMsLy+j2WyeyAYAPHv2zDGWfb4BsXLEkiQJdzs6OoIsy9A0DTMzM8hkMtB1/diJ8/k8dnZ20G630el0kM1m8fTpU8FqfyxyALEr2R6uiQjRaFSYI51OI51OIxwOo9VqDQB5+fIltre3EYvFsLCwAE3TEI/H0Wq1EI1GRXkw0msMwxAoiQgulwvdbhdXr14VMSIcDqNQKGB5eRmLi4tDzfLq1SuUSiURynVdh6qqg17Sl5/cAFin08HW1hbFYjFcunTJwRAfZG1tDQCwt7eH7e1tAEC5XB4QbqFQgK7rePv2LWq1Grxer2McPna328XHjx8FLnd/ecejJ09aXA+VSkUwZzdjs9lEuVwW//P5POr1ur0gQrFYxN7enqPiazQaI+sTisVidPPmTbp16xYlEgmKxWKkKAolEgkqlUpUKpVodXWV/mROyuVylM1myev1kqIopCgKra6u0pcvXygWixEfk7+nKIoY80/hRcO8hu3s7FC1WoWqqiJ0v3jxYqSHlMtlLC0tYWlpSdwbFmXD4bC4vnfvHuLxODY2NrC+vj7cfe0hOB6PQ1VVRKNRB639HjZs4larJbYf9vEikYjwuH4Bsz4l0/nz5/Hz50+8efMGqqqi1Wqh2WyKCe2eMirHjOpXKBQEe4uLi9jd3RV75JE1azabhaqqyOfzeP78+bET2sU6KvyHw2Hcv3/fIWr7/KPqEba+vk68aisUCojH4yMZGFYG9INtNpuo1+vC9ftJcB23HeUx4PHjx9jY2HCIzk67/TeMiXK5jDt37qBarfK4wiY+H+EudvnyZSwsLIj79XodyWRywGPW1tZQLBYxOzvr6Lu7u3vsuYl73AOXWq1Gf/YkUBQF09PTUFVVCJqvXlVVFItFvH//3lEc//UmvM9UFAwG8fDhQwBwsMEbv6frOl6/fs2r9ROZd016dHX79m1xvbGxIZjg+uEpgQfFPwzSWQKhVCo1NJP2R1veVFVFKpXi28y/ByJJEmmaBk3TxioL7U3TNGSz2RMPAccC0uv18OjRI4f9T2KE9+nPRWchVtGKxaIw0eLiouNZMpkUnjPRsemYpvmfx+PBt2/foOs6iAhHR0f4/v37gP0VRcGFCxfQbDZxcHCAX79+4d27d/j06ROI6J+zOPAl+2QnnY0dHBz0g2Rn5TUMAJMkyXGcdewLTCTWs48j9oLXHsb5f35vXLCnbowx8nq9lMvlqFQqUS6XI8YYaZomyklN02jMjwenZ4SIxEHLsMru1As8zWcSvmm3i9J+r1qtHnuCeDbfVRijfgYYY6NYGXv8fwErxZ1DYRHVKgAAAABJRU5ErkJggg==" alt="El sapo"><img class="help-sprite" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAArCAYAAAAQVipNAAAEMElEQVR42r1YTWvyQBB+dlFCQ4iIFzGgvdn0VigluUnRW/+xofSmF9tbozcbsHiRkiC1oZB9D+3uu8bNl7Z9IJCP2d1nZ2ZnJkNQAZRSxhgDIUS8Sz/L7zkIIUiShJRZg6AaGI4AIQSMsR8hxKQJ4TgOoiiCaZqlyXD56XQq5slbN5eQbdssvdNjYJom1us1zs7OAACLxSLThDRHM6zRaIAQIq5jEUURdF0X8/T7/UzzE5Xj9vt9WJaF7XaLKIrw0zBNE2EYKjVVS5MBgEajgdfXV/wWoigSGqeUMplULS2cJAn+CoyxvfAgTEYIYYwx2LYNy7J+VTsq083ncxGravz0EEKE3/wl+MGRNcRs20aj0diz8V9piCMMQ/i+/3XsLcs6EJSFTdNEp9OpFBBldDoddDqdTDKZpyyNx8dHaJoG13XheR6GwyEAYDKZlCISxzEGgwE8zwMAfHx8iPnSsCwLvu/nE0pFbXieB0op4jiGpmmFZO7u7jCdTkEpxe3tbbkEnveRLzqZTPD8/AzbtpEkCXRdV+5SxtXVldjAzc0NxuNx4SYKCaXx9PSE4XCIJEkQhqGSlOu6GI1GXw76TaaMiVer1X8fWq1We6dMVru8K03TMB6P4bquMEVaxjAMeJ4HfnLL+ptwakII5vP5XsR0HEcp7LouwjCEZVlCJm2G7XYLx3FgGAZWqxVc180ktV6vsVwuRSVBKf0ilCQJ0rFItRgA+L6PxWKB9/d35Xe+ODcbP5kqtNtttNttoVVCCGrfiY3Jk+U5LKXl3a5IVrWecsTDw8OvRmg+fxzH5QKjpmmZdk+SpLSWsiqHvPlrVXeX5xNp5x4Oh5WTNeFFUrfbRbvdFiotE8ROBfcdwzBwf3+/X8LymkjOOWVyVV6EL8Ll5SV8399TTk2q3ggvYatgMBgcfSAsyzqoq3OL/PF4/GumCsMQu90OLy8vez+Rqpqa+L7P8kxSxjR5Yw3DwHQ6rfbnTClleZdt28xxHCaDPzuOw4rGZ+aynBhC5J+58/Nz8S0IAui6jslkkhnVu93u3nMQBHJcIpUJ8YF8N61WC81mE+n7LKRlgiAo1XQgBV0L1uv10Gq1lN/r9bpSS4ZhiPu3t7eDsjiPFM3zIUKIUhtF2kmTkMf0ej3k+RDN0gwvQ/kCs9kMm82mkIwKs9lMkGy1Wty/WGkfYozh4uIC9Xr95FYMH9tsNkVe422Zyk7NM3Icx9B1vXDhrFPHGMN2uz0o3k4u8vN85KdQy1LxbrfDaDQ6aGLKZD4/P3F9fS2e5XtZjlKKMAzFfPwP4+geI5+UO7mMzWZzEH9UMryYL1q7VrZeyhJYLpdyM/OAVLPZxGazAaW0VGuYli1F06mA75xSygMdoZQiCAKlv32XvuzkPjUv3LLq6O/8ROT4pQoRZfJY2fTPKvS72am98X/r7CtiXPb1FQAAAABJRU5ErkJggg==" alt="El pasante"></div><h3>COMPAÑEROS DE OFICINA</h3><p><b>Señora del aseo:</b> donde pasa, algo se desconecta y ahí sale el próximo ticket. <b>Sapo</b> (desde Analista): si te ve cerca, le cuenta al jefe y el jefe va directo hacia ti. <b>Pasante</b>: lo contratas en la tienda al llegar a Jefe de TI y arregla tickets solo, despacio.</p></section>
   </div>
   <p class="help-footer">Evita al jefe y resuelve cada ticket antes de que venza el SLA.<br>La partida queda en pausa mientras consultas esta ayuda.</p>
   <p class="help-footer"><button class="chip" id="helpIntro" type="button">VER LA INTRO</button></p>
@@ -543,6 +568,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       else if (e.key === "Escape") closeIntro();
       return;
     }
+    if (!shopEl.hidden) { if (e.key === "Escape") closeShop(); return; }
     if (cut && state === "play") { if (!e.repeat) skipCut(); return; }
     if (helpDialog.open) return;
     if (e.target && e.target.tagName === "INPUT") return;  // escribiendo el apodo
@@ -727,10 +753,17 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   function boss() { return BOSSES[rank >= 2 ? 1 : 0]; }
   function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
   var LOVE_TIME = 4.5, LOVE_COOL = 12;
-  /* Comodín: una excusa que aparece de vez en cuando en el piso. Se recoge caminando (máximo 1 guardada)
-     y se usa sola cuando el jefe te alcanza: no pierdes vida ni el avance de los tickets.
-     EXCUSE.first/every/life son la perilla de dificultad de los comodines. */
-  var EXCUSE = { first: 40, every: 60, life: 10 };
+  /* Tienda de la oficina: se abre al ascender (después del cartel de "1 año / 5 años después") y lo que
+     compras se paga con tus puntos (bajan en la tabla). Lo que hay crece con el rango.
+     - Excusa (máximo 1 guardada): se usa sola cuando el jefe te alcanza; no pierdes vida ni avance.
+     - Pasante: aparece y arregla tickets solo, despacio, el resto de la partida.
+     Los precios son la perilla de dificultad de los comodines. */
+  var SHOP = [
+    { id: "excusa", from: 1, price: 100, name: "📄 EXCUSA", desc: "Te salva la próxima vez que el jefe te alcance. Máximo 1.",
+      owned: function () { return P.excuse; }, has: "YA LA TIENES", buy: function () { P.excuse = true; } },
+    { id: "pasante", from: 2, price: 250, name: "🎓 CONTRATAR PASANTE", desc: "Arregla tickets solo, despacio. No da puntos.",
+      owned: function () { return N.on; }, has: "YA LO CONTRATASTE", buy: function () { appear(N, "¡TU PASANTE!", "#5fd6a1"); } }
+  ];
   /* Compañeros de oficina:
      - Señora del aseo (siempre): donde pasa "desconecta" algo y ahí salen los tickets. Salen igual de seguido
        que siempre; solo cambia DÓNDE salen.
@@ -738,7 +771,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
      - Pasante (en Jefe de TI): camina a un ticket y lo arregla solo, más despacio que tú (no da puntos).
      SAPO y PASANTE son las perillas de dificultad de estos dos. */
   var SAPO = { from: 1, see: 110, seeT: 1.5, alert: 4, cool: 15 };
-  var PASANTE = { from: 2, speed: 0.35 };
+  var PASANTE = { speed: 0.35 };  // se contrata en la tienda (Jefe de TI)
   var ASEO_SAYS = ["Uy, ¿esto se desconecta?", "Yo no toqué nada", "Ese cable estaba sucio", "Permiso, voy a trapear",
     "¿Esto prende o qué?", "Le quité el polvo al cable"];
   var PASANTE_SAYS = ["¡Jefa, ya quedó!", "¡Lo reinicié y sirvió!", "Esto lo vi en el SENA", "¿Era el cable? ¡Era el cable!"];
@@ -779,7 +812,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   function rankOf(n) { var r = 0; for (var i = 0; i < RANKS.length; i++) if (n >= RANKS[i].from) r = i; return r; }
 
   var dists = 0;
-  var P, B, M, hearts, tickets, pops, score, done, rank, lives, combo, lastDone, spawnT, shake, clock, actPrev, best = 0, whyOver, cut = null, excuse, excuseT;
+  var P, B, M, hearts, tickets, pops, score, done, rank, lives, combo, lastDone, spawnT, shake, clock, actPrev, best = 0, whyOver, cut = null, shopPending = false, spent = 0;
   try { best = parseInt(localStorage.getItem("ticketrush-best") || "0", 10) || 0; } catch (e) {}
 
   function reset() {
@@ -790,7 +823,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     A = { x: 620, y: 420, tx: 620, ty: 420, pause: 2, stuckT: 0, lx: 620, ly: 420, say: "", sayT: 0, sayCool: 6, passed: [], unplug: 0 };
     S = { on: false, x: 0, y: 0, tx: 0, ty: 0, pause: 0, stuckT: 0, lx: 0, ly: 0, say: "", sayT: 0, seen: 0, cool: 6, gossip: 0 };
     N = { on: false, x: 0, y: 0, tx: 0, ty: 0, pause: 0, stuckT: 0, lx: 0, ly: 0, say: "", sayT: 0, job: null, working: false };
-    excuse = null; excuseT = EXCUSE.first;
+    shopPending = false; spent = 0;
     tickets = []; pops = []; score = 0; done = 0; rank = 0; lives = 3; combo = 0; lastDone = -99;
     shake = 0; clock = 0; actPrev = false; coffee.cool = 0;
     stations.forEach(function (s) { s.ticket = null; });
@@ -849,7 +882,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       setActLabel();
       if (lives < MAX_LIVES) { lives++; pop(P.x, P.y - 60, "+VIDA", "#ef5b6b"); }
       if (rank >= SAPO.from && !S.on) appear(S, "¡EL SAPO!", "#c58bff");
-      if (rank >= PASANTE.from && !N.on) appear(N, "¡TU PASANTE!", "#5fd6a1");
+      shopPending = true;  // al terminar el cartel se abre la tienda
       beep(523, 0.1, "square", 0.05); setTimeout(function () { beep(659, 0.1, "square", 0.05); }, 110);
       setTimeout(function () { beep(784, 0.2, "square", 0.05); }, 220);
       say((rank >= 2 ? "Cinco años después" : "Un año después") + ": ahora eres " + RANKS[rank].name.toLowerCase());
@@ -864,7 +897,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     state = "over";
     try { if (score > best) { best = score; localStorage.setItem("ticketrush-best", String(best)); } } catch (e) {}
     document.getElementById("overWhy").textContent = why;
-    document.getElementById("overStats").textContent = "Rango: " + RANKS[rank].name + " · Tickets: " + done + " · Puntos: " + score + " · Mejor: " + Math.max(best, score);
+    document.getElementById("overStats").textContent = "Rango: " + RANKS[rank].name + " · Tickets: " + done + " · Puntos: " + score + " · Mejor: " + Math.max(best, score) + (spent ? " · Gastaste " + spent + " en la tienda" : "");
     document.getElementById("over").hidden = false;
     say("Turno terminado. " + why + " Puntos " + score);
     track("end", { g: gameId, score: score, tickets: done, rank: rank, secs: Math.round(clock), why: why, dist: dists, n: myName });
@@ -1062,29 +1095,6 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     }
   }
 
-  function updateExcuse(dt) {
-    if (P.sayT > 0) P.sayT -= dt;
-    if (excuse) {
-      excuse.t -= dt;
-      if (Math.hypot(P.x - excuse.x, P.y - excuse.y) < 24) {
-        excuse = null; P.excuse = true; excuseT = EXCUSE.every;
-        pop(P.x, P.y - 60, "¡EXCUSA!", "#5fd6a1");
-        beep(520, 0.07, "triangle", 0.05); setTimeout(function () { beep(880, 0.1, "triangle", 0.05); }, 70);
-        say("Recogiste una excusa: te salva la próxima vez que te alcance el " + boss().name);
-      } else if (excuse.t <= 0) { excuse = null; excuseT = EXCUSE.every; }
-      return;
-    }
-    if (P.excuse) return;  // máximo 1 guardada: no aparece otra hasta usarla
-    excuseT -= dt;
-    if (excuseT > 0) return;
-    for (var n = 0; n < 40; n++) {  // un sitio libre, lejos de la jugadora y del jefe
-      var x = T + 20 + Math.random() * (14 * T - 40), y = T + 30 + Math.random() * (8 * T - 40);
-      if (blocked(x, y, 12, 10) || Math.hypot(x - P.x, y - P.y) < 150 || Math.hypot(x - B.x, y - B.y) < 90) continue;
-      excuse = { x: x, y: y, t: EXCUSE.life };
-      return;
-    }
-  }
-
   /* ---------- actualización ---------- */
   function update(dt) {
     clock += dt;
@@ -1131,7 +1141,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       }
     }
     if (state !== "play") return;
-    updateExcuse(dt);
+    if (P.sayT > 0) P.sayT -= dt;
     spawnT -= dt;
     if (spawnT <= 0) { spawnTicket(); spawnT = spawnEvery(); }
     updateMate(dt);
@@ -1581,7 +1591,8 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
      Usa VT323 porque la fuente pixel no trae mayúsculas con tilde. */
   function now() { return performance.now() / 1000; }  // reloj real (el juego está en pausa)
   function showCut(title, sub, sub2, dur) { cut = { start: now(), dur: dur, title: title, sub: sub, sub2: sub2 }; keys = {}; vk = {}; }
-  function skipCut() { if (cut && now() - cut.start > 0.8) cut = null; }
+  function endCut() { cut = null; if (shopPending) { shopPending = false; openShop(); } }
+  function skipCut() { if (cut && now() - cut.start > 0.8) endCut(); }
   function drawCut() {
     if (!cut) return;
     var t = now() - cut.start;
@@ -1612,16 +1623,6 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     R(x, y, 12, 14, "#0d0c14"); R(x + 1, y + 1, 10, 12, "#f2f0f8"); R(x + 8, y + 1, 3, 3, "#c9c4dc");
     R(x + 3, y + 4, 5, 1, "#6a8cf0"); R(x + 3, y + 6, 6, 1, "#6a8cf0"); R(x + 3, y + 8, 4, 1, "#6a8cf0");
     R(x + 7, y + 9, 3, 3, "#ef5b6b");
-  }
-  function drawExcuse() {
-    if (!excuse || (excuse.t < 3 && Math.floor(anim * 8) % 2)) return;
-    // marco oscuro + brillo verde: se ve tanto en el piso claro de la oficina como en los oscuros
-    var g = 0.55 + Math.sin(anim * 5) * 0.3, fy = Math.round(excuse.y - 30 + Math.sin(anim * 4) * 3);
-    shadow(excuse.x, excuse.y - 1, 12);
-    R(excuse.x - 19, fy - 5, 38, 38, "#0d0c14");
-    R(excuse.x - 17, fy - 3, 34, 34, "#1b6e4f");
-    ctx.globalAlpha = g; R(excuse.x - 17, fy - 3, 34, 34, "#5fd6a1"); ctx.globalAlpha = 1;
-    ctx.save(); ctx.translate(excuse.x - 12, fy); ctx.scale(2, 2); drawNote(0, 0); ctx.restore();
   }
   function drawSayOf(e, bg, fg) {
     if (!(e.sayT > 0)) return;
@@ -1692,7 +1693,6 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     if (shake > 0 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) ctx.translate(Math.round((Math.random() - 0.5) * 8), Math.round((Math.random() - 0.5) * 8));
     drawFloor();
     var items = solids.map(function (s) { return { b: s.y + s.h, f: function () { drawStation(s); } }; });
-    if (excuse) items.push({ b: excuse.y, f: drawExcuse });
     items.push({ b: A.y, f: drawAseo });
     if (S.on) items.push({ b: S.y, f: drawSapo });
     if (N.on) items.push({ b: N.y, f: drawPasante });
@@ -1708,8 +1708,8 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   var last = 0;
   function frame(ts) {
     var dt = Math.min(0.05, (ts - last) / 1000 || 0); last = ts; anim = ts / 1000;
-    if (cut && now() - cut.start >= cut.dur) cut = null;
-    if (state === "play" && !helpDialog.open && !rotateShown() && !cut) update(dt);
+    if (cut && now() - cut.start >= cut.dur) endCut();
+    if (state === "play" && !helpDialog.open && !rotateShown() && !cut && shopEl.hidden) update(dt);
     render();
     requestAnimationFrame(frame);
   }
@@ -1733,7 +1733,38 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   try { myName = localStorage.getItem("ticketrush-name") || ""; asked = localStorage.getItem("ticketrush-asked") === "1"; } catch (e) {}
   var online = /^https?:$/.test(location.protocol);
   function el(id) { return document.getElementById(id); }
-  function showScreen(id) { ["menu", "over", "nameScr", "boardScr"].forEach(function (s) { el(s).hidden = s !== id; }); }
+  var shopEl = el("shop");
+  function openShop() {
+    var list = SHOP.filter(function (it) { return rank >= it.from; });
+    if (!list.length || state !== "play") return;
+    keys = {}; vk = {};
+    renderShop(); shopEl.hidden = false;
+    setTimeout(function () { var b = shopEl.querySelector(".shop-item:not([disabled])") || el("shopGo"); try { b.focus(); } catch (e) {} }, 50);
+  }
+  function renderShop() {
+    el("shopPts").textContent = "Tienes " + score + " pts (lo que compres se descuenta)";
+    el("shopItems").innerHTML = SHOP.filter(function (it) { return rank >= it.from; }).map(function (it) {
+      var why = it.owned() ? it.has : score < it.price ? "TE FALTAN " + (it.price - score) + " PTS" : "";
+      return '<button class="shop-item" type="button" data-id="' + it.id + '"' + (why ? " disabled" : "") + '><b>' + it.name + '</b><span>' + it.desc +
+        '</span><span class="price">' + (why || it.price + " PTS") + '</span></button>';
+    }).join("");
+  }
+  function closeShop() {
+    shopEl.hidden = true; keys = {}; vk = {};
+    if (shopEl.contains(document.activeElement)) document.activeElement.blur();  // el teclado vuelve al juego
+  }
+  el("shopItems").addEventListener("click", function (e) {
+    var b = e.target.closest(".shop-item"); if (!b || b.disabled) return;
+    var it = SHOP.filter(function (x) { return x.id === b.getAttribute("data-id"); })[0];
+    if (!it || it.owned() || score < it.price) return;
+    score -= it.price; spent += it.price; it.buy();
+    beep(520, 0.07, "triangle", 0.05); setTimeout(function () { beep(880, 0.1, "triangle", 0.05); }, 70);
+    say("Compraste " + it.name.replace(/^\S+ /, "").toLowerCase() + " por " + it.price + " puntos");
+    renderShop();
+    var next = shopEl.querySelector(".shop-item:not([disabled])") || el("shopGo"); try { next.focus(); } catch (e) {}
+  });
+  el("shopGo").addEventListener("click", closeShop);
+  function showScreen(id) { ["menu", "over", "nameScr", "boardScr", "shop"].forEach(function (s) { el(s).hidden = s !== id; }); }
   function weekLeader() { var w = boardData && boardData.week; return w && w.length && w[0].s > 0 ? w[0].n : ""; }
 
   function updateWho() {

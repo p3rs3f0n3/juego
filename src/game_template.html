@@ -147,15 +147,34 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
 .board small { grid-column: 2 / 4; color: var(--muted); font-size: 0.8em; }
 .board .empty { display: block; color: var(--muted); text-align: center; border: 0; }
 .screen .fame { color: var(--warn); font-size: clamp(14px, 2.1vw, 18px); }
+#shop h2 { font-size: clamp(12px, 2.6vw, 20px); }
+.shop-items { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: 100%; }
+.shop-item { display: flex; flex-direction: column; gap: 4px; width: min(250px, 46%); padding: 10px 12px; text-align: left;
+  font: inherit; color: var(--fg); background: var(--panel); border: 2px solid var(--line); cursor: pointer; }
+.shop-item b { font: 400 clamp(9px, 1.6vw, 11px) var(--display); color: var(--warn); }
+.shop-item span { font-size: clamp(14px, 2vw, 18px); color: var(--muted); line-height: 1.15; }
+.shop-item .price { color: var(--good); }
+.shop-item:hover:not([disabled]) { border-color: var(--warn); }
+.shop-item:focus-visible { outline: 3px solid var(--warn); outline-offset: 2px; }
+.shop-item[disabled] { opacity: 0.5; cursor: default; }
+.shop-item[disabled] .price { color: var(--bad); }
 /* Recuadro del juego bajito (celular vertical o teléfonos pequeños): pantallas compactas.
    Mide el alto del recuadro, no el del celular. Las instrucciones completas están en AYUDA. */
 .stage { container-type: size; }
+@container (max-height: 340px) {  /* la tienda necesita compactarse antes que las demás pantallas */
+  #shop { gap: 6px; padding: 6px 10px; }
+  #shop h2 { font-size: 13px; }
+  #shop .btn { padding: 9px 12px; font-size: 10px; }
+  .shop-item { padding: 5px 8px; gap: 2px; }
+  .shop-item span { font-size: 14px; }
+}
 @container (max-height: 270px) {
   .screen { gap: 5px; padding: 6px 10px; }
   .screen h2 { font-size: 13px; }
   #menu > p:first-of-type { display: none; }
   .screen p, .screen .tips, .screen .who, .screen .brag, .screen .err, .screen .fame { font-size: 15px; line-height: 1.15; }
   .btn { padding: 9px 12px; font-size: 10px; }
+
   #nameIn { font-size: 18px; padding: 4px 10px; }
   .tab { padding: 5px 8px; font-size: 8px; }
   .board li { padding: 1px 6px; font-size: 14px; }
@@ -339,6 +358,12 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       <button class="btn alt" id="boardBtn2" type="button" hidden>🏆 TABLA</button>
     </div>
   </div>
+  <div class="screen" id="shop" hidden role="dialog" aria-labelledby="shopTitle">
+    <h2 id="shopTitle">TIENDA DE LA OFICINA</h2>
+    <p class="stats" id="shopPts"></p>
+    <div class="shop-items" id="shopItems"></div>
+    <button class="btn" id="shopGo" type="button">SEGUIR TRABAJANDO</button>
+  </div>
   <div class="screen" id="nameScr" hidden>
     <h2>¿CÓMO TE LLAMAS?</h2>
     <p>Tu apodo sale en la tabla de líderes. Es opcional.</p>
@@ -391,8 +416,8 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     <section class="help-card"><div class="help-art" style="flex-direction:column"><kbd class="help-space">ESPACIO</kbd><div class="help-progress" aria-hidden="true"></div></div><h3>RESUELVE TICKETS</h3><p>Acércate al <b style="color:#e3c35c">!</b> y mantén ESPACIO o E hasta llenar la barra. En celular, mantén el botón redondo.</p></section>
     <section class="help-card"><div class="help-art"><svg width="72" height="80" viewBox="0 0 48 54" shape-rendering="crispEdges" aria-hidden="true"><path fill="#d8d4e6" d="M18 1h3v4h-3zm9 3h3v4h-3z"/><path fill="#4c4c64" d="M8 10h32v44H8z"/><path fill="#22222e" d="M12 16h24v10H12z"/><path fill="#5fd6a1" d="M14 20h16v3H14zm19-2h3v3h-3z"/><path fill="#171525" d="M12 29h24v20H12z"/><path fill="#d8d4e6" d="M15 34h17v13H15zm17 2h5v8h-5z"/><path fill="#5a3a28" d="M17 37h13v8H17z"/></svg></div><h3>CAFÉ = TURBO</h3><p>Si la luz está verde, acércate y pulsa la acción. Camina y repara más rápido durante 6 segundos.</p></section>
     <section class="help-card"><div class="help-art"><img class="help-sprite" src="__JEFE_FRENTE__" alt="El jefe"><svg width="24" height="24" viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="#fc1d64" d="M1 2h3v1h2V2h3v1h2v4H9v2H7v2H5V9H3V7H1z"/></svg><img class="help-sprite" src="__DANI_FRENTE__" alt="Dani"></div><h3>DISTRAE AL JEFE</h3><p>Llévalo cerca de Dani. Se quedará embobado unos segundos: ¡aprovecha para escapar!</p></section>
-    <section class="help-card help-wide"><div class="help-art"><svg width="48" height="56" viewBox="0 0 12 14" shape-rendering="crispEdges" aria-hidden="true"><path fill="#0d0c14" d="M0 0h12v14H0z"/><path fill="#f2f0f8" d="M1 1h10v12H1z"/><path fill="#c9c4dc" d="M8 1h3v3H8z"/><path fill="#6a8cf0" d="M3 4h5v1H3zm0 2h6v1H3zm0 2h4v1H3z"/><path fill="#ef5b6b" d="M7 9h3v3H7z"/></svg></div><h3>EXCUSA = SALVAVIDAS</h3><p>A veces aparece una hojita en el piso. Recógela caminando: la próxima vez que el jefe te alcance, sueltas la excusa ("¡Tengo cita médica!") y no pierdes vida. Solo puedes guardar una.</p></section>
-    <section class="help-card help-wide"><div class="help-art"><img class="help-sprite" src="__ASEO_FRENTE__" alt="Señora del aseo"><img class="help-sprite" src="__SAPO_FRENTE__" alt="El sapo"><img class="help-sprite" src="__PASANTE_FRENTE__" alt="El pasante"></div><h3>COMPAÑEROS DE OFICINA</h3><p><b>Señora del aseo:</b> donde pasa, algo se desconecta y ahí sale el próximo ticket. <b>Sapo</b> (desde Analista): si te ve cerca, le cuenta al jefe y el jefe va directo hacia ti. <b>Pasante</b> (Jefe de TI): arregla tickets solo, despacio.</p></section>
+    <section class="help-card help-wide"><div class="help-art"><svg width="48" height="56" viewBox="0 0 12 14" shape-rendering="crispEdges" aria-hidden="true"><path fill="#0d0c14" d="M0 0h12v14H0z"/><path fill="#f2f0f8" d="M1 1h10v12H1z"/><path fill="#c9c4dc" d="M8 1h3v3H8z"/><path fill="#6a8cf0" d="M3 4h5v1H3zm0 2h6v1H3zm0 2h4v1H3z"/><path fill="#ef5b6b" d="M7 9h3v3H7z"/></svg></div><h3>EXCUSA = SALVAVIDAS</h3><p>Se compra con puntos en la <b>tienda</b>, que se abre cada vez que asciendes. La próxima vez que el jefe te alcance, sueltas la excusa ("¡Tengo cita médica!") y no pierdes vida. Solo puedes guardar una.</p></section>
+    <section class="help-card help-wide"><div class="help-art"><img class="help-sprite" src="__ASEO_FRENTE__" alt="Señora del aseo"><img class="help-sprite" src="__SAPO_FRENTE__" alt="El sapo"><img class="help-sprite" src="__PASANTE_FRENTE__" alt="El pasante"></div><h3>COMPAÑEROS DE OFICINA</h3><p><b>Señora del aseo:</b> donde pasa, algo se desconecta y ahí sale el próximo ticket. <b>Sapo</b> (desde Analista): si te ve cerca, le cuenta al jefe y el jefe va directo hacia ti. <b>Pasante</b>: lo contratas en la tienda al llegar a Jefe de TI y arregla tickets solo, despacio.</p></section>
   </div>
   <p class="help-footer">Evita al jefe y resuelve cada ticket antes de que venza el SLA.<br>La partida queda en pausa mientras consultas esta ayuda.</p>
   <p class="help-footer"><button class="chip" id="helpIntro" type="button">VER LA INTRO</button></p>
@@ -543,6 +568,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       else if (e.key === "Escape") closeIntro();
       return;
     }
+    if (!shopEl.hidden) { if (e.key === "Escape") closeShop(); return; }
     if (cut && state === "play") { if (!e.repeat) skipCut(); return; }
     if (helpDialog.open) return;
     if (e.target && e.target.tagName === "INPUT") return;  // escribiendo el apodo
@@ -727,10 +753,17 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   function boss() { return BOSSES[rank >= 2 ? 1 : 0]; }
   function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
   var LOVE_TIME = 4.5, LOVE_COOL = 12;
-  /* Comodín: una excusa que aparece de vez en cuando en el piso. Se recoge caminando (máximo 1 guardada)
-     y se usa sola cuando el jefe te alcanza: no pierdes vida ni el avance de los tickets.
-     EXCUSE.first/every/life son la perilla de dificultad de los comodines. */
-  var EXCUSE = { first: 40, every: 60, life: 10 };
+  /* Tienda de la oficina: se abre al ascender (después del cartel de "1 año / 5 años después") y lo que
+     compras se paga con tus puntos (bajan en la tabla). Lo que hay crece con el rango.
+     - Excusa (máximo 1 guardada): se usa sola cuando el jefe te alcanza; no pierdes vida ni avance.
+     - Pasante: aparece y arregla tickets solo, despacio, el resto de la partida.
+     Los precios son la perilla de dificultad de los comodines. */
+  var SHOP = [
+    { id: "excusa", from: 1, price: 100, name: "📄 EXCUSA", desc: "Te salva la próxima vez que el jefe te alcance. Máximo 1.",
+      owned: function () { return P.excuse; }, has: "YA LA TIENES", buy: function () { P.excuse = true; } },
+    { id: "pasante", from: 2, price: 250, name: "🎓 CONTRATAR PASANTE", desc: "Arregla tickets solo, despacio. No da puntos.",
+      owned: function () { return N.on; }, has: "YA LO CONTRATASTE", buy: function () { appear(N, "¡TU PASANTE!", "#5fd6a1"); } }
+  ];
   /* Compañeros de oficina:
      - Señora del aseo (siempre): donde pasa "desconecta" algo y ahí salen los tickets. Salen igual de seguido
        que siempre; solo cambia DÓNDE salen.
@@ -738,7 +771,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
      - Pasante (en Jefe de TI): camina a un ticket y lo arregla solo, más despacio que tú (no da puntos).
      SAPO y PASANTE son las perillas de dificultad de estos dos. */
   var SAPO = { from: 1, see: 110, seeT: 1.5, alert: 4, cool: 15 };
-  var PASANTE = { from: 2, speed: 0.35 };
+  var PASANTE = { speed: 0.35 };  // se contrata en la tienda (Jefe de TI)
   var ASEO_SAYS = ["Uy, ¿esto se desconecta?", "Yo no toqué nada", "Ese cable estaba sucio", "Permiso, voy a trapear",
     "¿Esto prende o qué?", "Le quité el polvo al cable"];
   var PASANTE_SAYS = ["¡Jefa, ya quedó!", "¡Lo reinicié y sirvió!", "Esto lo vi en el SENA", "¿Era el cable? ¡Era el cable!"];
@@ -779,7 +812,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   function rankOf(n) { var r = 0; for (var i = 0; i < RANKS.length; i++) if (n >= RANKS[i].from) r = i; return r; }
 
   var dists = 0;
-  var P, B, M, hearts, tickets, pops, score, done, rank, lives, combo, lastDone, spawnT, shake, clock, actPrev, best = 0, whyOver, cut = null, excuse, excuseT;
+  var P, B, M, hearts, tickets, pops, score, done, rank, lives, combo, lastDone, spawnT, shake, clock, actPrev, best = 0, whyOver, cut = null, shopPending = false, spent = 0;
   try { best = parseInt(localStorage.getItem("ticketrush-best") || "0", 10) || 0; } catch (e) {}
 
   function reset() {
@@ -790,7 +823,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     A = { x: 620, y: 420, tx: 620, ty: 420, pause: 2, stuckT: 0, lx: 620, ly: 420, say: "", sayT: 0, sayCool: 6, passed: [], unplug: 0 };
     S = { on: false, x: 0, y: 0, tx: 0, ty: 0, pause: 0, stuckT: 0, lx: 0, ly: 0, say: "", sayT: 0, seen: 0, cool: 6, gossip: 0 };
     N = { on: false, x: 0, y: 0, tx: 0, ty: 0, pause: 0, stuckT: 0, lx: 0, ly: 0, say: "", sayT: 0, job: null, working: false };
-    excuse = null; excuseT = EXCUSE.first;
+    shopPending = false; spent = 0;
     tickets = []; pops = []; score = 0; done = 0; rank = 0; lives = 3; combo = 0; lastDone = -99;
     shake = 0; clock = 0; actPrev = false; coffee.cool = 0;
     stations.forEach(function (s) { s.ticket = null; });
@@ -849,7 +882,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       setActLabel();
       if (lives < MAX_LIVES) { lives++; pop(P.x, P.y - 60, "+VIDA", "#ef5b6b"); }
       if (rank >= SAPO.from && !S.on) appear(S, "¡EL SAPO!", "#c58bff");
-      if (rank >= PASANTE.from && !N.on) appear(N, "¡TU PASANTE!", "#5fd6a1");
+      shopPending = true;  // al terminar el cartel se abre la tienda
       beep(523, 0.1, "square", 0.05); setTimeout(function () { beep(659, 0.1, "square", 0.05); }, 110);
       setTimeout(function () { beep(784, 0.2, "square", 0.05); }, 220);
       say((rank >= 2 ? "Cinco años después" : "Un año después") + ": ahora eres " + RANKS[rank].name.toLowerCase());
@@ -864,7 +897,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     state = "over";
     try { if (score > best) { best = score; localStorage.setItem("ticketrush-best", String(best)); } } catch (e) {}
     document.getElementById("overWhy").textContent = why;
-    document.getElementById("overStats").textContent = "Rango: " + RANKS[rank].name + " · Tickets: " + done + " · Puntos: " + score + " · Mejor: " + Math.max(best, score);
+    document.getElementById("overStats").textContent = "Rango: " + RANKS[rank].name + " · Tickets: " + done + " · Puntos: " + score + " · Mejor: " + Math.max(best, score) + (spent ? " · Gastaste " + spent + " en la tienda" : "");
     document.getElementById("over").hidden = false;
     say("Turno terminado. " + why + " Puntos " + score);
     track("end", { g: gameId, score: score, tickets: done, rank: rank, secs: Math.round(clock), why: why, dist: dists, n: myName });
@@ -1062,29 +1095,6 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     }
   }
 
-  function updateExcuse(dt) {
-    if (P.sayT > 0) P.sayT -= dt;
-    if (excuse) {
-      excuse.t -= dt;
-      if (Math.hypot(P.x - excuse.x, P.y - excuse.y) < 24) {
-        excuse = null; P.excuse = true; excuseT = EXCUSE.every;
-        pop(P.x, P.y - 60, "¡EXCUSA!", "#5fd6a1");
-        beep(520, 0.07, "triangle", 0.05); setTimeout(function () { beep(880, 0.1, "triangle", 0.05); }, 70);
-        say("Recogiste una excusa: te salva la próxima vez que te alcance el " + boss().name);
-      } else if (excuse.t <= 0) { excuse = null; excuseT = EXCUSE.every; }
-      return;
-    }
-    if (P.excuse) return;  // máximo 1 guardada: no aparece otra hasta usarla
-    excuseT -= dt;
-    if (excuseT > 0) return;
-    for (var n = 0; n < 40; n++) {  // un sitio libre, lejos de la jugadora y del jefe
-      var x = T + 20 + Math.random() * (14 * T - 40), y = T + 30 + Math.random() * (8 * T - 40);
-      if (blocked(x, y, 12, 10) || Math.hypot(x - P.x, y - P.y) < 150 || Math.hypot(x - B.x, y - B.y) < 90) continue;
-      excuse = { x: x, y: y, t: EXCUSE.life };
-      return;
-    }
-  }
-
   /* ---------- actualización ---------- */
   function update(dt) {
     clock += dt;
@@ -1131,7 +1141,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       }
     }
     if (state !== "play") return;
-    updateExcuse(dt);
+    if (P.sayT > 0) P.sayT -= dt;
     spawnT -= dt;
     if (spawnT <= 0) { spawnTicket(); spawnT = spawnEvery(); }
     updateMate(dt);
@@ -1581,7 +1591,8 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
      Usa VT323 porque la fuente pixel no trae mayúsculas con tilde. */
   function now() { return performance.now() / 1000; }  // reloj real (el juego está en pausa)
   function showCut(title, sub, sub2, dur) { cut = { start: now(), dur: dur, title: title, sub: sub, sub2: sub2 }; keys = {}; vk = {}; }
-  function skipCut() { if (cut && now() - cut.start > 0.8) cut = null; }
+  function endCut() { cut = null; if (shopPending) { shopPending = false; openShop(); } }
+  function skipCut() { if (cut && now() - cut.start > 0.8) endCut(); }
   function drawCut() {
     if (!cut) return;
     var t = now() - cut.start;
@@ -1612,16 +1623,6 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     R(x, y, 12, 14, "#0d0c14"); R(x + 1, y + 1, 10, 12, "#f2f0f8"); R(x + 8, y + 1, 3, 3, "#c9c4dc");
     R(x + 3, y + 4, 5, 1, "#6a8cf0"); R(x + 3, y + 6, 6, 1, "#6a8cf0"); R(x + 3, y + 8, 4, 1, "#6a8cf0");
     R(x + 7, y + 9, 3, 3, "#ef5b6b");
-  }
-  function drawExcuse() {
-    if (!excuse || (excuse.t < 3 && Math.floor(anim * 8) % 2)) return;
-    // marco oscuro + brillo verde: se ve tanto en el piso claro de la oficina como en los oscuros
-    var g = 0.55 + Math.sin(anim * 5) * 0.3, fy = Math.round(excuse.y - 30 + Math.sin(anim * 4) * 3);
-    shadow(excuse.x, excuse.y - 1, 12);
-    R(excuse.x - 19, fy - 5, 38, 38, "#0d0c14");
-    R(excuse.x - 17, fy - 3, 34, 34, "#1b6e4f");
-    ctx.globalAlpha = g; R(excuse.x - 17, fy - 3, 34, 34, "#5fd6a1"); ctx.globalAlpha = 1;
-    ctx.save(); ctx.translate(excuse.x - 12, fy); ctx.scale(2, 2); drawNote(0, 0); ctx.restore();
   }
   function drawSayOf(e, bg, fg) {
     if (!(e.sayT > 0)) return;
@@ -1692,7 +1693,6 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     if (shake > 0 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) ctx.translate(Math.round((Math.random() - 0.5) * 8), Math.round((Math.random() - 0.5) * 8));
     drawFloor();
     var items = solids.map(function (s) { return { b: s.y + s.h, f: function () { drawStation(s); } }; });
-    if (excuse) items.push({ b: excuse.y, f: drawExcuse });
     items.push({ b: A.y, f: drawAseo });
     if (S.on) items.push({ b: S.y, f: drawSapo });
     if (N.on) items.push({ b: N.y, f: drawPasante });
@@ -1708,8 +1708,8 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   var last = 0;
   function frame(ts) {
     var dt = Math.min(0.05, (ts - last) / 1000 || 0); last = ts; anim = ts / 1000;
-    if (cut && now() - cut.start >= cut.dur) cut = null;
-    if (state === "play" && !helpDialog.open && !rotateShown() && !cut) update(dt);
+    if (cut && now() - cut.start >= cut.dur) endCut();
+    if (state === "play" && !helpDialog.open && !rotateShown() && !cut && shopEl.hidden) update(dt);
     render();
     requestAnimationFrame(frame);
   }
@@ -1733,7 +1733,38 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   try { myName = localStorage.getItem("ticketrush-name") || ""; asked = localStorage.getItem("ticketrush-asked") === "1"; } catch (e) {}
   var online = /^https?:$/.test(location.protocol);
   function el(id) { return document.getElementById(id); }
-  function showScreen(id) { ["menu", "over", "nameScr", "boardScr"].forEach(function (s) { el(s).hidden = s !== id; }); }
+  var shopEl = el("shop");
+  function openShop() {
+    var list = SHOP.filter(function (it) { return rank >= it.from; });
+    if (!list.length || state !== "play") return;
+    keys = {}; vk = {};
+    renderShop(); shopEl.hidden = false;
+    setTimeout(function () { var b = shopEl.querySelector(".shop-item:not([disabled])") || el("shopGo"); try { b.focus(); } catch (e) {} }, 50);
+  }
+  function renderShop() {
+    el("shopPts").textContent = "Tienes " + score + " pts (lo que compres se descuenta)";
+    el("shopItems").innerHTML = SHOP.filter(function (it) { return rank >= it.from; }).map(function (it) {
+      var why = it.owned() ? it.has : score < it.price ? "TE FALTAN " + (it.price - score) + " PTS" : "";
+      return '<button class="shop-item" type="button" data-id="' + it.id + '"' + (why ? " disabled" : "") + '><b>' + it.name + '</b><span>' + it.desc +
+        '</span><span class="price">' + (why || it.price + " PTS") + '</span></button>';
+    }).join("");
+  }
+  function closeShop() {
+    shopEl.hidden = true; keys = {}; vk = {};
+    if (shopEl.contains(document.activeElement)) document.activeElement.blur();  // el teclado vuelve al juego
+  }
+  el("shopItems").addEventListener("click", function (e) {
+    var b = e.target.closest(".shop-item"); if (!b || b.disabled) return;
+    var it = SHOP.filter(function (x) { return x.id === b.getAttribute("data-id"); })[0];
+    if (!it || it.owned() || score < it.price) return;
+    score -= it.price; spent += it.price; it.buy();
+    beep(520, 0.07, "triangle", 0.05); setTimeout(function () { beep(880, 0.1, "triangle", 0.05); }, 70);
+    say("Compraste " + it.name.replace(/^\S+ /, "").toLowerCase() + " por " + it.price + " puntos");
+    renderShop();
+    var next = shopEl.querySelector(".shop-item:not([disabled])") || el("shopGo"); try { next.focus(); } catch (e) {}
+  });
+  el("shopGo").addEventListener("click", closeShop);
+  function showScreen(id) { ["menu", "over", "nameScr", "boardScr", "shop"].forEach(function (s) { el(s).hidden = s !== id; }); }
   function weekLeader() { var w = boardData && boardData.week; return w && w.length && w[0].s > 0 ? w[0].n : ""; }
 
   function updateWho() {
