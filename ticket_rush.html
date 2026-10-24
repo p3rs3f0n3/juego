@@ -77,6 +77,7 @@ h1 {
 }
 .chip:hover { border-color: var(--accent); }
 .chip:focus-visible, .btn:focus-visible, .pad button:focus-visible { outline: 3px solid var(--warn); outline-offset: 2px; }
+.pad-sel { outline: 3px solid var(--warn) !important; outline-offset: 3px; }  /* botón elegido con el control */
 .stage {
   position: relative;
   width: 100%;
@@ -323,6 +324,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     <h2>TICKET RUSH</h2>
     <p>Corre a cada <b style="color:var(--warn)">!</b>, mantén ARREGLAR (o ESPACIO) antes de que venza el SLA y esquiva al jefe. Asciende de practicante a jefe de TI.</p>
     <p class="tips"><b style="color:var(--warn)">☕</b> La cafetera da turbo · <b style="color:#ff7eb6">♥</b> El jefe se distrae con Dani</p>
+    <p class="tips" id="padMsg" hidden>🎮 Control conectado: A para arreglar · + para empezar</p>
     <div class="row">
       <button class="btn" id="start" type="button">EMPEZAR TURNO</button>
       <button class="btn alt" id="boardBtn" type="button" hidden>🏆 TABLA</button>
@@ -393,7 +395,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     <section class="help-card"><div class="help-art"><img class="help-sprite" src="data:image/png;base64,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" alt="El jefe"><svg width="24" height="24" viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="#fc1d64" d="M1 2h3v1h2V2h3v1h2v4H9v2H7v2H5V9H3V7H1z"/></svg><img class="help-sprite" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC0AAAAvCAYAAAB30kORAAAJUklEQVR42sVZXWgc1xX+7vzs7K5GWLZWkSXW24SNYwpBYCzyEMcFK7gCyUTG1AqFgvpggp7sJMIk0PYpKdQF0VqltQh+qB9KsV2CHSRTFyJTWoU8yCgIk9aRtw3yInnj3Tj2jmZndmbn9mF0787MzuyuVae9sEgze+fOt+d+55zvnEvwFEZcIDSVVNqeX9RNGA4l232ftP0HCbVBAQBDuzowticGy6EgW1AoBf/fey0RgvdWgbxmUADbAv6kD1GPdfHj51QAQFoh6JJFWDWKmORfktLGRTZ0GyUH+P2/NRgOfWIcZLsUGIhLePkZARWLIqWIAABZJLBqfpSy2PgKtgPzeQsrho28ZpBvgx4UAN7NJiAL9fUfmLZvklWj2HQcVKw68L6kBEL8Fq/a7sXYnhhwD7ivEWqjfY63M5GOpFQc2S2FWs2qURTNGhIy8YFlI6WIiEkklCbs+TuVGi7kNLQLXGgH8NieGJKywLeWBJaOAhykBwmBlJQFdAuADdo2PYR2J3ojQxBUlywiIde/LDmN/A3+ZcOmFAmZIC4QxAVC/1t60JGUipefEbAzJrZcqGpTJGUBo2++xe8tzi9h9fbNps8/rNbQIbi2m/7SQF4zWtJWiIoUaTWOw2kFPYoUyUfAjbtsdO09hP5smn+OnxyGEpNRtWnTNTYdB0lZwEBcQlwg27I0Tatx/GxvEpYbQ0NpwQDrloPvYA9eOjOO3r7uhjmFjRLOv/9L9HdIkAiBHUD/sFrjYVMWCW5rNmZz5abWbsnpZoCZI710Zhz92XTkGgeUZ307ErZLLJLsS4gYSalIq3EaxXEB2xy65UC3HE6Jml4Jndfb141js29zZ5ZIPfzZlKJDELgTyyKBLBKM7YlhIC6xbPnk9PAag1nGphSpF76Hg6OD6O3rhphMcNBiMgEADT+isFHCH3/1a5hVCz2KxGkSxfVvrBryJmVU8WF9IsFkU8qBHxwdRH82jfVcHovzSw1zj58c9l33Z9PIvPAK1j//a6guCYqrHkXCzhjFSEplqZ4LrJagg5awQRu4uHr7JjoEAZuOG6CVmAzAD7qmV3Di1DFcmQFWlheQUWWAoMExvXnBm+qLOuF0aTt6UOqqMyaOTpyZCuVyFD2831+ZuYqV5QWkFJFnWu9ueo3FBFjRrGE6p8F22qQHpS7HooaYTDTQ5MSpYz7gwTkD+4dc7q7+DbrlRKZ+WSSQBYKE48B2tnY6JLFgIC75uFa1KfImxdojiiO7w+Xm4vwSXr98DQBwaXws9MexOWk1jrU/nwcArOcGsTi/hJu3FgAA3UJdZEU5ajDkUVaFsG2SCMGm4+DwgSF8MP1Ow3YGqhmk1XiDlYNzGH1qeoVnTq9uKZo1Ll9bxWkuQRlgWSB4YNroUSQcPzmM/mwaXXsPRVKFKbUowN45XgctbJR89xhwSl1OB52VgaYSCA6nFSRlwbclFYuia+8h/oKDo4ORMlRqQ55LbRZLJccFLIukIVpJLFpM9MlIUAcMDw2UnSwqNI3jbWji4Jxm63rrzbxJG+mRUWVffUe2YmhGlbGyvIArM1e5MwUzHduByWwnpkeGI4F453ifDRtphaBquzlh+bGF2VyZVTZECit/gtEhpYi4eWsBNycW+IJslM8toQxg38wx/O7iDKdRMF7X9Ap6+7r5nPVcHuVzS+j9xXAo4A5BQFIWYDkUcwULcaGeXCQApKib9L1VYDITQ48iQbccvjWW44r79FbBWnLg43Tn6cEG52MxuXyuvivPb4Fj83r7uoHTgxCTCZ+kZYBl0Q0Cs2vVhsJAAADDoSSvGfjkKwcPTNvnjIS4wHfGRGRUGd2C6ySL80tYz+XRn037XtqMo8HvmHb58MINHqO7ZJFHrrxJQysZEpbCJ/pkZFTZF2pYh6hqu9Xz2iP3uw+m32mQoq1SujfEvTF1FiuGjaO9MvYlRE5NWSBY0yxM5zQww7aUpqef70ASTqhwYm0D1iViTZz7mgkbFJfGx3BwdLBh4TemzuJ6UUNcIPyZo73u7rEeSTATh9WOYemNFHUTZz4rYX3T9ol2b03HtnNoVwfuayYA4A/jr2Ey2xlJj4mhVzGZ7cTQrg7kNQMDcYkD9oojr5FkkWAyE8NISuVNIxJV2A7t6uCVeJSV2Qt/vlrGpfExnDh1rCHbsQLBy+eaXsFzx9/2tda8PRTmiOx9SVngYQ8AEcK6oUx/dMmir/tJiN/KAHBxw+KAa3oF67k81nN5H2AW4rz3P/3tT7Bi2PjkK7/Ci8q2zXp59PupetvWW2ZZlPLKmVlkdq2KgbjELVzYKPEwV94Kh7193bj77o16XN8Kf/3ZNKZHhvH65WvI7Oj00SRsMMdvWbkw8W9TCqtGm1rhysxVDNz132OJJzg+vHCjgUqtRmYHAYpNqnHWDaU0usecNynuayYmhl5FTa9g6voNTK193BaAiT99hCszV3FwdBBxgfisyCqjIJ/nChYXW0HQ5HpRw+xaFbJQ7zWH9T7mChZOZlWcOHUMhY0S8pqBha83WwKeWvsYhkOx9sXf0Z9N4+IPXsPC15soOS7lvA7IsuJcwUJeM3hXNTLkXbtXRVIWfPEyIRMkZILlh+71b86f5ZpiJKViKqu2Zem0GscP33qTF7tDuzowV3BbC8xQSVnAhm7j/X+WUdTNxjQeHIZDyV+Km7h2r4qH1RpvovQoEnoUKTQ9Z3YQHFCebQn4cFrhKdzH10B9eO1eFRc3LBgObThUEproXnK9qCFvUmzoNr6xalh+bGH5sYX9Owl3KCaO5gqWT0BFjaPCK9xxWSicK1g42ivjgWnjtmbjTqWG60UtsoNK2jnFAgBJAAzHbZ4cTivIlau4kNOwW1XYERuP10GFFxznHi1gNldGWo3jvmZit6pgMhPzKrqm2KQ2Kg0CALYDCoCsGDZduetGF0kA8prRUEIx2dkMuATCARZ1Ez/9nK9DntpJAFssrxkkr7kCxnBoaM0nJhNYnF/C/s8+wrlHCxHGAOv+89bF0zpzafYDCABig5Lgy2p6BRcX3NA2myvjyBc3fFx3s5/rYN7PUz9zeZIqu7BRwoph+yzZ29fNq5cfdQ4hrcZ9h6n/k2PmoGa5/OKL+O5d4M6pq/XsllTYwSb16g+mo2frTvd/AY1b5peIOrQv6ib+Uf1XpAD6ts/GW56ZR6xPnyaG/wCQ8d6yy43ldAAAAABJRU5ErkJggg==" alt="Dani"></div><h3>DISTRAE AL JEFE</h3><p>Llévalo cerca de Dani. Se quedará embobado unos segundos: ¡aprovecha para escapar!</p></section>
     <section class="help-card help-wide"><div class="help-art"><svg width="48" height="56" viewBox="0 0 12 14" shape-rendering="crispEdges" aria-hidden="true"><path fill="#0d0c14" d="M0 0h12v14H0z"/><path fill="#f2f0f8" d="M1 1h10v12H1z"/><path fill="#c9c4dc" d="M8 1h3v3H8z"/><path fill="#6a8cf0" d="M3 4h5v1H3zm0 2h6v1H3zm0 2h4v1H3z"/><path fill="#ef5b6b" d="M7 9h3v3H7z"/></svg></div><h3>EXCUSA = SALVAVIDAS</h3><p>A veces aparece una hojita en el piso. Recógela caminando: la próxima vez que el jefe te alcance, sueltas la excusa ("¡Tengo cita médica!") y no pierdes vida. Solo puedes guardar una.</p></section>
   </div>
-  <p class="help-footer">Evita al jefe y resuelve cada ticket antes de que venza el SLA.<br>La partida queda en pausa mientras consultas esta ayuda.</p>
+  <p class="help-footer">Evita al jefe y resuelve cada ticket antes de que venza el SLA.<br>La partida queda en pausa mientras consultas esta ayuda.<br>🎮 ¿Tienes control (Joy-Con, Xbox, PlayStation)? Conéctalo por Bluetooth y oprime un botón: cruceta para moverte, A para arreglar, + para empezar.</p>
   <p class="help-footer"><button class="chip" id="helpIntro" type="button">VER LA INTRO</button></p>
 </dialog>
 
@@ -549,7 +551,70 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   });
   window.addEventListener("keyup", function (e) { var k = KEYMAP[e.key]; if (k) keys[k] = false; });
   window.addEventListener("blur", function () { keys = {}; vk = {}; });
-  function inp(k) { return !!(keys[k] || vk[k]); }
+  function inp(k) { return !!(keys[k] || vk[k] || pk[k]); }
+
+  /* ---------- controles: Joy-Con, control Pro, Xbox, PlayStation... (Gamepad API) ----------
+     Por privacidad el navegador solo muestra el control después de oprimir un botón con la página abierta.
+     Jugando: cruceta o palanca = moverse; A/B/X/Y = arreglar. En las pantallas: cruceta = elegir botón,
+     A o + = aceptar. Carteles, intro y ayuda también se pasan con el control. */
+  var pk = {}, padPrev = {}, padOn = false, padSel = null;
+  var PAD_DEFAULT = { nameScr: "nameAnon" };  // con control no se puede escribir el apodo
+  function padRead() {
+    var st = { left: false, right: false, up: false, down: false, a: false, start: false, back: false };
+    var list = navigator.getGamepads ? navigator.getGamepads() : [];
+    for (var i = 0; i < list.length; i++) {
+      var g = list[i];
+      if (!g || g.connected === false) continue;
+      var b = function (n) { return !!(g.buttons[n] && g.buttons[n].pressed); };
+      var ax = g.axes[0] || 0, ay = g.axes[1] || 0;
+      st.left = st.left || ax < -0.5 || b(14); st.right = st.right || ax > 0.5 || b(15);
+      st.up = st.up || ay < -0.5 || b(12); st.down = st.down || ay > 0.5 || b(13);
+      st.a = st.a || b(0) || b(1) || b(2) || b(3);
+      st.start = st.start || b(9);
+      st.back = st.back || b(8);
+    }
+    return st;
+  }
+  function padButtons(scr) {
+    return [].slice.call(scr.querySelectorAll("button")).filter(function (x) { return !x.disabled && !x.hidden && x.offsetParent; });
+  }
+  function padSelect(x) {
+    if (padSel) padSel.classList.remove("pad-sel");
+    padSel = x;
+    if (x) { x.classList.add("pad-sel"); try { x.focus({ preventScroll: true }); } catch (e) {} }
+  }
+  function pollPad() {
+    var st = padRead(), pv = padPrev; padPrev = st;
+    var hit = function (n) { return st[n] && !pv[n]; };
+    var any = st.left || st.right || st.up || st.down || st.a || st.start || st.back;
+    if (any && !padOn) {
+      padOn = true;
+      var m = document.getElementById("padMsg"); if (m) m.hidden = false;
+      say("Control conectado");
+    }
+    var playing = state === "play" && !cut && !helpDialog.open && introEl.hidden && !rotateShown();
+    pk = playing ? { left: st.left, right: st.right, up: st.up, down: st.down, act: st.a } : {};
+    if (!any && !(pv.left || pv.right || pv.up || pv.down || pv.a || pv.start || pv.back)) return;
+    var dir = hit("right") || hit("down") ? 1 : hit("left") || hit("up") ? -1 : 0;
+    var ok = hit("a") || hit("start");
+    if (!introEl.hidden) {  // intro cómic
+      if (ok || dir > 0) introNext.click(); else if (dir < 0) introShow(introI - 1); else if (hit("back")) closeIntro();
+      return;
+    }
+    if (helpDialog.open) { if (ok || hit("back")) helpDialog.close(); return; }
+    if (rotateShown()) { if (ok) document.getElementById("rotateSkip").click(); return; }
+    if (cut && state === "play") { if (ok) skipCut(); return; }
+    var scr = [].slice.call(document.querySelectorAll(".screen")).filter(function (x) { return !x.hidden; })[0];
+    if (!scr) { if (padSel) padSelect(null); return; }
+    var btns = padButtons(scr), i = btns.indexOf(padSel);
+    if (dir) padSelect(btns[i < 0 ? 0 : (i + dir + btns.length) % btns.length]);
+    else if (ok) {
+      var target = i >= 0 ? padSel : (PAD_DEFAULT[scr.id] && document.getElementById(PAD_DEFAULT[scr.id])) || btns[0];
+      padSelect(null);
+      if (target) target.click();
+    }
+  }
+  window.addEventListener("gamepadconnected", function () { var m = document.getElementById("padMsg"); if (m) m.hidden = false; padOn = true; });
 
   Array.prototype.forEach.call(document.querySelectorAll(".pad button"), function (b) {
     var k = b.getAttribute("data-k");
@@ -1548,6 +1613,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   var last = 0;
   function frame(ts) {
     var dt = Math.min(0.05, (ts - last) / 1000 || 0); last = ts; anim = ts / 1000;
+    pollPad();
     if (cut && now() - cut.start >= cut.dur) cut = null;
     if (state === "play" && !helpDialog.open && !rotateShown() && !cut) update(dt);
     render();

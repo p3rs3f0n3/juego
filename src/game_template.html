@@ -77,6 +77,7 @@ h1 {
 }
 .chip:hover { border-color: var(--accent); }
 .chip:focus-visible, .btn:focus-visible, .pad button:focus-visible { outline: 3px solid var(--warn); outline-offset: 2px; }
+.pad-sel { outline: 3px solid var(--warn) !important; outline-offset: 3px; }  /* botón elegido con el control */
 .stage {
   position: relative;
   width: 100%;
@@ -323,6 +324,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     <h2>TICKET RUSH</h2>
     <p>Corre a cada <b style="color:var(--warn)">!</b>, mantén ARREGLAR (o ESPACIO) antes de que venza el SLA y esquiva al jefe. Asciende de practicante a jefe de TI.</p>
     <p class="tips"><b style="color:var(--warn)">☕</b> La cafetera da turbo · <b style="color:#ff7eb6">♥</b> El jefe se distrae con Dani</p>
+    <p class="tips" id="padMsg" hidden>🎮 Control conectado: A para arreglar · + para empezar</p>
     <div class="row">
       <button class="btn" id="start" type="button">EMPEZAR TURNO</button>
       <button class="btn alt" id="boardBtn" type="button" hidden>🏆 TABLA</button>
@@ -393,7 +395,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     <section class="help-card"><div class="help-art"><img class="help-sprite" src="__JEFE_FRENTE__" alt="El jefe"><svg width="24" height="24" viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="#fc1d64" d="M1 2h3v1h2V2h3v1h2v4H9v2H7v2H5V9H3V7H1z"/></svg><img class="help-sprite" src="__DANI_FRENTE__" alt="Dani"></div><h3>DISTRAE AL JEFE</h3><p>Llévalo cerca de Dani. Se quedará embobado unos segundos: ¡aprovecha para escapar!</p></section>
     <section class="help-card help-wide"><div class="help-art"><svg width="48" height="56" viewBox="0 0 12 14" shape-rendering="crispEdges" aria-hidden="true"><path fill="#0d0c14" d="M0 0h12v14H0z"/><path fill="#f2f0f8" d="M1 1h10v12H1z"/><path fill="#c9c4dc" d="M8 1h3v3H8z"/><path fill="#6a8cf0" d="M3 4h5v1H3zm0 2h6v1H3zm0 2h4v1H3z"/><path fill="#ef5b6b" d="M7 9h3v3H7z"/></svg></div><h3>EXCUSA = SALVAVIDAS</h3><p>A veces aparece una hojita en el piso. Recógela caminando: la próxima vez que el jefe te alcance, sueltas la excusa ("¡Tengo cita médica!") y no pierdes vida. Solo puedes guardar una.</p></section>
   </div>
-  <p class="help-footer">Evita al jefe y resuelve cada ticket antes de que venza el SLA.<br>La partida queda en pausa mientras consultas esta ayuda.</p>
+  <p class="help-footer">Evita al jefe y resuelve cada ticket antes de que venza el SLA.<br>La partida queda en pausa mientras consultas esta ayuda.<br>🎮 ¿Tienes control (Joy-Con, Xbox, PlayStation)? Conéctalo por Bluetooth y oprime un botón: cruceta para moverte, A para arreglar, + para empezar.</p>
   <p class="help-footer"><button class="chip" id="helpIntro" type="button">VER LA INTRO</button></p>
 </dialog>
 
@@ -549,7 +551,70 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   });
   window.addEventListener("keyup", function (e) { var k = KEYMAP[e.key]; if (k) keys[k] = false; });
   window.addEventListener("blur", function () { keys = {}; vk = {}; });
-  function inp(k) { return !!(keys[k] || vk[k]); }
+  function inp(k) { return !!(keys[k] || vk[k] || pk[k]); }
+
+  /* ---------- controles: Joy-Con, control Pro, Xbox, PlayStation... (Gamepad API) ----------
+     Por privacidad el navegador solo muestra el control después de oprimir un botón con la página abierta.
+     Jugando: cruceta o palanca = moverse; A/B/X/Y = arreglar. En las pantallas: cruceta = elegir botón,
+     A o + = aceptar. Carteles, intro y ayuda también se pasan con el control. */
+  var pk = {}, padPrev = {}, padOn = false, padSel = null;
+  var PAD_DEFAULT = { nameScr: "nameAnon" };  // con control no se puede escribir el apodo
+  function padRead() {
+    var st = { left: false, right: false, up: false, down: false, a: false, start: false, back: false };
+    var list = navigator.getGamepads ? navigator.getGamepads() : [];
+    for (var i = 0; i < list.length; i++) {
+      var g = list[i];
+      if (!g || g.connected === false) continue;
+      var b = function (n) { return !!(g.buttons[n] && g.buttons[n].pressed); };
+      var ax = g.axes[0] || 0, ay = g.axes[1] || 0;
+      st.left = st.left || ax < -0.5 || b(14); st.right = st.right || ax > 0.5 || b(15);
+      st.up = st.up || ay < -0.5 || b(12); st.down = st.down || ay > 0.5 || b(13);
+      st.a = st.a || b(0) || b(1) || b(2) || b(3);
+      st.start = st.start || b(9);
+      st.back = st.back || b(8);
+    }
+    return st;
+  }
+  function padButtons(scr) {
+    return [].slice.call(scr.querySelectorAll("button")).filter(function (x) { return !x.disabled && !x.hidden && x.offsetParent; });
+  }
+  function padSelect(x) {
+    if (padSel) padSel.classList.remove("pad-sel");
+    padSel = x;
+    if (x) { x.classList.add("pad-sel"); try { x.focus({ preventScroll: true }); } catch (e) {} }
+  }
+  function pollPad() {
+    var st = padRead(), pv = padPrev; padPrev = st;
+    var hit = function (n) { return st[n] && !pv[n]; };
+    var any = st.left || st.right || st.up || st.down || st.a || st.start || st.back;
+    if (any && !padOn) {
+      padOn = true;
+      var m = document.getElementById("padMsg"); if (m) m.hidden = false;
+      say("Control conectado");
+    }
+    var playing = state === "play" && !cut && !helpDialog.open && introEl.hidden && !rotateShown();
+    pk = playing ? { left: st.left, right: st.right, up: st.up, down: st.down, act: st.a } : {};
+    if (!any && !(pv.left || pv.right || pv.up || pv.down || pv.a || pv.start || pv.back)) return;
+    var dir = hit("right") || hit("down") ? 1 : hit("left") || hit("up") ? -1 : 0;
+    var ok = hit("a") || hit("start");
+    if (!introEl.hidden) {  // intro cómic
+      if (ok || dir > 0) introNext.click(); else if (dir < 0) introShow(introI - 1); else if (hit("back")) closeIntro();
+      return;
+    }
+    if (helpDialog.open) { if (ok || hit("back")) helpDialog.close(); return; }
+    if (rotateShown()) { if (ok) document.getElementById("rotateSkip").click(); return; }
+    if (cut && state === "play") { if (ok) skipCut(); return; }
+    var scr = [].slice.call(document.querySelectorAll(".screen")).filter(function (x) { return !x.hidden; })[0];
+    if (!scr) { if (padSel) padSelect(null); return; }
+    var btns = padButtons(scr), i = btns.indexOf(padSel);
+    if (dir) padSelect(btns[i < 0 ? 0 : (i + dir + btns.length) % btns.length]);
+    else if (ok) {
+      var target = i >= 0 ? padSel : (PAD_DEFAULT[scr.id] && document.getElementById(PAD_DEFAULT[scr.id])) || btns[0];
+      padSelect(null);
+      if (target) target.click();
+    }
+  }
+  window.addEventListener("gamepadconnected", function () { var m = document.getElementById("padMsg"); if (m) m.hidden = false; padOn = true; });
 
   Array.prototype.forEach.call(document.querySelectorAll(".pad button"), function (b) {
     var k = b.getAttribute("data-k");
@@ -1548,6 +1613,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   var last = 0;
   function frame(ts) {
     var dt = Math.min(0.05, (ts - last) / 1000 || 0); last = ts; anim = ts / 1000;
+    pollPad();
     if (cut && now() - cut.start >= cut.dur) cut = null;
     if (state === "play" && !helpDialog.open && !rotateShown() && !cut) update(dt);
     render();
