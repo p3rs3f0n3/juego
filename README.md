@@ -202,3 +202,23 @@ El visor y el juego comparten el mismo renderizado y `src/sprites.config.json`.
 «Probar borrador» aplica los ajustes solo en una pestaña de prueba; «Guardar en proyecto»
 escribe la configuración y regenera el juego local.
 Más detalles en [tools/sprites/README.md](tools/sprites/README.md).
+
+### Update de octubre: protagonista y Halloween
+
+La protagonista usa camisa azul cobalto en movimiento, reposo, tecleo y celebración.
+Las hojas nuevas de movimiento y acciones están en `sprites/jugadora_octubre.png` y
+`sprites/jugadora_acciones_octubre.png`; sus originales están en `design-proposals/octubre-2026/`.
+La caminata alterna pasos según distancia recorrida y el halo rosa animado se dibuja bajo sus pies.
+
+Las nueve variantes de personajes están en `sprites/halloween/`, en PNG transparente 4 × 3.
+Dani lleva sombrero de bruja, el jefe y gerente cachitos, la protagonista un broche de murciélago,
+la señora del aseo un fantasma, la chismosa orejas de gato y el pasante un gorro de calabaza.
+El estudio permite elegir **Normal / Halloween**, editar cada variante y previsualizar el halo.
+Las banderitas, telarañas, calabazas, luces y fantasmas de la oficina son decoración sin colisiones.
+Se activa del 23 de octubre al 1 de noviembre; `?tema=normal` y `?tema=halloween` permiten probar.
+
+Los PNG ya vienen preparados. Solo para regenerar arte: `npm install --prefix scripts` y
+`node scripts/preparar_octubre.cjs`, luego `python3 scripts/construir_juego.py`.
+La herramienta opcional usa `@napi-rs/canvas`; el juego y el servidor del estudio siguen sin
+necesitar npm. Los accesorios y el halo están definidos en `src/sprite-seasonal.js`.
+Pruebas adicionales: `node tests/octubre.cjs`.

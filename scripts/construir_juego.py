@@ -17,7 +17,9 @@ with open(ROOT / "src/game_template.html", encoding="utf-8") as f:
 
 config = json.loads((ROOT / "src/sprites.config.json").read_text())
 validate_config(config, ROOT)
-files = {a["file"]: uri(str(ROOT / a["file"])) for a in config["assets"].values()}
+variants = list(config["assets"].values()) + [a["halloween"] for a in config["assets"].values() if a.get("halloween")]
+files = {a["file"]: uri(str(ROOT / a["file"])) for a in variants}
+html = html.replace("__SPRITE_SEASONAL__", (ROOT / "src/sprite-seasonal.js").read_text())
 html = html.replace("__SPRITE_RUNTIME__", (ROOT / "src/sprite-runtime.js").read_text())
 html = html.replace("__SPRITE_CONFIG__", json.dumps(config, ensure_ascii=True).replace("<", "\\u003c"))
 html = html.replace("__SPRITE_FILES__", json.dumps(files))

@@ -10,7 +10,12 @@ def number(value, low, high, integer=False):
 def validate_config(config, root):
     if not isinstance(config,dict) or config.get('version')!=1 or not isinstance(config.get('assets'),dict) or set(config['assets']) != REQUIRED:
         raise ValueError('La configuración debe conservar todos los slots del juego.')
-    for id,a in config['assets'].items():
+    entries=list(config['assets'].items())
+    for id,a in list(entries):
+        if isinstance(a,dict) and a.get('halloween') is not None:
+            if not isinstance(a['halloween'],dict) or a['halloween'].get('halloween') is not None: raise ValueError('Variante Halloween inválida: '+id)
+            entries.append((id+' (Halloween)',a['halloween']))
+    for id,a in entries:
         if not isinstance(a,dict): raise ValueError('Asset inválido: '+id)
         if not isinstance(a.get('label'),str) or not 1<=len(a['label'])<=512: raise ValueError('Nombre de slot inválido: '+id)
         source=a.get('source')

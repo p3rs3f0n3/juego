@@ -12,6 +12,10 @@
       for (const k of ['columns','rows','cellWidth','cellHeight','width','height','stride']) if (!Number.isFinite(a[k]) || a[k] <= 0 || a[k] > 4096) throw Error('Valor inválido: '+id+' · '+k);
       for (const k of ['columns','rows','cellWidth','cellHeight']) if (!Number.isInteger(a[k])) throw Error('La cuadrícula requiere enteros.');
       for (const k of ['anchorX','anchorY','offsetX','offsetY']) if (!Number.isFinite(a[k]) || Math.abs(a[k]) > 4096) throw Error('Posición inválida: '+id);
+      if (a.halloween) {
+        if (a.halloween.halloween) throw Error('La variante Halloween no puede contener otra variante.');
+        validate({version:1, assets:{[id]:a.halloween}});
+      }
       if (!a.animations || !Object.keys(a.animations).length) throw Error('Faltan animaciones: '+id);
       for (const an of Object.values(a.animations)) {
         if (!Array.isArray(an.frames) || !an.frames.length || an.frames.length > 256 || an.frames.some(f => !Number.isInteger(f) || f < 0 || f >= a.columns*a.rows)) throw Error('Fotogramas fuera de la hoja: '+id);
@@ -46,5 +50,13 @@
     } catch (_) { /* A missing or invalid draft never prevents starting the game. */ }
     return validate(base);
   }
-  root.SpriteRuntime={KEY,validate,animation,frame,rect,draw,resolve};
+  function applyTheme(config, theme) {
+    const result=JSON.parse(JSON.stringify(config));
+    for(const [id,a] of Object.entries(result.assets)) {
+      if(theme==='halloween' && a.halloween) result.assets[id]=a.halloween;
+      delete result.assets[id].halloween;
+    }
+    return validate(result);
+  }
+  root.SpriteRuntime={KEY,validate,animation,frame,rect,draw,resolve,applyTheme};
 })(typeof globalThis !== 'undefined' ? globalThis : window);

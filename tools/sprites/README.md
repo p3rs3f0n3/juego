@@ -34,8 +34,8 @@ y los atlas de muebles también se soportan explícitamente.
 
 ## Por qué había diferencias
 
-La protagonista usa tres PNG diferentes: movimiento direccional nuevo, tecleo anterior y acciones
-anteriores. Cada uno tiene su slot. Elegir un PNG diferente en el visor solo modifica ese slot;
+La protagonista tiene tres slots (movimiento, tecleo, reposo/celebración) y ahora usa dos PNG
+coordinados de octubre. Tecleo y celebración comparten la hoja de acciones, con secuencias distintas. Elegir un PNG diferente en el visor solo modifica ese slot;
 las otras acciones no cambian automáticamente. El original de `design-proposals/` es una referencia:
 los scripts lo recortan, escalan, alinean y reducen de paleta para crear el PNG de `sprites/`.
 
@@ -62,3 +62,12 @@ sigue eligiendo cuándo caminar, trabajar o celebrar; cambiar una secuencia no a
 - `scripts/construir_juego.py`: generación del HTML con ajustes guardados.
 
 No subas el HTML generado a la rama; sigue el flujo del README principal del proyecto.
+
+## Versiones de Halloween
+
+El selector **Versión** cambia entre la hoja normal y la de Halloween de cada personaje.
+Los accesorios ya están incluidos en los PNG estacionales, por lo que no se duplican al jugar.
+La configuración de cada variante se guarda dentro de `halloween` en el slot correspondiente.
+«Probar borrador» respeta la versión seleccionada. «Halo principal» muestra u oculta el halo
+solo en el visor; el halo siempre identifica a la protagonista en la partida.
+Los muebles mantienen su arte base; la decoración de Halloween se compone en el escenario.

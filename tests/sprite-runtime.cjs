@@ -2,7 +2,7 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const ctx={URLSearchParams};vm.createContext(ctx);vm.runInContext(fs.readFileSync(__dirname+'/../src/sprite-runtime.js','utf8'),ctx);
 const R=ctx.SpriteRuntime,config=JSON.parse(fs.readFileSync(__dirname+'/../src/sprites.config.json','utf8'));
 R.validate(config);const a=config.assets.playerDirections;
-assert.equal(R.frame(a,'up',0),4);assert.equal(R.frame(a,'up',.25),6);assert.equal(R.frame(a,'left',0),8);assert.equal(R.animation(a,'left').flip,true);
+assert.equal(R.frame(a,'up',0),4);assert.equal(R.frame(a,'up',2/a.animations.up.fps),6);assert.equal(R.frame(a,'left',0),8);assert.equal(R.animation(a,'left').flip,true);
 assert.deepEqual(Array.from(R.rect(a,5)),[56,56,56,56]);
 const cloned=JSON.parse(JSON.stringify(config));cloned.assets.playerDirections.offsetX=4;
 const store={getItem:()=>JSON.stringify(cloned)};

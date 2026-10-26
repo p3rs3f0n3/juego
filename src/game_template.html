@@ -436,6 +436,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
 
 <script>
 __SPRITE_RUNTIME__
+__SPRITE_SEASONAL__
 </script>
 <script>
 (function () {
@@ -457,7 +458,8 @@ __SPRITE_RUNTIME__
   function sheet(src) { var i = new Image(); i.src = src; return i; }
   var spriteStorage = { getItem: function () { return null; } };
   try { spriteStorage = window.localStorage; } catch (_) {}
-  var spriteConfig = SpriteRuntime.resolve(__SPRITE_CONFIG__, spriteStorage, location.search);
+  var HALLOWEEN = SpriteSeasonal.isHalloween(location.search, new Date());
+  var spriteConfig = SpriteRuntime.applyTheme(SpriteRuntime.resolve(__SPRITE_CONFIG__, spriteStorage, location.search), HALLOWEEN ? "halloween" : "normal");
   var spriteFiles = __SPRITE_FILES__, spriteImages = {};
   Object.keys(spriteConfig.assets).forEach(function (id) {
     var image = sheet(spriteFiles[spriteConfig.assets[id].file] || spriteConfig.assets[id].file);
@@ -481,7 +483,7 @@ __SPRITE_RUNTIME__
     var moving = !front && frame < 8 && !(img === shA && e.pause > 0);
     var name = action || (img === shPA ? "work" : frame < 4 ? "walk" : frame < 8 ? "run" : frame === 8 ? "idle" : "special");
     var step = moving ? (e.walk || 0) / a.stride : undefined;
-    var time = img === shA && action === "special" ? Math.max(0, 1.2 - e.unplug) : anim;
+    var time = action === "celebrate" ? Math.max(0, 0.32 - P.cheer) : img === shA && action === "special" ? Math.max(0, 1.2 - e.unplug) : anim;
     configuredSprite(img.spriteId, name, e.x, e.y, time, step, !front && facing(e) < 0);
   }
   function drawDirectionalPlayer() {
@@ -1276,12 +1278,6 @@ __SPRITE_RUNTIME__
   /* ---------- Halloween: adornos encima del escenario de cada rango ----------
      Se prende solo del 23 de octubre al 1 de noviembre (o con ?tema=halloween / ?tema=normal para probar).
      Todo va en paredes, ventanas y encima de los muebles: nada en el piso, así que no cambia los choques ni la dificultad. */
-  var HALLOWEEN = (function () {
-    var q = /[?&]tema=(\w+)/.exec(location.search);
-    if (q) return q[1] === "halloween";
-    var d = new Date(), m = d.getMonth(), day = d.getDate();
-    return (m === 9 && day >= 23) || (m === 10 && day <= 1);
-  })();
   function pumpkin(x, y, sz) {  // calabaza tallada; sz = tamaño de cada "pixel"
     var p = sz || 2, glow = Math.floor(anim * 3 + x) % 5 ? "#ffd84a" : "#ffb02e";
     R(x + 2 * p, y, p, 2 * p, "#3f7a35");
@@ -1343,32 +1339,7 @@ __SPRITE_RUNTIME__
       pumpkin(704, 2, 3);
     }
   }
-  // Disfraces: el jefe de vampiro (capa), el gerente de diablo (cachos) y Dani de bruja (sombrero).
-  function costumeBack(e) {
-    if (rank >= 2) return;
-    var x = Math.round(e.x), y = Math.round(e.y);
-    R(x - 21, y - 36, 42, 32, "#16121f"); R(x - 19, y - 34, 38, 28, "#b3263a");
-    R(x - 19, y - 48, 8, 14, "#16121f"); R(x + 11, y - 48, 8, 14, "#16121f");  // cuello alto de vampiro
-    R(x - 17, y - 46, 4, 10, "#b3263a"); R(x + 13, y - 46, 4, 10, "#b3263a");
-  }
-  function costumeFront(e, who) {
-    var x = Math.round(e.x), y = Math.round(e.y) - 50;
-    if (who === "boss" && rank >= 2) {
-      [-1, 1].forEach(function (sd) {
-        var hx = x + sd * 10;
-        R(hx - 4, y - 1, 8, 8, "#0d0c14"); R(hx - 3, y, 6, 6, "#e0303a");
-        R(hx - 2 + sd * 2, y - 6, 5, 6, "#0d0c14"); R(hx - 1 + sd * 2, y - 5, 3, 5, "#e0303a");
-      });
-    } else if (who === "mate") {
-      var c = "#5b2a86", k = "#0d0c14";
-      R(x - 19, y + 3, 38, 6, k); R(x - 18, y + 4, 36, 4, c);           // ala
-      R(x - 11, y - 5, 22, 9, k); R(x - 10, y - 4, 20, 8, c);           // copa
-      R(x - 10, y + 0, 20, 3, "#ff8a1f");                               // cinta naranja
-      R(x - 7, y - 13, 15, 9, k); R(x - 6, y - 12, 13, 8, c);
-      R(x - 2, y - 20, 10, 8, k); R(x - 1, y - 19, 8, 7, c);
-      R(x + 5, y - 24, 7, 5, k); R(x + 6, y - 23, 5, 4, c);             // punta doblada
-    }
-  }
+  // Los accesorios estacionales están incluidos en los PNG de sprites/halloween/.
 
   function drawWindow(x, th) {
     if (th.sky === "dia" && configuredSprite("window", "idle", x - 2, 4, anim)) return;
@@ -1501,7 +1472,7 @@ __SPRITE_RUNTIME__
     }
     R(T - 4, T, 4, 8 * T, sd[3]); R(15 * T, T, 4, 8 * T, sd[3]);
     drawSideExtras(th);
-    if (HALLOWEEN) drawHalloweenWall(th);
+    if (HALLOWEEN) { drawHalloweenWall(th); SpriteSeasonal.decorations(ctx, W, anim); }
   }
 
   // Pantalla de un computador: con ticket parpadea en azul con carita triste; sin ticket, código en verde.
@@ -1639,6 +1610,7 @@ __SPRITE_RUNTIME__
 
   function shadow(x, y, w) { ctx.fillStyle = "rgba(0,0,0,0.3)"; ctx.beginPath(); ctx.ellipse(Math.round(x), Math.round(y), w, 5, 0, 0, 7); ctx.fill(); }
   function drawPlayer() {
+    SpriteSeasonal.halo(ctx, P.x, P.y, anim);
     shadow(P.x, P.y - 1, 14);
     var bob = P.moving ? Math.round(Math.sin(anim * 16) * 1.5) : 0;
     if (P.inv > 0 && Math.floor(anim * 14) % 2) ctx.globalAlpha = 0.45;
@@ -1648,6 +1620,7 @@ __SPRITE_RUNTIME__
       else if (P.party > 0 && !P.moving) drawChibi(shP, P, cycle(8, 6), true, "special");
       else if (P.fixing && ready(shPA)) drawChibi(shPA, P, Math.floor(anim * 8) % 8, true);
       else if (P.stun > 0) drawChibi(shP, P, 8, true);
+      else if (!P.moving && (!P.dir || P.dir === "down")) drawChibi(shP, P, 8, true);
       else if (ready(shPD)) drawDirectionalPlayer();
       else if (!P.moving) drawChibi(shP, P, 8, true);
       else drawChibi(shP, P, P.boost > 0 ? cycle(4, 12) : cycle(0, 8));
@@ -1664,7 +1637,6 @@ __SPRITE_RUNTIME__
       : (B.state !== "wander" || Math.hypot(B.tx - B.x, B.ty - B.y) > 8) ? Math.round(Math.sin(anim * 12) * 1.5) : 0;
     var img = rank >= 2 ? imgG : imgB, sh = rank >= 2 ? shG : shB;
     var walking = B.state === "wander" && Math.hypot(B.tx - B.x, B.ty - B.y) > 8;
-    if (HALLOWEEN) costumeBack(B);
     if (ready(sh)) {
       // bravo cuando te alcanza · embobado de frente con Dani · corre persiguiendo o huyendo · camina · quieto
       if (B.angry > 0) drawChibi(sh, B, cycle(8, 8), true, "special");
@@ -1674,7 +1646,6 @@ __SPRITE_RUNTIME__
       else drawChibi(sh, B, 8, true);
     } else if (img.complete && img.naturalWidth) ctx.drawImage(img, Math.round(B.x - 24), Math.round(B.y - 47 + bob), 48, 48);
     else R(B.x - 10, B.y - 36, 20, 36, "#34343e");
-    if (HALLOWEEN) costumeFront(B, "boss");
     if (B.sayT > 0) {
       ctx.font = "20px " + F_B; var w = ctx.measureText(B.say).width + 14;
       var bx = Math.round(Math.max(4, Math.min(W - w - 4, B.x - w / 2))), by = Math.round(B.y - 80);
@@ -1693,7 +1664,6 @@ __SPRITE_RUNTIME__
       else drawChibi(shM, M, cycle(0, 7));
     } else if (imgM.complete && imgM.naturalWidth) ctx.drawImage(imgM, Math.round(M.x - 24), Math.round(M.y - 47 + bob), 48, 48);
     else R(M.x - 10, M.y - 36, 20, 36, "#de5670");
-    if (HALLOWEEN) costumeFront(M, "mate");
   }
   var MINI_HEART = ["01010", "11111", "11111", "01110", "00100"];
   function drawHearts() {
@@ -1780,8 +1750,10 @@ __SPRITE_RUNTIME__
     else R(N.x - 10, N.y - 36, 20, 36, "#3fa34d");
     // gorra (provisional, en gris como el muñequito mientras llega la figura final)
     var x = Math.round(N.x), y = Math.round(N.y) - 50, f = N.face || 1;
+    if (!HALLOWEEN) {
     R(x - 12, y - 1, 24, 8, "#0d0c14"); R(x - 11, y, 22, 6, "#9a9a9a"); R(x - 11, y + 5, 22, 2, "#5e5e5e");
     R(f > 0 ? x + 6 : x - 20, y + 5, 14, 3, "#5e5e5e");
+    }
     if (N.working && Math.floor(anim * 6) % 2) R(N.x + 14 * f, N.y - 30, 3, 3, "#f2d76b");  // chispita de trabajo
   }
   function drawPops() {
