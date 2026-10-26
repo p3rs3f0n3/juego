@@ -435,6 +435,9 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
 <p class="sr" id="live" aria-live="polite"></p>
 
 <script>
+__SPRITE_RUNTIME__
+</script>
+<script>
 (function () {
   "use strict";
   var W = 768, H = 480, T = 48;
@@ -452,25 +455,47 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
      Las hojas miran a la derecha; a la izquierda se dibujan reflejadas. */
   var CH = 56;
   function sheet(src) { var i = new Image(); i.src = src; return i; }
-  var shP = sheet("__CHIBI_JUGADORA__"), shB = sheet("__CHIBI_JEFE__"), shG = sheet("__CHIBI_GERENTE__"), shM = sheet("__CHIBI_DANI__");
-  var officeArt = sheet("__OFFICE__");  // atlas de muebles, tres paletas por rango
-  var shPA = sheet("__CHIBI_JUGADORA_ARREGLANDO__");  // 8 cuadros de frente: arreglando un ticket
-  // Compañeros de oficina (aseo y pasante: muñequitos provisionales hasta que lleguen los de Manuel)
-  var shA = sheet("__CHIBI_ASEO__"), shS = sheet("__CHIBI_SAPO__"), shN = sheet("__CHIBI_PASANTE__");
-  function ready(i) { return i.complete && i.naturalWidth; }
-  function facing(e) {
-    if (e.fx === undefined) { e.fx = e.x; e.face = 1; }
-    if (e.x > e.fx + 0.05) e.face = 1; else if (e.x < e.fx - 0.05) e.face = -1;
-    e.fx = e.x;
-    return e.face;
+  var spriteStorage = { getItem: function () { return null; } };
+  try { spriteStorage = window.localStorage; } catch (_) {}
+  var spriteConfig = SpriteRuntime.resolve(__SPRITE_CONFIG__, spriteStorage, location.search);
+  var spriteFiles = __SPRITE_FILES__, spriteImages = {};
+  Object.keys(spriteConfig.assets).forEach(function (id) {
+    var image = sheet(spriteFiles[spriteConfig.assets[id].file] || spriteConfig.assets[id].file);
+    image.spriteId = id; spriteImages[id] = image;
+  });
+  var shP = spriteImages.player, shB = spriteImages.boss, shG = spriteImages.manager, shM = spriteImages.mate;
+  var shPD = spriteImages.playerDirections, shPA = spriteImages.playerWork;
+  var shA = spriteImages.cleaner, shS = spriteImages.gossip, shN = spriteImages.intern;
+  var officeArt = sheet("__OFFICE__");
+  function configuredSprite(id, name, x, y, time, step, flip) {
+    var a = spriteConfig.assets[id], an = SpriteRuntime.animation(a, name);
+    return SpriteRuntime.draw(ctx, spriteImages[id], a, SpriteRuntime.frame(a, name, time, step), x, y, !!flip !== !!an.flip);
   }
+  function ready(i) { return i.complete && i.naturalWidth; }
+  function facing(e) { return e.face || 1; }
   function cycle(base, fps) { return base + Math.floor(anim * fps) % 4; }
-  function drawChibi(img, e, frame, front) {
-    var f = facing(e), x = Math.round(e.x), y = Math.round(e.y) - CH + 1;
-    if (front || f > 0) { ctx.drawImage(img, frame * CH, 0, CH, CH, x - CH / 2, y, CH, CH); return; }
-    ctx.save(); ctx.translate(x, 0); ctx.scale(-1, 1);
-    ctx.drawImage(img, frame * CH, 0, CH, CH, -CH / 2, y, CH, CH);
-    ctx.restore();
+  // Gait follows distance travelled, not the render clock. Blocked actors stop stepping.
+  function gait(e, base) { return base + Math.floor((e.walk || 0) / 16) % 4; }
+  function drawChibi(img, e, frame, front, action) {
+    var a = spriteConfig.assets[img.spriteId];
+    var moving = !front && frame < 8 && !(img === shA && e.pause > 0);
+    var name = action || (img === shPA ? "work" : frame < 4 ? "walk" : frame < 8 ? "run" : frame === 8 ? "idle" : "special");
+    var step = moving ? (e.walk || 0) / a.stride : undefined;
+    var time = img === shA && action === "special" ? Math.max(0, 1.2 - e.unplug) : anim;
+    configuredSprite(img.spriteId, name, e.x, e.y, time, step, !front && facing(e) < 0);
+  }
+  function drawDirectionalPlayer() {
+    var a = spriteConfig.assets.playerDirections, dir = P.dir || "down";
+    configuredSprite("playerDirections", dir, P.x, P.y, anim, P.moving ? (P.walk || 0) / a.stride : 1, false);
+  }
+  function celebrationStars() {
+    var age = 0.32 - P.cheer;
+    for (var i = 0; i < 3; i++) {
+      var x = Math.round(P.x + (i - 1) * 19), y = Math.round(P.y - 48 - age * 32 - (i % 2) * 10);
+      ctx.globalAlpha = Math.min(1, P.cheer / 0.1);
+      R(x - 1, y - 4, 2, 9, "#ffe27a"); R(x - 4, y - 1, 9, 2, "#ffe27a"); R(x - 1, y - 1, 3, 3, "#fff8d0");
+    }
+    ctx.globalAlpha = 1;
   }
 
   var F_D = '"Press Start 2P", ui-monospace, monospace';
@@ -772,8 +797,16 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     return moved;
   }
   function move(e, dx, dy) {
+    var ox = e.x, oy = e.y;
     if (dx && !approach(e, "x", dx) && !dy) slideAround(e, "x", dx);
     if (dy && !approach(e, "y", dy) && !dx) slideAround(e, "y", dy);
+    var mx = e.x - ox, my = e.y - oy, distance = Math.hypot(mx, my);
+    if (distance > 0.001) {
+      e.walk = (e.walk || 0) + distance;
+      if (Math.abs(mx) > Math.abs(my)) { e.face = mx > 0 ? 1 : -1; e.dir = mx > 0 ? "right" : "left"; }
+      else e.dir = my > 0 ? "down" : "up";
+    }
+    return distance > 0.001;
   }
   function distRect(x, y, r) {
     var dx = Math.max(r.x - x, 0, x - (r.x + r.w)), dy = Math.max(r.y - y, 0, y - (r.y + r.h));
@@ -933,6 +966,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     lastDone = clock;
     var pts = Math.round(t.pts * (1 + combo * 0.2));
     score += pts; done++;
+    P.cheer = 0.32; P.fixing = false;
     pop(t.st.x + t.st.w / 2, t.st.y - 10, "+" + pts, "#5fd6a1");
     if (combo > 0) pop(t.st.x + t.st.w / 2, t.st.y + 6, "COMBO x" + (combo + 1), "#f2b441");
     beep(520, 0.09, "square", 0.05); setTimeout(function () { beep(780, 0.12, "square", 0.05); }, 90);
@@ -1175,12 +1209,12 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     var fixing = act && tk && P.stun <= 0;
     P.fixing = !!fixing;  // solo para el dibujo: nerviosa y sudando mientras arregla
     if (P.party > 0) P.party -= dt;
+    if (P.cheer > 0) P.cheer = Math.max(0, P.cheer - dt);
     if (B.angry > 0) B.angry -= dt;
     P.moving = false;
     if (P.stun <= 0 && !fixing && (dx || dy)) {
       var l = Math.hypot(dx, dy), sp = P.boost > 0 ? 190 : 125;
-      move(P, dx / l * sp * dt, dy / l * sp * dt);
-      P.moving = true;
+      P.moving = move(P, dx / l * sp * dt, dy / l * sp * dt);
     }
     for (var i = 0; i < tickets.length; i++) {
       var t = tickets[i];
@@ -1225,7 +1259,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
      equipos y adornos. Las máquinas de las paredes laterales son solo decoración (ahí no se camina). */
   var THEMES = [
     { // practicante (Día 1): la oficina de siempre
-      bg: "#867d68", floor: ["#c5cebd", "#c2ccba", "#b4c0aa"], wall: ["#eee0c1", "#a27f57", "#c0a47b"],
+      bg: "#867d68", floor: ["#bcc7ae", "#bec8b1", "#aab99f"], wall: ["#eee0c1", "#a27f57", "#c0a47b"],
       side: ["#dfcba6", "#e3d1af", "#c6ac85", "#79654e"], sky: "dia", frame: "#817f6d",
       board: "sla", desk: ["#74513a", "#8d6648", "#4f3626"], pc: "crt", leds: ["#5fd6a1", "#f2b441"], plant: 0 },
     { // analista (1 año después): área de TI moderna, alfombra azul, portátiles, atardecer
@@ -1337,6 +1371,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   }
 
   function drawWindow(x, th) {
+    if (th.sky === "dia" && configuredSprite("window", "idle", x - 2, 4, anim)) return;
     R(x, 8, 120, 28, th.frame);
     if (th.sky === "atardecer") {
       R(x + 3, 11, 114, 8, "#f6b26b"); R(x + 3, 19, 114, 7, "#ef8a6a"); R(x + 3, 26, 114, 7, "#c95d7c");
@@ -1422,7 +1457,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       R(c * T, r * T, T, T, (r + c) % 2 ? f[0] : f[1]);
       R(c * T, r * T, T, 1, f[2]);
       R(c * T, r * T, 1, T, f[2]);
-      for (var n = 0; n < 3; n++) {
+      for (var n = 0; n < 14; n++) {
         R(c * T + 7 + (c * 11 + n * 13) % 37, r * T + 5 + (r * 7 + n * 17) % 39, 2, 1, f[2]);
       }
       if (th.pc === "ancho") R(c * T, r * T + 24, T, 1, f[2]);  // tablas de madera
@@ -1439,7 +1474,9 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
       }); ctx.restore();
     }
     R(0, 0, W, T, wl[0]);
-    R(0, 40, W, 8, wl[1]);
+    R(0, 39, W, 9, wl[1]);
+    R(0, 39, W, 2, "#d9ab70"); R(0, 42, W, 1, "#b78a58");
+    R(0, 47, W, 2, "rgba(67,49,35,0.28)");
     R(0, 0, W, 4, wl[2]);
     var leader = weekLeader();
     // Si hay empleado de la semana, su cuadro reemplaza la tercera ventana (ahí no lo tapa nada).
@@ -1458,7 +1495,9 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     drawBoard(th);
     for (var y = T; y < 9 * T; y += 24) {
       R(0, y, T, 24, y % 48 ? sd[0] : sd[1]); R(15 * T, y, T, 24, y % 48 ? sd[0] : sd[1]);
-      R(0, y, T, 2, sd[2]); R(15 * T, y, T, 2, sd[2]);
+      R(0, y, T, 1, sd[2]); R(15 * T, y, T, 1, sd[2]);
+      R(19, y, 3, 24, "#ae8155"); R(22, y, 2, 24, "#e2b783");
+      R(744, y, 3, 24, "#ae8155"); R(747, y, 2, 24, "#e2b783");
     }
     R(T - 4, T, 4, 8 * T, sd[3]); R(15 * T, T, 4, 8 * T, sd[3]);
     drawSideExtras(th);
@@ -1467,7 +1506,17 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
 
   // Pantalla de un computador: con ticket parpadea en azul con carita triste; sin ticket, código en verde.
   function screen(sx, sy, sw, sh, tk, blink) {
-    if (tk) {
+    var working = tk && ((P.fixing && nearestTicket() === tk) || (N.working && N.job === tk));
+    if (working) {
+      R(sx, sy, sw, sh, "#102f30");
+      var step = Math.floor(anim * 12);
+      for (var line = 0; line < 5; line++) {
+        var yy = (line * 5 + step) % (sh - 3);
+        var len = Math.max(4, Math.round((sw - 6) * (0.35 + ((line * 7 + Math.floor(step / 3)) % 9) / 15)));
+        R(sx + 3, sy + 1 + yy, Math.min(sw - 6, len), 1, line % 2 ? "#39b99a" : "#70f0b7");
+      }
+      if (step % 2) R(sx + sw - 5, sy + sh - 4, 2, 2, "#d5ffe0");
+    } else if (tk) {
       R(sx, sy, sw, sh, blink ? "#2d5fd6" : "#2551bd");
       R(sx + Math.round(sw * 0.15), sy + Math.round(sh * 0.25), 4, 4, "#fff"); R(sx + Math.round(sw * 0.38), sy + Math.round(sh * 0.25), 4, 4, "#fff");
       R(sx + Math.round(sw * 0.15), sy + Math.round(sh * 0.65), Math.round(sw * 0.6), 2, "#fff");
@@ -1500,11 +1549,14 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     if (!a || !ready(officeArt)) return false;
     var x = s.x, y = s.y, tk = s.ticket, blink = Math.floor(anim * 4) % 2;
     R(x + 8, y + 44, s.w - 16, 4, "rgba(35,49,36,0.16)");
-    ctx.drawImage(officeArt, a[0], Math.min(rank, 2) * 128, a[2], a[3], x, y - a[4], a[2], a[3]);
+    var detailed = configuredSprite(s.type, "idle", x, y, anim);
+    if (!detailed) ctx.drawImage(officeArt, a[0], Math.min(rank, 2) * 128, a[2], a[3], x, y - a[4], a[2], a[3]);
     if (s.type === "desk") {
       drawPC(x, y, tk, blink, theme().pc);
+      if (!detailed) {
       R(x + 8, y + 20, 8, 9, s.seed % 2 ? "#f5ecd4" : "#a76f60");
       R(x + 16, y + 22, 3, 5, "#ded5b9"); R(x + 10, y + 20, 4, 2, "#73533d");
+      }
       if (HALLOWEEN && s.seed % 3 === 2) pumpkin(x + 74, y + 16, 2);
     } else if (s.type === "server") {
       for (var k = 0; k < 2; k++) for (var j = 0; j < 5; j++)
@@ -1592,13 +1644,17 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     if (P.inv > 0 && Math.floor(anim * 14) % 2) ctx.globalAlpha = 0.45;
     if (ready(shP)) {
       // celebra al ascender · aturdida si el jefe la alcanzó · corre con turbo · camina · quieta de frente
-      if (P.party > 0) drawChibi(shP, P, cycle(8, 6), true);
+      if (P.cheer > 0 && !P.moving) drawChibi(shP, P, 9, true, "celebrate");
+      else if (P.party > 0 && !P.moving) drawChibi(shP, P, cycle(8, 6), true, "special");
       else if (P.fixing && ready(shPA)) drawChibi(shPA, P, Math.floor(anim * 8) % 8, true);
-      else if (P.stun > 0 || !P.moving) drawChibi(shP, P, 8, true);
+      else if (P.stun > 0) drawChibi(shP, P, 8, true);
+      else if (ready(shPD)) drawDirectionalPlayer();
+      else if (!P.moving) drawChibi(shP, P, 8, true);
       else drawChibi(shP, P, P.boost > 0 ? cycle(4, 12) : cycle(0, 8));
     } else if (imgP.complete && imgP.naturalWidth) ctx.drawImage(imgP, Math.round(P.x - 24), Math.round(P.y - 47 + bob), 48, 48);
     else R(P.x - 10, P.y - 36, 20, 36, "#1e8c96");
     ctx.globalAlpha = 1;
+    if (P.cheer > 0) celebrationStars();
     if (P.boost > 0) { R(P.x - 14, P.y - 60, 28, 4, "#3a2a6e"); R(P.x - 14, P.y - 60, 28 * (P.boost / 6), 4, "#f2b441"); }
     if (P.stun > 0) { for (var i = 0; i < 3; i++) { var a = anim * 8 + i * 2.1; R(P.x + Math.cos(a) * 14 - 2, P.y - 62 + Math.sin(a) * 4, 4, 4, "#f2b441"); } }
   }
@@ -1611,7 +1667,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     if (HALLOWEEN) costumeBack(B);
     if (ready(sh)) {
       // bravo cuando te alcanza · embobado de frente con Dani · corre persiguiendo o huyendo · camina · quieto
-      if (B.angry > 0) drawChibi(sh, B, cycle(8, 8), true);
+      if (B.angry > 0) drawChibi(sh, B, cycle(8, 8), true, "special");
       else if (B.state === "love") drawChibi(sh, B, 8, true);
       else if (B.state === "chase" || B.state === "flee") drawChibi(sh, B, cycle(4, 10));
       else if (walking) drawChibi(sh, B, cycle(0, 7));
@@ -1632,7 +1688,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     var bob = M.pause > 0 ? 0 : Math.round(Math.sin(anim * 10) * 1.5);
     if (ready(shM)) {
       // enamorada (con corazones) mientras distrae al jefe · quieta · caminando
-      if (B.state === "love") drawChibi(shM, M, cycle(8, 6), true);
+      if (B.state === "love") drawChibi(shM, M, cycle(8, 6), true, "special");
       else if (M.pause > 0) drawChibi(shM, M, 8, true);
       else drawChibi(shM, M, cycle(0, 7));
     } else if (imgM.complete && imgM.naturalWidth) ctx.drawImage(imgM, Math.round(M.x - 24), Math.round(M.y - 47 + bob), 48, 48);
@@ -1706,7 +1762,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   function drawAseo() {
     shadow(A.x, A.y - 1, 14);
     // hoja de Manuel: camina con la escoba (0-3) · barre (4-7) · desconecta un cable de frente (8-11)
-    if (ready(shA)) drawChibi(shA, A, A.unplug > 0 ? 8 + Math.min(3, Math.floor((1.2 - A.unplug) * 3.4)) : A.pause > 0 ? cycle(4, 6) : cycle(0, 6), A.unplug > 0);
+    if (ready(shA)) drawChibi(shA, A, A.unplug > 0 ? 8 + Math.min(3, Math.floor((1.2 - A.unplug) * 3.4)) : A.pause > 0 ? cycle(4, 6) : cycle(0, 6), A.unplug > 0, A.unplug > 0 ? "special" : A.pause > 0 ? "run" : "walk");
     else R(A.x - 10, A.y - 36, 20, 36, "#8fc3e0");
   }
   function drawSapo() {
@@ -1951,5 +2007,6 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   requestAnimationFrame(frame);
 })();
 </script>
+
 
 
