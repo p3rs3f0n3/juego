@@ -1,0 +1,1271 @@
+{
+  "version": 1,
+  "assets": {
+    "player": {
+      "label": "Jugadora · reposo y celebración",
+      "file": "sprites/jugadora_acciones_octubre.png",
+      "source": "design-proposals/octubre-2026/jugadora-acciones.png",
+      "columns": 4,
+      "rows": 3,
+      "cellWidth": 56,
+      "cellHeight": 56,
+      "width": 56,
+      "height": 56,
+      "anchorX": 28,
+      "anchorY": 55,
+      "offsetX": 0,
+      "offsetY": 0,
+      "stride": 20,
+      "frameOffsets": {},
+      "animations": {
+        "idle": {
+          "label": "Reposo de frente",
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 2,
+          "loop": true,
+          "flip": false
+        },
+        "celebrate": {
+          "label": "Ticket resuelto · 0,32 s",
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 12,
+          "loop": false,
+          "flip": false
+        },
+        "special": {
+          "label": "Celebración de ascenso",
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 12,
+          "loop": true,
+          "flip": false
+        }
+      },
+      "frameRects": {},
+      "halloween": {
+        "label": "Jugadora · reposo y celebración",
+        "file": "sprites/halloween/player.png",
+        "source": "sprites/jugadora_acciones_octubre.png",
+        "columns": 4,
+        "rows": 3,
+        "cellWidth": 64,
+        "cellHeight": 72,
+        "width": 64,
+        "height": 72,
+        "anchorX": 32,
+        "anchorY": 71,
+        "offsetX": 0,
+        "offsetY": 0,
+        "stride": 20,
+        "frameOffsets": {},
+        "animations": {
+          "idle": {
+            "label": "Reposo de frente",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "fps": 2,
+            "loop": true,
+            "flip": false
+          },
+          "celebrate": {
+            "label": "Ticket resuelto · 0,32 s",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "fps": 12,
+            "loop": false,
+            "flip": false
+          },
+          "special": {
+            "label": "Celebración de ascenso",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "fps": 12,
+            "loop": true,
+            "flip": false
+          }
+        },
+        "frameRects": {}
+      }
+    },
+    "playerDirections": {
+      "label": "Jugadora · movimiento actual",
+      "file": "sprites/jugadora_octubre.png",
+      "source": "design-proposals/octubre-2026/jugadora-caminar.png",
+      "columns": 4,
+      "rows": 3,
+      "cellWidth": 56,
+      "cellHeight": 56,
+      "width": 56,
+      "height": 56,
+      "anchorX": 28,
+      "anchorY": 55,
+      "offsetX": 0,
+      "offsetY": 0,
+      "stride": 20,
+      "frameOffsets": {},
+      "animations": {
+        "down": {
+          "label": "Hacia abajo / frente",
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6.25,
+          "loop": true,
+          "flip": false
+        },
+        "up": {
+          "label": "Hacia arriba / espalda",
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 6.25,
+          "loop": true,
+          "flip": false
+        },
+        "right": {
+          "label": "Hacia la derecha",
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 6.25,
+          "loop": true,
+          "flip": false
+        },
+        "left": {
+          "label": "Hacia la izquierda",
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 6.25,
+          "loop": true,
+          "flip": true
+        }
+      },
+      "frameRects": {},
+      "halloween": {
+        "label": "Jugadora · movimiento actual",
+        "file": "sprites/halloween/playerDirections.png",
+        "source": "sprites/jugadora_octubre.png",
+        "columns": 4,
+        "rows": 3,
+        "cellWidth": 64,
+        "cellHeight": 72,
+        "width": 64,
+        "height": 72,
+        "anchorX": 32,
+        "anchorY": 71,
+        "offsetX": 0,
+        "offsetY": 0,
+        "stride": 20,
+        "frameOffsets": {},
+        "animations": {
+          "down": {
+            "label": "Hacia abajo / frente",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "fps": 6.25,
+            "loop": true,
+            "flip": false
+          },
+          "up": {
+            "label": "Hacia arriba / espalda",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "fps": 6.25,
+            "loop": true,
+            "flip": false
+          },
+          "right": {
+            "label": "Hacia la derecha",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "fps": 6.25,
+            "loop": true,
+            "flip": false
+          },
+          "left": {
+            "label": "Hacia la izquierda",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "fps": 6.25,
+            "loop": true,
+            "flip": true
+          }
+        },
+        "frameRects": {}
+      }
+    },
+    "playerWork": {
+      "label": "Jugadora · tecleando",
+      "file": "sprites/jugadora_acciones_octubre.png",
+      "source": "design-proposals/octubre-2026/jugadora-acciones.png",
+      "columns": 4,
+      "rows": 3,
+      "cellWidth": 56,
+      "cellHeight": 56,
+      "width": 56,
+      "height": 56,
+      "anchorX": 28,
+      "anchorY": 55,
+      "offsetX": 0,
+      "offsetY": 0,
+      "stride": 20,
+      "frameOffsets": {},
+      "animations": {
+        "work": {
+          "label": "Teclear con afán",
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 10,
+          "loop": true,
+          "flip": false
+        }
+      },
+      "frameRects": {},
+      "halloween": {
+        "label": "Jugadora · tecleando",
+        "file": "sprites/halloween/playerWork.png",
+        "source": "sprites/jugadora_acciones_octubre.png",
+        "columns": 4,
+        "rows": 3,
+        "cellWidth": 64,
+        "cellHeight": 72,
+        "width": 64,
+        "height": 72,
+        "anchorX": 32,
+        "anchorY": 71,
+        "offsetX": 0,
+        "offsetY": 0,
+        "stride": 20,
+        "frameOffsets": {},
+        "animations": {
+          "work": {
+            "label": "Teclear con afán",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "fps": 10,
+            "loop": true,
+            "flip": false
+          }
+        },
+        "frameRects": {}
+      }
+    },
+    "boss": {
+      "label": "Jefe",
+      "file": "sprites/chibi_jefe.png",
+      "source": null,
+      "columns": 12,
+      "rows": 1,
+      "cellWidth": 56,
+      "cellHeight": 56,
+      "width": 56,
+      "height": 56,
+      "anchorX": 28,
+      "anchorY": 55,
+      "offsetX": 0,
+      "offsetY": 0,
+      "stride": 16,
+      "frameOffsets": {},
+      "animations": {
+        "walk": {
+          "label": "Caminar",
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 8,
+          "loop": true,
+          "flip": false
+        },
+        "run": {
+          "label": "Correr",
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 12,
+          "loop": true,
+          "flip": false
+        },
+        "special": {
+          "label": "Acción especial",
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 6,
+          "loop": true,
+          "flip": false
+        },
+        "idle": {
+          "label": "Quieta / quieto",
+          "frames": [
+            8
+          ],
+          "fps": 1,
+          "loop": true,
+          "flip": false
+        }
+      },
+      "frameRects": {},
+      "halloween": {
+        "label": "Jefe",
+        "file": "sprites/halloween/boss.png",
+        "source": "sprites/chibi_jefe.png",
+        "columns": 4,
+        "rows": 3,
+        "cellWidth": 64,
+        "cellHeight": 72,
+        "width": 64,
+        "height": 72,
+        "anchorX": 32,
+        "anchorY": 71,
+        "offsetX": 0,
+        "offsetY": 0,
+        "stride": 16,
+        "frameOffsets": {},
+        "animations": {
+          "walk": {
+            "label": "Caminar",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "fps": 8,
+            "loop": true,
+            "flip": false
+          },
+          "run": {
+            "label": "Correr",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "fps": 12,
+            "loop": true,
+            "flip": false
+          },
+          "special": {
+            "label": "Acción especial",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "fps": 6,
+            "loop": true,
+            "flip": false
+          },
+          "idle": {
+            "label": "Quieta / quieto",
+            "frames": [
+              8
+            ],
+            "fps": 1,
+            "loop": true,
+            "flip": false
+          }
+        },
+        "frameRects": {}
+      }
+    },
+    "manager": {
+      "label": "Gerente",
+      "file": "sprites/chibi_gerente.png",
+      "source": null,
+      "columns": 12,
+      "rows": 1,
+      "cellWidth": 56,
+      "cellHeight": 56,
+      "width": 56,
+      "height": 56,
+      "anchorX": 28,
+      "anchorY": 55,
+      "offsetX": 0,
+      "offsetY": 0,
+      "stride": 16,
+      "frameOffsets": {},
+      "animations": {
+        "walk": {
+          "label": "Caminar",
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 8,
+          "loop": true,
+          "flip": false
+        },
+        "run": {
+          "label": "Correr",
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 12,
+          "loop": true,
+          "flip": false
+        },
+        "special": {
+          "label": "Acción especial",
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 6,
+          "loop": true,
+          "flip": false
+        },
+        "idle": {
+          "label": "Quieta / quieto",
+          "frames": [
+            8
+          ],
+          "fps": 1,
+          "loop": true,
+          "flip": false
+        }
+      },
+      "frameRects": {},
+      "halloween": {
+        "label": "Gerente",
+        "file": "sprites/halloween/manager.png",
+        "source": "sprites/chibi_gerente.png",
+        "columns": 4,
+        "rows": 3,
+        "cellWidth": 64,
+        "cellHeight": 72,
+        "width": 64,
+        "height": 72,
+        "anchorX": 32,
+        "anchorY": 71,
+        "offsetX": 0,
+        "offsetY": 0,
+        "stride": 16,
+        "frameOffsets": {},
+        "animations": {
+          "walk": {
+            "label": "Caminar",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "fps": 8,
+            "loop": true,
+            "flip": false
+          },
+          "run": {
+            "label": "Correr",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "fps": 12,
+            "loop": true,
+            "flip": false
+          },
+          "special": {
+            "label": "Acción especial",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "fps": 6,
+            "loop": true,
+            "flip": false
+          },
+          "idle": {
+            "label": "Quieta / quieto",
+            "frames": [
+              8
+            ],
+            "fps": 1,
+            "loop": true,
+            "flip": false
+          }
+        },
+        "frameRects": {}
+      }
+    },
+    "mate": {
+      "label": "Dani",
+      "file": "sprites/chibi_dani.png",
+      "source": null,
+      "columns": 12,
+      "rows": 1,
+      "cellWidth": 56,
+      "cellHeight": 56,
+      "width": 56,
+      "height": 56,
+      "anchorX": 28,
+      "anchorY": 55,
+      "offsetX": 0,
+      "offsetY": 0,
+      "stride": 16,
+      "frameOffsets": {},
+      "animations": {
+        "walk": {
+          "label": "Caminar",
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 8,
+          "loop": true,
+          "flip": false
+        },
+        "run": {
+          "label": "Correr",
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 12,
+          "loop": true,
+          "flip": false
+        },
+        "special": {
+          "label": "Acción especial",
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 6,
+          "loop": true,
+          "flip": false
+        },
+        "idle": {
+          "label": "Quieta / quieto",
+          "frames": [
+            8
+          ],
+          "fps": 1,
+          "loop": true,
+          "flip": false
+        }
+      },
+      "frameRects": {},
+      "halloween": {
+        "label": "Dani",
+        "file": "sprites/halloween/mate.png",
+        "source": "sprites/chibi_dani.png",
+        "columns": 4,
+        "rows": 3,
+        "cellWidth": 64,
+        "cellHeight": 72,
+        "width": 64,
+        "height": 72,
+        "anchorX": 32,
+        "anchorY": 71,
+        "offsetX": 0,
+        "offsetY": 0,
+        "stride": 16,
+        "frameOffsets": {},
+        "animations": {
+          "walk": {
+            "label": "Caminar",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "fps": 8,
+            "loop": true,
+            "flip": false
+          },
+          "run": {
+            "label": "Correr",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "fps": 12,
+            "loop": true,
+            "flip": false
+          },
+          "special": {
+            "label": "Acción especial",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "fps": 6,
+            "loop": true,
+            "flip": false
+          },
+          "idle": {
+            "label": "Quieta / quieto",
+            "frames": [
+              8
+            ],
+            "fps": 1,
+            "loop": true,
+            "flip": false
+          }
+        },
+        "frameRects": {}
+      }
+    },
+    "cleaner": {
+      "label": "Señora del aseo",
+      "file": "sprites/chibi_aseo.png",
+      "source": null,
+      "columns": 12,
+      "rows": 1,
+      "cellWidth": 56,
+      "cellHeight": 56,
+      "width": 56,
+      "height": 56,
+      "anchorX": 28,
+      "anchorY": 55,
+      "offsetX": 0,
+      "offsetY": 0,
+      "stride": 16,
+      "frameOffsets": {},
+      "animations": {
+        "walk": {
+          "label": "Caminar",
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 8,
+          "loop": true,
+          "flip": false
+        },
+        "run": {
+          "label": "Barrer / trapear",
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 12,
+          "loop": true,
+          "flip": false
+        },
+        "special": {
+          "label": "Desconectar cable",
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 3.4,
+          "loop": false,
+          "flip": false
+        },
+        "idle": {
+          "label": "Quieta / quieto",
+          "frames": [
+            8
+          ],
+          "fps": 1,
+          "loop": true,
+          "flip": false
+        }
+      },
+      "frameRects": {},
+      "halloween": {
+        "label": "Señora del aseo",
+        "file": "sprites/halloween/cleaner.png",
+        "source": "sprites/chibi_aseo.png",
+        "columns": 4,
+        "rows": 3,
+        "cellWidth": 64,
+        "cellHeight": 72,
+        "width": 64,
+        "height": 72,
+        "anchorX": 32,
+        "anchorY": 71,
+        "offsetX": 0,
+        "offsetY": 0,
+        "stride": 16,
+        "frameOffsets": {},
+        "animations": {
+          "walk": {
+            "label": "Caminar",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "fps": 8,
+            "loop": true,
+            "flip": false
+          },
+          "run": {
+            "label": "Barrer / trapear",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "fps": 12,
+            "loop": true,
+            "flip": false
+          },
+          "special": {
+            "label": "Desconectar cable",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "fps": 3.4,
+            "loop": false,
+            "flip": false
+          },
+          "idle": {
+            "label": "Quieta / quieto",
+            "frames": [
+              8
+            ],
+            "fps": 1,
+            "loop": true,
+            "flip": false
+          }
+        },
+        "frameRects": {}
+      }
+    },
+    "gossip": {
+      "label": "Compañera chismosa",
+      "file": "sprites/chibi_sapo.png",
+      "source": null,
+      "columns": 12,
+      "rows": 1,
+      "cellWidth": 56,
+      "cellHeight": 56,
+      "width": 56,
+      "height": 56,
+      "anchorX": 28,
+      "anchorY": 55,
+      "offsetX": 0,
+      "offsetY": 0,
+      "stride": 16,
+      "frameOffsets": {},
+      "animations": {
+        "walk": {
+          "label": "Caminar",
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 8,
+          "loop": true,
+          "flip": false
+        },
+        "run": {
+          "label": "Correr",
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 12,
+          "loop": true,
+          "flip": false
+        },
+        "special": {
+          "label": "Acción especial",
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 6,
+          "loop": true,
+          "flip": false
+        },
+        "idle": {
+          "label": "Quieta / quieto",
+          "frames": [
+            8
+          ],
+          "fps": 1,
+          "loop": true,
+          "flip": false
+        }
+      },
+      "frameRects": {},
+      "halloween": {
+        "label": "Compañera chismosa",
+        "file": "sprites/halloween/gossip.png",
+        "source": "sprites/chibi_sapo.png",
+        "columns": 4,
+        "rows": 3,
+        "cellWidth": 64,
+        "cellHeight": 72,
+        "width": 64,
+        "height": 72,
+        "anchorX": 32,
+        "anchorY": 71,
+        "offsetX": 0,
+        "offsetY": 0,
+        "stride": 16,
+        "frameOffsets": {},
+        "animations": {
+          "walk": {
+            "label": "Caminar",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "fps": 8,
+            "loop": true,
+            "flip": false
+          },
+          "run": {
+            "label": "Correr",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "fps": 12,
+            "loop": true,
+            "flip": false
+          },
+          "special": {
+            "label": "Acción especial",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "fps": 6,
+            "loop": true,
+            "flip": false
+          },
+          "idle": {
+            "label": "Quieta / quieto",
+            "frames": [
+              8
+            ],
+            "fps": 1,
+            "loop": true,
+            "flip": false
+          }
+        },
+        "frameRects": {}
+      }
+    },
+    "intern": {
+      "label": "Pasante",
+      "file": "sprites/chibi_pasante.png",
+      "source": null,
+      "columns": 12,
+      "rows": 1,
+      "cellWidth": 56,
+      "cellHeight": 56,
+      "width": 56,
+      "height": 56,
+      "anchorX": 28,
+      "anchorY": 55,
+      "offsetX": 0,
+      "offsetY": 0,
+      "stride": 16,
+      "frameOffsets": {},
+      "animations": {
+        "walk": {
+          "label": "Caminar",
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 8,
+          "loop": true,
+          "flip": false
+        },
+        "run": {
+          "label": "Correr",
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 12,
+          "loop": true,
+          "flip": false
+        },
+        "special": {
+          "label": "Acción especial",
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 6,
+          "loop": true,
+          "flip": false
+        },
+        "idle": {
+          "label": "Quieta / quieto",
+          "frames": [
+            8
+          ],
+          "fps": 1,
+          "loop": true,
+          "flip": false
+        }
+      },
+      "frameRects": {},
+      "halloween": {
+        "label": "Pasante",
+        "file": "sprites/halloween/intern.png",
+        "source": "sprites/chibi_pasante.png",
+        "columns": 4,
+        "rows": 3,
+        "cellWidth": 64,
+        "cellHeight": 72,
+        "width": 64,
+        "height": 72,
+        "anchorX": 32,
+        "anchorY": 71,
+        "offsetX": 0,
+        "offsetY": 0,
+        "stride": 16,
+        "frameOffsets": {},
+        "animations": {
+          "walk": {
+            "label": "Caminar",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "fps": 8,
+            "loop": true,
+            "flip": false
+          },
+          "run": {
+            "label": "Correr",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "fps": 12,
+            "loop": true,
+            "flip": false
+          },
+          "special": {
+            "label": "Acción especial",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "fps": 6,
+            "loop": true,
+            "flip": false
+          },
+          "idle": {
+            "label": "Quieta / quieto",
+            "frames": [
+              8
+            ],
+            "fps": 1,
+            "loop": true,
+            "flip": false
+          }
+        },
+        "frameRects": {}
+      }
+    },
+    "desk": {
+      "label": "Escritorio",
+      "file": "sprites/oficina_detallada.png",
+      "source": "design-proposals/design-v4/oficina-atlas.png",
+      "columns": 3,
+      "rows": 2,
+      "cellWidth": 192,
+      "cellHeight": 192,
+      "width": 96,
+      "height": 64,
+      "anchorX": 0,
+      "anchorY": 16,
+      "offsetX": 0,
+      "offsetY": 0,
+      "stride": 16,
+      "frameOffsets": {},
+      "animations": {
+        "idle": {
+          "label": "Asset estático",
+          "frames": [
+            0
+          ],
+          "fps": 1,
+          "loop": true,
+          "flip": false
+        }
+      },
+      "frameRects": {}
+    },
+    "server": {
+      "label": "Servidores",
+      "file": "sprites/oficina_detallada.png",
+      "source": "design-proposals/design-v4/oficina-atlas.png",
+      "columns": 3,
+      "rows": 2,
+      "cellWidth": 192,
+      "cellHeight": 192,
+      "width": 96,
+      "height": 80,
+      "anchorX": 0,
+      "anchorY": 32,
+      "offsetX": 0,
+      "offsetY": 0,
+      "stride": 16,
+      "frameOffsets": {},
+      "animations": {
+        "idle": {
+          "label": "Asset estático",
+          "frames": [
+            1
+          ],
+          "fps": 1,
+          "loop": true,
+          "flip": false
+        }
+      },
+      "frameRects": {}
+    },
+    "printer": {
+      "label": "Impresora",
+      "file": "sprites/oficina_detallada.png",
+      "source": "design-proposals/design-v4/oficina-atlas.png",
+      "columns": 3,
+      "rows": 2,
+      "cellWidth": 192,
+      "cellHeight": 192,
+      "width": 96,
+      "height": 64,
+      "anchorX": 0,
+      "anchorY": 16,
+      "offsetX": 0,
+      "offsetY": 0,
+      "stride": 16,
+      "frameOffsets": {},
+      "animations": {
+        "idle": {
+          "label": "Asset estático",
+          "frames": [
+            2
+          ],
+          "fps": 1,
+          "loop": true,
+          "flip": false
+        }
+      },
+      "frameRects": {}
+    },
+    "coffee": {
+      "label": "Cafetera",
+      "file": "sprites/oficina_detallada.png",
+      "source": "design-proposals/design-v4/oficina-atlas.png",
+      "columns": 3,
+      "rows": 2,
+      "cellWidth": 192,
+      "cellHeight": 192,
+      "width": 48,
+      "height": 64,
+      "anchorX": 0,
+      "anchorY": 16,
+      "offsetX": 0,
+      "offsetY": 0,
+      "stride": 16,
+      "frameOffsets": {},
+      "animations": {
+        "idle": {
+          "label": "Asset estático",
+          "frames": [
+            3
+          ],
+          "fps": 1,
+          "loop": true,
+          "flip": false
+        }
+      },
+      "frameRects": {}
+    },
+    "plant": {
+      "label": "Planta",
+      "file": "sprites/oficina_detallada.png",
+      "source": "design-proposals/design-v4/planta-referencia.png",
+      "columns": 3,
+      "rows": 2,
+      "cellWidth": 192,
+      "cellHeight": 192,
+      "width": 48,
+      "height": 64,
+      "anchorX": 0,
+      "anchorY": 16,
+      "offsetX": 0,
+      "offsetY": 0,
+      "stride": 16,
+      "frameOffsets": {},
+      "animations": {
+        "idle": {
+          "label": "Asset estático",
+          "frames": [
+            4
+          ],
+          "fps": 1,
+          "loop": true,
+          "flip": false
+        }
+      },
+      "frameRects": {}
+    },
+    "window": {
+      "label": "Ventana",
+      "file": "sprites/oficina_detallada.png",
+      "source": "design-proposals/design-v4/oficina-atlas.png",
+      "columns": 3,
+      "rows": 2,
+      "cellWidth": 192,
+      "cellHeight": 192,
+      "width": 124,
+      "height": 36,
+      "anchorX": 0,
+      "anchorY": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "stride": 16,
+      "frameOffsets": {},
+      "animations": {
+        "idle": {
+          "label": "Asset estático",
+          "frames": [
+            5
+          ],
+          "fps": 1,
+          "loop": true,
+          "flip": false
+        }
+      },
+      "frameRects": {}
+    }
+  }
+}

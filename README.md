@@ -108,6 +108,16 @@ integra el atlas en el HTML como el resto de sprites: no añade descargas ni arc
 Las pantallas, indicadores, vapor y adornos de Halloween siguen dibujándose de forma dinámica.
 La ubicación de los muebles, sus cajas de choque y la dificultad no cambian.
 
+**Diseño detallado v4.** Las fuentes de arte están en `design-proposals/design-v4/`.
+`python preparar_diseno_v4.py` (desde `scripts/`, con Pillow) prepara
+`sprites/oficina_detallada.png` y `sprites/chibi_jugadora_direcciones.png`; después se ejecuta
+`python construir_juego.py`. La hoja direccional conserva PNG transparente, 4 columnas × 3 filas:
+caminar de frente, de espalda y a la derecha (izquierda reflejada). La animación avanza según
+la distancia real recorrida, también para los personajes secundarios. Los tickets resueltos
+activan una celebración de 0,32 segundos que no bloquea el movimiento. Las pantallas muestran
+código verde animado mientras las repara la jugadora o el pasante. Los nuevos muebles respetan
+las posiciones y cajas de choque existentes. El atlas procedural anterior queda como respaldo.
+
 **Animaciones chibi (de Manuel).** Los personajes del juego hoy usan las hojas de `arte/chibi/` (generadas con IA por Manuel: 4 columnas × 3 filas, caminar, correr y acción especial). `scripts/preparar_chibi.py` las limpia (bordes nítidos, sin transparencias a medias, paleta reducida, pies alineados, misma escala para todos) y genera `sprites/chibi_<nombre>.png`: una tira de 12 cuadros de 56 px. El Gerente sale del jefe cambiando colores. Los sprites de 48 px de arriba quedan de respaldo por si las tiras no cargan.
 
 | Personaje | Camina | Corre | Acción especial |
@@ -180,3 +190,35 @@ Abre http://127.0.0.1:8095 para jugar y http://127.0.0.1:8095/stats para ver las
 
 **Publicar** en la VPS lo hace quien administra el juego; las llaves y claves no están en el repositorio.
 
+
+
+### Estudio de sprites (vista previa y control visual)
+
+Ejecuta `python3 scripts/servidor_diseno.py` desde la raíz del juego y abre
+[el estudio local](http://127.0.0.1:8766/tools/sprites/). Permite comparar originales y PNG activos,
+ver animaciones individualmente y ajustar recortes, tamaños, anclas, reflejos, secuencias,
+velocidad y alineación por fotograma. Se puede elegir otro PNG o subir uno nuevo.
+El visor y el juego comparten el mismo renderizado y `src/sprites.config.json`.
+«Probar borrador» aplica los ajustes solo en una pestaña de prueba; «Guardar en proyecto»
+escribe la configuración y regenera el juego local.
+Más detalles en [tools/sprites/README.md](tools/sprites/README.md).
+
+### Update de octubre: protagonista y Halloween
+
+La protagonista usa camisa azul cobalto en movimiento, reposo, tecleo y celebración.
+Las hojas nuevas de movimiento y acciones están en `sprites/jugadora_octubre.png` y
+`sprites/jugadora_acciones_octubre.png`; sus originales están en `design-proposals/octubre-2026/`.
+La caminata alterna pasos según distancia recorrida y el halo rosa animado se dibuja bajo sus pies.
+
+Las nueve variantes de personajes están en `sprites/halloween/`, en PNG transparente 4 × 3.
+Dani lleva sombrero de bruja, el jefe y gerente cachitos, la protagonista un broche de murciélago,
+la señora del aseo un fantasma, la chismosa orejas de gato y el pasante un gorro de calabaza.
+El estudio permite elegir **Normal / Halloween**, editar cada variante y previsualizar el halo.
+Las banderitas, telarañas, calabazas, luces y fantasmas de la oficina son decoración sin colisiones.
+Se activa del 23 de octubre al 1 de noviembre; `?tema=normal` y `?tema=halloween` permiten probar.
+
+Los PNG ya vienen preparados. Solo para regenerar arte: `npm install --prefix scripts` y
+`node scripts/preparar_octubre.cjs`, luego `python3 scripts/construir_juego.py`.
+La herramienta opcional usa `@napi-rs/canvas`; el juego y el servidor del estudio siguen sin
+necesitar npm. Los accesorios y el halo están definidos en `src/sprite-seasonal.js`.
+Pruebas adicionales: `node tests/octubre.cjs`.

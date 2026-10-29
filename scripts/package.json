@@ -1,0 +1,6 @@
+{
+  "name": "ticket-rush-asset-tools",
+  "private": true,
+  "description": "Dependencia opcional para regenerar las hojas PNG de octubre; el juego y el estudio no necesitan npm.",
+  "dependencies": { "@napi-rs/canvas": "0.1.100" }
+}
