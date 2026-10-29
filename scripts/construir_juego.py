@@ -24,6 +24,8 @@ html = html.replace("__SPRITE_RUNTIME__", (ROOT / "src/sprite-runtime.js").read_
 html = html.replace("__SPRITE_CONFIG__", json.dumps(config, ensure_ascii=True).replace("<", "\\u003c"))
 html = html.replace("__SPRITE_FILES__", json.dumps(files))
 html = html.replace("__OFFICE__", uri("../sprites/oficina.png"))
+html = html.replace("__OFICINA_ANALISTA__", uri("../sprites/oficina_detallada_analista.png"))
+html = html.replace("__OFICINA_JEFE__", uri("../sprites/oficina_detallada_jefe.png"))
 html = html.replace("__LOGO__", uri("../sprites/ticket-rush-logo.png"))
 html = html.replace("__PLAYER__", uri("../sprites/avatar_48.png"))
 html = html.replace("__BOSS__", uri("../sprites/boss_48.png"))

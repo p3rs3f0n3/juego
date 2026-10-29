@@ -55,6 +55,8 @@ Orden sugerido: frases + días → intro cómic → señora del aseo → comodin
 
 - [x] **Oficina cálida de día** (23 oct 2026, PR #3 de Manuel): paredes crema, persianas, cubículos con sillas, archivadores, tablón; muebles desde `sprites/oficina.png` (`scripts/crear_oficina.py`). Sin cambios en choques ni dificultad.
   - [ ] Ajustes pedidos a Manuel en el PR #3: diferenciar más **Analista** de Practicante · cafetera más visible (destello y vapor como antes) · **matas que crezcan** por rango · *(opcional)* Halloween más oscuro.
+- [x] **PR #4 de Manuel** (unido el 28 oct 2026): estudio de sprites (`tools/sprites/`), protagonista que camina en 4 direcciones con camisa cobalto y halo rosa, celebración al completar un ticket, pantallas con código mientras se arregla, oficina detallada (`sprites/oficina_detallada.png`) y disfraces de Halloween en `sprites/halloween/`.
+  - [x] **Muebles distintos por rango** (28 oct 2026): `scripts/crear_oficina_rangos.py` recolorea escritorio y cafetera (Analista: blanco y azul · Jefe de TI: caoba y vinotinto) y las matas crecen 12 % y 25 % al ascender (solo dibujo; la maceta choca igual).
   - [x] Excusas: la hojita lleva marco oscuro y brillo verde para verse sobre el piso claro.
 
 - [ ] **Temporadas**: Halloween en octubre (brujas, calabazas) y Navidad en diciembre (decoración, gorros). *(Jesús)*

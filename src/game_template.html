@@ -469,6 +469,8 @@ __SPRITE_SEASONAL__
   var shPD = spriteImages.playerDirections, shPA = spriteImages.playerWork;
   var shA = spriteImages.cleaner, shS = spriteImages.gossip, shN = spriteImages.intern;
   var officeArt = sheet("__OFFICE__");
+  // Muebles de Manuel recoloreados por rango (scripts/crear_oficina_rangos.py): misma forma, otra oficina.
+  var officeRank = [null, sheet("__OFICINA_ANALISTA__"), sheet("__OFICINA_JEFE__")];
   function configuredSprite(id, name, x, y, time, step, flip) {
     var a = spriteConfig.assets[id], an = SpriteRuntime.animation(a, name);
     return SpriteRuntime.draw(ctx, spriteImages[id], a, SpriteRuntime.frame(a, name, time, step), x, y, !!flip !== !!an.flip);
@@ -1520,7 +1522,12 @@ __SPRITE_SEASONAL__
     if (!a || !ready(officeArt)) return false;
     var x = s.x, y = s.y, tk = s.ticket, blink = Math.floor(anim * 4) % 2;
     R(x + 8, y + 44, s.w - 16, 4, "rgba(35,49,36,0.16)");
-    var detailed = configuredSprite(s.type, "idle", x, y, anim);
+    var alt = (s.type === "desk" || s.type === "coffee") && officeRank[Math.min(rank, 2)], oa = spriteConfig.assets[s.type], detailed;
+    var grow = s.type === "plant" ? [1, 1.12, 1.25][Math.min(rank, 2)] : 1;  // las matas crecen con los años (la maceta choca igual)
+    if (grow !== 1) { ctx.save(); ctx.translate(x + 24, y + 46); ctx.scale(grow, grow); ctx.translate(-(x + 24), -(y + 46)); }
+    if (alt && oa && ready(alt)) detailed = SpriteRuntime.draw(ctx, alt, oa, SpriteRuntime.frame(oa, "idle", anim), x, y, false);
+    else detailed = configuredSprite(s.type, "idle", x, y, anim);
+    if (grow !== 1) ctx.restore();
     if (!detailed) ctx.drawImage(officeArt, a[0], Math.min(rank, 2) * 128, a[2], a[3], x, y - a[4], a[2], a[3]);
     if (s.type === "desk") {
       drawPC(x, y, tk, blink, theme().pc);
