@@ -152,17 +152,47 @@ def board(me):
             return c.execute("""SELECT visitor, MAX(score) AS score, tickets, rank, MIN(ts) AS first FROM games
                                 WHERE ts >= ? GROUP BY visitor ORDER BY score DESC, first ASC""", (since,)).fetchall()
 
+        # Una línea por apodo: si alguien jugó desde dos navegadores (o desde el dominio viejo y el nuevo)
+        # con el mismo apodo, se cuenta como una sola persona con su mejor puntaje.
+        def who(v):
+            return nm[v].strip().lower() if nm.get(v) else v
+        grupo = {}
+        for v in agg:
+            grupo.setdefault(who(v), []).append(v)
+
+        def stat(k, campo, f):
+            return f(agg[v][campo] or 0 for v in grupo[k])
+
         out = {}
         for key, rows in (("week", best(max(week_start(), season["start"]))), ("all", best(season["start"]))):
+            vistos, uno = set(), []
+            for r in rows:  # ya vienen del mejor al peor: la primera de cada persona es su mejor
+                if who(r["visitor"]) not in vistos:
+                    vistos.add(who(r["visitor"])); uno.append(r)
+            mios = set(grupo.get(who(me), [me]))
             out[key] = [{"n": shown(r["visitor"], nm), "s": r["score"], "t": r["tickets"], "r": r["rank"],
-                         "g": agg[r["visitor"]]["games"], "top": agg[r["visitor"]]["top"],
-                         "d": agg[r["visitor"]]["dist"] or 0, "me": r["visitor"] == me} for r in rows[:10]]
-            pos = next((i for i, r in enumerate(rows, 1) if r["visitor"] == me), 0)
-            out[key + "Me"] = {"pos": pos, "of": len(rows), "best": rows[pos - 1]["score"] if pos else 0}
+                         "g": stat(who(r["visitor"]), "games", sum), "top": stat(who(r["visitor"]), "top", max),
+                         "d": stat(who(r["visitor"]), "dist", sum), "me": r["visitor"] in mios} for r in uno[:10]]
+            pos = next((i for i, r in enumerate(uno, 1) if r["visitor"] in mios), 0)
+            out[key + "Me"] = {"pos": pos, "of": len(uno), "best": uno[pos - 1]["score"] if pos else 0}
         out["name"] = nm.get(me, "")
         out["season"] = season["name"]
         out["fame"] = fame(c, nm)
         return out
+
+
+def merge(c, new, old):
+    """Une la ficha del navegador nuevo (`new`) con la de antes (`old`): pasa sus visitas y partidas a `old`.
+    Solo quien tiene los dos ids (el de antes vive en el navegador de la persona, nunca se publica) puede unirlos."""
+    if new == old or not c.execute("SELECT 1 FROM visits WHERE visitor = ? LIMIT 1", (old,)).fetchone():
+        return False
+    for t in ("visits", "starts", "games"):
+        c.execute("UPDATE %s SET visitor = ? WHERE visitor = ?" % t, (old, new))
+    nuevo = c.execute("SELECT name FROM players WHERE visitor = ?", (new,)).fetchone()
+    if nuevo and nuevo["name"]:  # el apodo más reciente gana
+        save_name(c, old, nuevo["name"])
+    c.execute("DELETE FROM players WHERE visitor = ?", (new,))
+    return True
 
 
 def now():
@@ -199,7 +229,7 @@ class Handler(BaseHTTPRequestHandler):
         if self.path.split("?")[0].rstrip("/") == "/stats/season":
             return self.new_season()
         kind = self.path.split("?")[0].rstrip("/").rsplit("/", 1)[-1]
-        if not self.path.startswith("/api/") or kind not in ("visit", "start", "end", "name"):
+        if not self.path.startswith("/api/") or kind not in ("visit", "start", "end", "name", "merge"):
             return self.send(404)
         n = int(self.headers.get("Content-Length") or 0)
         if n <= 0 or n > 2048:
@@ -211,6 +241,12 @@ class Handler(BaseHTTPRequestHandler):
         if not isinstance(d, dict) or not VID.match(str(d.get("v", ""))):
             return self.send(400)
         v = d["v"]
+        if kind == "merge":
+            old = str(d.get("old", ""))
+            if not VID.match(old):
+                return self.send(400)
+            with db() as c:
+                return self.send_json(200, {"ok": merge(c, v, old)})
         if kind == "name":
             n = clean_name(d.get("n"))
             if n is None:

@@ -652,6 +652,27 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
     try { localStorage.setItem("ticketrush-help-seen", "1"); } catch (e) {}
   });
   // La primera vez que alguien entra, la guía se abre sola (muchos no leen las instrucciones).
+  /* Mudanza de dominio: la dirección vieja (sslip.io) manda aquí, en el #, lo que el navegador tenía guardado allá
+     (el # no viaja a ningún servidor). Se adopta ese id para seguir siendo la misma persona en la tabla; si ya
+     había jugado en el dominio nuevo, el servidor une las dos fichas. */
+  var movedFrom = (function () {
+    var m = /[#&]desde=([^&]+)/.exec(location.hash), d, vid = "";
+    try { vid = localStorage.getItem("ticketrush-vid") || ""; } catch (e) {}
+    if (!m) return;
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+    try { d = JSON.parse(decodeURIComponent(m[1])); } catch (e) { return; }
+    if (!d || !/^[a-z0-9-]{4,40}$/.test(d.vid || "") || d.vid === vid) return;
+    try {
+      localStorage.setItem("ticketrush-vid", d.vid);
+      if (d.name && !localStorage.getItem("ticketrush-name")) localStorage.setItem("ticketrush-name", d.name);
+      if (d.asked) localStorage.setItem("ticketrush-asked", "1");
+      if (d.help) localStorage.setItem("ticketrush-help-seen", "1");
+      if (d.intro) localStorage.setItem("ticketrush-intro-seen", "1");
+      var b = parseInt(d.best, 10) || 0;
+      if (b > (parseInt(localStorage.getItem("ticketrush-best") || "0", 10) || 0)) localStorage.setItem("ticketrush-best", String(b));
+    } catch (e) {}
+    return /^[a-z0-9-]{4,40}$/.test(vid) ? vid : "";  // la ficha del dominio nuevo, para unirla con la de antes
+  })();
   var helpSeen = false;
   try { helpSeen = localStorage.getItem("ticketrush-help-seen") === "1"; } catch (e) {}
   function maybeHelp() {
@@ -814,6 +835,12 @@ kbd { display: inline-flex; justify-content: center; align-items: center; height
   if (!/^[a-z0-9-]{4,40}$/.test(vid)) {
     vid = Math.random().toString(36).slice(2, 10) + "-" + Date.now().toString(36);
     try { localStorage.setItem("ticketrush-vid", vid); } catch (e) {}
+  }
+  if (movedFrom && movedFrom !== vid && /^https?:$/.test(location.protocol)) {
+    try {
+      fetch("/api/merge", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ v: movedFrom, old: vid }), keepalive: true });
+    } catch (e) {}
   }
   function track(kind, data) {
     if (!/^https?:$/.test(location.protocol)) return;  // abierto como archivo local: no mandar nada

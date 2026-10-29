@@ -89,3 +89,4 @@ Música 8 bits estilo NES, generada con Web Audio en el mismo HTML (2 canales de
 
 - **El turbo sigue siendo café** (se habló de Coca-Cola, pero ganó el café colombiano y así se evitan problemas de marca registrada).
 - **La dificultad aprobada no se cambia sin hablarlo** (ver README).
+- **Dominio ticketrush.online (29 oct 2026)**: la dirección vieja (sslip.io) muestra `stats/mudanza.html`, que lleva el apodo y la ficha del navegador al dominio nuevo (en el `#`, que no viaja a ningún servidor); el juego la adopta y `/api/merge` une las dos fichas. Además la tabla junta en una línea a quienes tienen el mismo apodo.

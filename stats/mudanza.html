@@ -1,0 +1,30 @@
+<!doctype html>
+<!-- Se sirve en la dirección vieja (juego.66.94.101.47.sslip.io). Lee lo que el navegador guardó del juego
+     allá y lo lleva a ticketrush.online en el # (el # no se manda a ningún servidor), para que la persona
+     siga siendo la misma en la tabla. Ver "Mudanza de dominio" en src/game_template.html. -->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Ticket Rush</title>
+<style>body{margin:0;background:#17152a;color:#ece8f7;font:18px system-ui,sans-serif;display:grid;place-items:center;height:100vh}</style>
+</head>
+<body>
+<p>Llevándote a <a href="https://ticketrush.online/" style="color:#ff2e7e">ticketrush.online</a>…</p>
+<script>
+(function () {
+  var dest = "https://ticketrush.online/" + location.search, d = null;
+  try {
+    var ls = localStorage, vid = ls.getItem("ticketrush-vid") || "";
+    if (/^[a-z0-9-]{4,40}$/.test(vid)) {
+      d = { vid: vid, name: ls.getItem("ticketrush-name") || "", asked: ls.getItem("ticketrush-asked") === "1",
+            help: ls.getItem("ticketrush-help-seen") === "1", intro: ls.getItem("ticketrush-intro-seen") === "1",
+            best: parseInt(ls.getItem("ticketrush-best") || "0", 10) || 0 };
+    }
+  } catch (e) {}
+  location.replace(d ? dest + "#desde=" + encodeURIComponent(JSON.stringify(d)) : dest);
+})();
+</script>
+</body>
+</html>
