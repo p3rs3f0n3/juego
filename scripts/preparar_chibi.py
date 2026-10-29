@@ -19,6 +19,7 @@ SP = "../sprites/"
 CELDA = 56          # tamano de cada cuadro en el juego
 ALTO = 50           # alto de la jugadora caminando (la mas alta); los demas, a la misma escala
 COLORES = 20        # paleta por personaje
+COLORES_DE = {"aseo": 32, "sapo": 32}  # con menos colores se pierden los guantes amarillos y la blusa morada
 NOMBRES = ["jugadora", "jefe", "dani", "sapo", "aseo"]  # aseo: camina con escoba · barre · desconecta un cable
 # Hojas extra (de frente, una sola animacion): nombre -> (personaje, columnas, filas, extension).
 # Salen a la misma estatura que ese personaje quieto de frente.
@@ -116,7 +117,7 @@ def construir():
     caja = cel[0][0].getbbox()
     k = ALTO / (pies[0] - caja[1] + 1)
     for nombre, (celdas, pies, cw, ch) in hojas.items():
-        tira = paleta(armar(celdas, pies, cw, ch, k, 4, 3))
+        tira = paleta(armar(celdas, pies, cw, ch, k, 4, 3), COLORES_DE.get(nombre, COLORES))
         tira.save(SP + "chibi_" + nombre + ".png", optimize=True)
         frente = tira.crop((8 * CELDA, 0, 9 * CELDA, CELDA))  # cuadro "quieto de frente", para la ayuda
         frente.crop(frente.getbbox()).save(SP + "chibi_" + nombre + "_frente.png", optimize=True)
@@ -148,10 +149,10 @@ def armar(celdas, pies, cw, ch, k, cols, filas):
     return tira
 
 
-def paleta(tira):
+def paleta(tira, colores=COLORES):
     """Reduce a pocos colores planos (sin degradados ni ruido de la IA)."""
     rgb = tira.convert("RGB")
-    q = rgb.quantize(colors=COLORES, method=Image.MEDIANCUT, dither=Image.Dither.NONE).convert("RGB")
+    q = rgb.quantize(colors=colores, method=Image.MEDIANCUT, dither=Image.Dither.NONE).convert("RGB")
     out = q.convert("RGBA"); out.putalpha(tira.getchannel("A"))
     return out
 

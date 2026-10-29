@@ -1755,11 +1755,11 @@ __SPRITE_SEASONAL__
     var moving = !N.working && N.pause <= 0;
     if (ready(shN)) drawChibi(shN, N, moving ? cycle(0, 7) : 8, !moving);
     else R(N.x - 10, N.y - 36, 20, 36, "#3fa34d");
-    // gorra (provisional, en gris como el muñequito mientras llega la figura final)
+    // gorra verde del SENA (provisional mientras llega la figura de Manuel)
     var x = Math.round(N.x), y = Math.round(N.y) - 50, f = N.face || 1;
     if (!HALLOWEEN) {
-    R(x - 12, y - 1, 24, 8, "#0d0c14"); R(x - 11, y, 22, 6, "#9a9a9a"); R(x - 11, y + 5, 22, 2, "#5e5e5e");
-    R(f > 0 ? x + 6 : x - 20, y + 5, 14, 3, "#5e5e5e");
+    R(x - 12, y - 1, 24, 8, "#0d0c14"); R(x - 11, y, 22, 6, "#3fa34d"); R(x - 11, y + 5, 22, 2, "#2a7a35");
+    R(f > 0 ? x + 6 : x - 20, y + 5, 14, 3, "#2a7a35");
     }
     if (N.working && Math.floor(anim * 6) % 2) R(N.x + 14 * f, N.y - 30, 3, 3, "#f2d76b");  // chispita de trabajo
   }
