@@ -1,6 +1,6 @@
 TICKET RUSH - The Office IT
 ===========================
-Jugar en linea: https://juego.66.94.101.47.sslip.io
+Jugar en linea: https://ticketrush.online
 
 README.md               Que es el juego, como se juega y como esta hecho (empieza por ahi).
 ticket_rush.html        El juego terminado. Doble clic y se abre en el navegador.

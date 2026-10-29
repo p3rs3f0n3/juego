@@ -2,7 +2,7 @@
 
 Juego de oficina en pixel art: eres la nueva de TI y tienes que resolver los tickets de todo el mundo antes de que se venza el SLA, mientras esquivas al jefe y su "cosita rápida".
 
-**Jugar:** https://juego.66.94.101.47.sslip.io (funciona en computador y celular; en celular se ve mejor horizontal).
+**Jugar:** https://ticketrush.online (funciona en computador y celular; en celular se ve mejor horizontal). La dirección vieja `juego.66.94.101.47.sslip.io` redirige aquí.
 
 ---
 
