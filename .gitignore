@@ -10,3 +10,7 @@ Thumbs.db
 # bases de datos de prueba del servicio de estadisticas
 *.db
 *.db.bak*
+
+# dependencia opcional para regenerar arte (scripts/package.json)
+node_modules/
+scripts/package-lock.json

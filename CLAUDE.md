@@ -26,6 +26,8 @@ proyecto para poder seguirlo desde cualquier PC. Detalles técnicos en `README.m
   jefe), **pasante del SENA** (se compra en la tienda en Jefe de TI; arregla tickets solo). Los tres van a color;
   el pasante es provisional (el jefe rejuvenecido, cara alegre, camiseta verde) hasta que Manuel haga su hoja.
 - En Halloween (23 oct – 1 nov) usan los disfraces de `sprites/halloween/` (en gris: "son fantasmas").
+- En Navidad (1 dic – 6 ene) usan los de `sprites/navidad/` (a color). Se regeneran con
+  `cd scripts && npm install && node preparar_octubre.cjs navidad`. Probar con `?tema=navidad`.
 
 ## Construir
 
@@ -33,7 +35,7 @@ proyecto para poder seguirlo desde cualquier PC. Detalles técnicos en `README.m
   se genera con `cd scripts && python construir_juego.py`.
 - Sprites con Pillow, en este orden: `python preparar_chibi.py` → `python crear_provisionales.py` →
   `python crear_oficina_rangos.py` (este solo si cambian los muebles).
-- Pruebas: `node tests/sprite-runtime.cjs`, `node tests/design-motion.cjs`, `node tests/octubre.cjs`.
+- Pruebas: `node tests/sprite-runtime.cjs`, `node tests/design-motion.cjs`, `node tests/octubre.cjs`, `node tests/navidad.cjs`.
 - Sprite Studio de Manuel (solo local, no se publica): `python scripts/servidor_diseno.py` →
   http://127.0.0.1:8766/tools/sprites/ (ajusta recortes y animaciones, no colores).
 - Para probar con la tabla: `STATS_STATIC=. STATS_DB=<base de prueba> python stats/stats_server.py`

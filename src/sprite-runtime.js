@@ -2,6 +2,7 @@
 (function (root) {
   'use strict';
   const KEY = 'ticket-rush-sprites-v1';
+  const SEASONS = ['halloween', 'navidad'];  // variantes de temporada de cada slot
   function validate(config) {
     if (!config || config.version !== 1 || !config.assets || typeof config.assets !== 'object') throw Error('Configuración no compatible.');
     for (const [id, a] of Object.entries(config.assets)) {
@@ -12,9 +13,9 @@
       for (const k of ['columns','rows','cellWidth','cellHeight','width','height','stride']) if (!Number.isFinite(a[k]) || a[k] <= 0 || a[k] > 4096) throw Error('Valor inválido: '+id+' · '+k);
       for (const k of ['columns','rows','cellWidth','cellHeight']) if (!Number.isInteger(a[k])) throw Error('La cuadrícula requiere enteros.');
       for (const k of ['anchorX','anchorY','offsetX','offsetY']) if (!Number.isFinite(a[k]) || Math.abs(a[k]) > 4096) throw Error('Posición inválida: '+id);
-      if (a.halloween) {
-        if (a.halloween.halloween) throw Error('La variante Halloween no puede contener otra variante.');
-        validate({version:1, assets:{[id]:a.halloween}});
+      for (const season of SEASONS) if (a[season]) {
+        if (SEASONS.some(s => a[season][s])) throw Error('La variante de temporada no puede contener otra variante.');
+        validate({version:1, assets:{[id]:a[season]}});
       }
       if (!a.animations || !Object.keys(a.animations).length) throw Error('Faltan animaciones: '+id);
       for (const an of Object.values(a.animations)) {
@@ -53,10 +54,10 @@
   function applyTheme(config, theme) {
     const result=JSON.parse(JSON.stringify(config));
     for(const [id,a] of Object.entries(result.assets)) {
-      if(theme==='halloween' && a.halloween) result.assets[id]=a.halloween;
-      delete result.assets[id].halloween;
+      if(SEASONS.includes(theme) && a[theme]) result.assets[id]=a[theme];
+      for(const season of SEASONS) delete result.assets[id][season];
     }
     return validate(result);
   }
-  root.SpriteRuntime={KEY,validate,animation,frame,rect,draw,resolve,applyTheme};
+  root.SpriteRuntime={KEY,SEASONS,validate,animation,frame,rect,draw,resolve,applyTheme};
 })(typeof globalThis !== 'undefined' ? globalThis : window);

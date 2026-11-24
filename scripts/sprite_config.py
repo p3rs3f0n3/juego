@@ -2,6 +2,7 @@
 import math
 import re
 import struct
+SEASONS = ('halloween','navidad')  # variantes de temporada de cada slot
 REQUIRED = {'player','playerDirections','playerWork','boss','manager','mate','cleaner','gossip','intern','desk','server','printer','coffee','plant','window'}
 
 def number(value, low, high, integer=False):
@@ -12,9 +13,11 @@ def validate_config(config, root):
         raise ValueError('La configuración debe conservar todos los slots del juego.')
     entries=list(config['assets'].items())
     for id,a in list(entries):
-        if isinstance(a,dict) and a.get('halloween') is not None:
-            if not isinstance(a['halloween'],dict) or a['halloween'].get('halloween') is not None: raise ValueError('Variante Halloween inválida: '+id)
-            entries.append((id+' (Halloween)',a['halloween']))
+        for season in SEASONS:
+            if isinstance(a,dict) and a.get(season) is not None:
+                v=a[season]
+                if not isinstance(v,dict) or any(v.get(s) is not None for s in SEASONS): raise ValueError('Variante de temporada inválida: '+id+' · '+season)
+                entries.append((id+' ('+season+')',v))
     for id,a in entries:
         if not isinstance(a,dict): raise ValueError('Asset inválido: '+id)
         if not isinstance(a.get('label'),str) or not 1<=len(a['label'])<=512: raise ValueError('Nombre de slot inválido: '+id)

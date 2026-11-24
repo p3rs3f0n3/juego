@@ -59,9 +59,9 @@ Orden sugerido: frases + días → intro cómic → señora del aseo → comodin
   - [x] **Muebles distintos por rango** (28 oct 2026): `scripts/crear_oficina_rangos.py` recolorea escritorio y cafetera (Analista: blanco y azul · Jefe de TI: caoba y vinotinto) y las matas crecen 12 % y 25 % al ascender (solo dibujo; la maceta choca igual).
   - [x] Excusas: la hojita lleva marco oscuro y brillo verde para verse sobre el piso claro.
 
-- [ ] **Temporadas**: Halloween en octubre (brujas, calabazas) y Navidad en diciembre (decoración, gorros). *(Jesús)*
+- [x] **Temporadas**: Halloween en octubre (brujas, calabazas) y Navidad en diciembre (decoración, gorros). *(Jesús)*
   - [x] **Halloween** (23 oct 2026): se prende solo del 23 oct al 1 nov, adornos distintos en los 3 escenarios y disfraces (jefe vampiro, gerente diablo, Dani bruja). Probar con `?tema=halloween`.
-  - [ ] **Navidad**: misma idea (`HALLOWEEN` en el código sirve de modelo).
+  - [x] **Navidad** (24 nov 2026): se prende sola del 1 dic al 6 ene (Reyes). Luces de colores, nieve en las ventanas, medias, natilla con buñuelos y regalos en los escritorios, corona / arbolito / velitas según el rango. Disfraces: jefe Papá Noel, Gerente reno, Dani duende, chismosa gorro de lana, aseo moño, pasante gorro verde, jugadora ramita de acebo (`sprites/navidad/`, `node scripts/preparar_octubre.cjs navidad`). Probar con `?tema=navidad`. Prueba: `node tests/navidad.cjs`.
 - [ ] **Puertas con letreros chistosos** en la oficina (Il Palazzo, Condoricosas, cuarto de las escobas). *(Manuel)*
 
 ## 5. Música y sonido 🎵 *(Alex, con su Claude — 23 oct 2026)*

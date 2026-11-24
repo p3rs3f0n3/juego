@@ -4,7 +4,7 @@ Uso (desde la carpeta scripts):  python construir_juego.py
 import base64
 import json
 from pathlib import Path
-from sprite_config import validate_config
+from sprite_config import validate_config, SEASONS
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -15,12 +15,12 @@ def uri(ruta):
 with open(ROOT / "src/game_template.html", encoding="utf-8") as f:
     html = f.read()
 
-config = json.loads((ROOT / "src/sprites.config.json").read_text())
+config = json.loads((ROOT / "src/sprites.config.json").read_text(encoding="utf-8"))
 validate_config(config, ROOT)
-variants = list(config["assets"].values()) + [a["halloween"] for a in config["assets"].values() if a.get("halloween")]
+variants = list(config["assets"].values()) + [a[s] for a in config["assets"].values() for s in SEASONS if a.get(s)]
 files = {a["file"]: uri(str(ROOT / a["file"])) for a in variants}
-html = html.replace("__SPRITE_SEASONAL__", (ROOT / "src/sprite-seasonal.js").read_text())
-html = html.replace("__SPRITE_RUNTIME__", (ROOT / "src/sprite-runtime.js").read_text())
+html = html.replace("__SPRITE_SEASONAL__", (ROOT / "src/sprite-seasonal.js").read_text(encoding="utf-8"))
+html = html.replace("__SPRITE_RUNTIME__", (ROOT / "src/sprite-runtime.js").read_text(encoding="utf-8"))
 html = html.replace("__SPRITE_CONFIG__", json.dumps(config, ensure_ascii=True).replace("<", "\\u003c"))
 html = html.replace("__SPRITE_FILES__", json.dumps(files))
 html = html.replace("__OFFICE__", uri("../sprites/oficina.png"))

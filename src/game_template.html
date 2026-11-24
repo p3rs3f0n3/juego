@@ -458,8 +458,9 @@ __SPRITE_SEASONAL__
   function sheet(src) { var i = new Image(); i.src = src; return i; }
   var spriteStorage = { getItem: function () { return null; } };
   try { spriteStorage = window.localStorage; } catch (_) {}
-  var HALLOWEEN = SpriteSeasonal.isHalloween(location.search, new Date());
-  var spriteConfig = SpriteRuntime.applyTheme(SpriteRuntime.resolve(__SPRITE_CONFIG__, spriteStorage, location.search), HALLOWEEN ? "halloween" : "normal");
+  var SEASON = SpriteSeasonal.season(location.search, new Date());  // "halloween", "navidad" o "normal"
+  var HALLOWEEN = SEASON === "halloween", NAVIDAD = SEASON === "navidad";
+  var spriteConfig = SpriteRuntime.applyTheme(SpriteRuntime.resolve(__SPRITE_CONFIG__, spriteStorage, location.search), SEASON);
   var spriteFiles = __SPRITE_FILES__, spriteImages = {};
   Object.keys(spriteConfig.assets).forEach(function (id) {
     var image = sheet(spriteFiles[spriteConfig.assets[id].file] || spriteConfig.assets[id].file);
@@ -1368,10 +1369,77 @@ __SPRITE_SEASONAL__
       pumpkin(704, 2, 3);
     }
   }
-  // Los accesorios estacionales están incluidos en los PNG de sprites/halloween/.
+  // Los accesorios estacionales están incluidos en los PNG de sprites/halloween/ y sprites/navidad/.
+
+  /* ---------- Navidad: adornos encima del escenario de cada rango ----------
+     Se prende sola del 1 de diciembre al 6 de enero (Reyes), o con ?tema=navidad para probar.
+     Igual que Halloween: todo va en paredes, ventanas y encima de los muebles, así que no cambia los choques ni la dificultad. */
+  var XMAS_LIGHTS = ["#ff4b4b", "#4bd66f", "#ffd24a", "#58a8ff"];
+  function snow(x) {  // copos cayendo dentro de una ventana (en Cali no nieva, pero en el juego sí)
+    for (var i = 0; i < 9; i++) {
+      var fx = x + 6 + (i * 13 + Math.floor(Math.sin(anim * 1.3 + i) * 3)) % 108;
+      var fy = 11 + ((anim * (9 + i % 3 * 4) + i * 7) % 21);
+      var sz = i % 3 ? 2 : 3;
+      R(Math.round(fx) + 1, Math.round(fy) + 1, sz, sz, "rgba(70,100,130,0.35)");  // sombrita para que se vea sobre el cielo claro
+      R(Math.round(fx), Math.round(fy), sz, sz, "#ffffff");
+    }
+    R(x + 3, 31, 114, 2, "#ffffff"); R(x + 3, 33, 114, 1, "#c9d8e6");  // nieve acumulada en el marco
+  }
+  function deskTreat(x, y, seed) {
+    if (Math.floor(seed / 2) % 2) {  // natilla con buñuelos (las semillas de los escritorios son pares)
+      R(x, y + 8, 16, 3, "#f4f1ea"); R(x + 1, y + 11, 14, 1, "#c9c3b4");
+      R(x + 2, y + 6, 6, 3, "#c98a3c"); R(x + 3, y + 6, 2, 1, "#e2b277");
+      for (var b = 0; b < 3; b++) { R(x + 8 + b * 3 - (b === 2 ? 4 : 0), y + 3 + (b === 2 ? -1 : 2), 4, 4, "#d9a043"); R(x + 9 + b * 3 - (b === 2 ? 4 : 0), y + 4 + (b === 2 ? -1 : 2), 1, 1, "#f2cf86"); }
+    } else {  // regalo con moño
+      R(x + 1, y + 2, 13, 10, "#d8343c"); R(x + 6, y + 2, 3, 10, "#ffd24a"); R(x + 1, y + 6, 13, 2, "#ffd24a");
+      R(x + 3, y - 1, 4, 3, "#ffd24a"); R(x + 8, y - 1, 4, 3, "#ffd24a"); R(x + 1, y + 11, 13, 1, "#a71f2c");
+    }
+  }
+  function xmasTree(x, y) {  // arbolito con luces que titilan y estrella
+    R(x + 7, y + 24, 4, 4, "#7a4a2a");
+    for (var l = 0; l < 4; l++) R(x + 6 - l * 2, y + 5 + l * 5, 6 + l * 4, 5, l % 2 ? "#237a42" : "#2f9e55");
+    for (var b = 0; b < 6; b++) R(x + 3 + (b * 5) % 12, y + 9 + b * 3, 2, 2, XMAS_LIGHTS[(b + Math.floor(anim * 3)) % 4]);
+    R(x + 8, y + 1, 2, 4, "#ffd24a"); R(x + 7, y + 2, 4, 2, "#ffd24a");
+  }
+  function wreath(x, y) {  // corona navideña con moño rojo
+    ctx.strokeStyle = "#237a42"; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(x, y, 9, 0, 7); ctx.stroke();
+    ctx.strokeStyle = "#2f9e55"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 9, 0, 7); ctx.stroke();
+    [[-8, -3], [6, -6], [7, 5], [-4, 8]].forEach(function (p) { R(x + p[0], y + p[1], 2, 2, "#ff4b4b"); });
+    R(x - 4, y + 7, 8, 4, "#d8343c"); R(x - 1, y + 7, 2, 4, "#a71f2c"); R(x - 4, y + 11, 2, 4, "#d8343c"); R(x + 2, y + 11, 2, 4, "#d8343c");
+  }
+  function velita(x, y, n) {  // vela del Día de las Velitas (7 de diciembre)
+    R(x, y, 3, 9, ["#f4f1ea", "#ff4b4b", "#4bd66f"][n % 3]);
+    R(x + 1, y - 3 + (Math.floor(anim * 6 + n) % 2), 1, 3, "#ffb02e"); R(x + 1, y - 1, 1, 1, "#ffe9a8");
+  }
+  function drawNavidadWall(th) {
+    // guirnalda de luces de colores que titilan a lo largo de la pared de arriba
+    for (var x = 12; x < W - 8; x += 22) {
+      var i = x / 22, on = (Math.floor(anim * 2) + i) % 3 !== 0, col = XMAS_LIGHTS[Math.floor(i) % 4];
+      R(x, 40 + (i % 2 ? 1 : 0), 22, 2, "#1d4a2a");
+      R(x + 9, 42, 2, 2, "#1d4a2a");
+      R(x + 8, 44, 5, 7, on ? col : "#4a4652"); R(x + 9, 44, 1, 2, on ? "#ffffff" : "#5d5966");
+      if (on) { ctx.globalAlpha = 0.22; R(x + 4, 41, 13, 13, col); ctx.globalAlpha = 1; }
+    }
+    // estrellitas de papel colgando en las esquinas
+    [[T + 10, T + 6], [15 * T - 12, T + 6]].forEach(function (s, n) {
+      var sy = s[1] + 10 + Math.round(Math.sin(anim * 2 + n) * 2);
+      R(s[0], s[1], 1, sy - s[1], "rgba(255,255,255,0.5)");
+      R(s[0] - 1, sy, 3, 7, "#ffd24a"); R(s[0] - 3, sy + 2, 7, 3, "#ffd24a"); R(s[0], sy + 3, 1, 1, "#fff6c8");
+    });
+    if (th.extras === "ti") {  // analista: arbolito sobre la máquina de snacks y regalo en el agua
+      xmasTree(12, 142);
+      deskTreat(735, 262, 0);
+    } else if (th.extras === "ejecutivo") {  // jefe de TI: velitas sobre la biblioteca y gato... digo, reno de peluche en el dispensador
+      for (var v = 0; v < 5; v++) velita(12 + v * 5, 150, v);
+      R(734, 264, 16, 10, "#9a6236"); R(746, 256, 8, 9, "#9a6236"); R(745, 251, 2, 5, "#7a4a2a"); R(752, 251, 2, 5, "#7a4a2a");
+      R(752, 260, 3, 3, "#ff4b4b"); R(736, 274, 3, 3, "#7a4a2a"); R(746, 274, 3, 3, "#7a4a2a"); R(748, 258, 2, 2, "#0d0c14");
+    } else {  // practicante: corona sobre el cuadro del SLA
+      wreath(716, 16);
+    }
+  }
 
   function drawWindow(x, th) {
-    if (th.sky === "dia" && configuredSprite("window", "idle", x - 2, 4, anim)) return;
+    if (th.sky === "dia" && configuredSprite("window", "idle", x - 2, 4, anim)) { if (NAVIDAD) snow(x); return; }
     R(x, 8, 120, 28, th.frame);
     if (th.sky === "atardecer") {
       R(x + 3, 11, 114, 8, "#f6b26b"); R(x + 3, 19, 114, 7, "#ef8a6a"); R(x + 3, 26, 114, 7, "#c95d7c");
@@ -1385,6 +1453,7 @@ __SPRITE_SEASONAL__
       R(x + 104, 14, 5, 5, "#e8e4f5");  // luna
     }
     if (HALLOWEEN) { ctx.fillStyle = "#ff9a3c"; ctx.beginPath(); ctx.arc(x + 88, 22, 9, 0, 7); ctx.fill(); R(x + 84, 18, 3, 3, "#e8761c"); R(x + 91, 24, 4, 3, "#e8761c"); }
+    if (NAVIDAD) snow(x);
     if (th.sky === "dia") {
       R(x + 4, 28, 22, 5, "#82a26c"); R(x + 21, 25, 16, 8, "#9ab379");
       R(x + 89, 26, 21, 7, "#7b9b66");
@@ -1463,6 +1532,7 @@ __SPRITE_SEASONAL__
       if (th.pc === "ancho") R(c * T, r * T + 24, T, 1, f[2]);  // tablas de madera
     }
     if (HALLOWEEN) { ctx.globalAlpha = 0.035; R(T, T, 14 * T, 8 * T, "#5b1f86"); ctx.globalAlpha = 1; }
+    if (NAVIDAD) { ctx.globalAlpha = 0.03; R(T, T, 14 * T, 8 * T, "#2f6f9e"); ctx.globalAlpha = 1; }
     if (th.carpet) {  // alfombras vinotinto en los pasillos entre escritorios
       [3, 5].forEach(function (row) { R(T + 8, row * T + 8, 14 * T - 16, 32, th.carpet); R(T + 12, row * T + 12, 14 * T - 24, 24, "#99747a"); });
     }
@@ -1501,7 +1571,8 @@ __SPRITE_SEASONAL__
     }
     R(T - 4, T, 4, 8 * T, sd[3]); R(15 * T, T, 4, 8 * T, sd[3]);
     drawSideExtras(th);
-    if (HALLOWEEN) { drawHalloweenWall(th); SpriteSeasonal.decorations(ctx, W, anim); }
+    if (HALLOWEEN) { drawHalloweenWall(th); SpriteSeasonal.decorations(ctx, W, anim, SEASON); }
+    if (NAVIDAD) { drawNavidadWall(th); SpriteSeasonal.decorations(ctx, W, anim, SEASON); }
   }
 
   // Pantalla de un computador: con ticket parpadea en azul con carita triste; sin ticket, código en verde.
@@ -1563,6 +1634,7 @@ __SPRITE_SEASONAL__
       R(x + 16, y + 22, 3, 5, "#ded5b9"); R(x + 10, y + 20, 4, 2, "#73533d");
       }
       if (HALLOWEEN && s.seed % 3 === 2) pumpkin(x + 74, y + 16, 2);
+      if (NAVIDAD && s.seed % 3 === 2) deskTreat(x + 72, y + 18, s.seed);
     } else if (s.type === "server") {
       for (var k = 0; k < 2; k++) for (var j = 0; j < 5; j++)
         R(x + 10 + k * 46, y - 9 + j * 10, 3, 2, tk ? (blink ? "#ef5b6b" : "#8f4f54") : theme().leds[j % 2]);
@@ -1591,6 +1663,7 @@ __SPRITE_SEASONAL__
       drawPC(x, y, tk, Math.floor(anim * 4) % 2, th.pc);
       R(x + 8, y + 20, 9, 10, (s.seed % 2) ? "#e8e4f5" : "#ef5b6b"); R(x + 17, y + 23, 3, 4, "#cfc9dd");
       if (HALLOWEEN && s.seed % 3 === 2) pumpkin(x + 74, y + 16, 2);
+      else if (NAVIDAD && s.seed % 3 === 2) deskTreat(x + 72, y + 18, s.seed);
       else { R(x + 74, y + 21, 14, 10, "#f2f0f8"); R(x + 76, y + 23, 10, 1, "#9d96b8"); R(x + 76, y + 26, 8, 1, "#9d96b8"); }
     } else if (s.type === "server") {
       for (var k = 0; k < 2; k++) {
@@ -1784,7 +1857,7 @@ __SPRITE_SEASONAL__
     else R(N.x - 10, N.y - 36, 20, 36, "#3fa34d");
     // gorra verde del SENA (provisional mientras llega la figura de Manuel)
     var x = Math.round(N.x), y = Math.round(N.y) - 50, f = N.face || 1;
-    if (!HALLOWEEN) {
+    if (SEASON === "normal") {
     R(x - 12, y - 1, 24, 8, "#0d0c14"); R(x - 11, y, 22, 6, "#3fa34d"); R(x - 11, y + 5, 22, 2, "#2a7a35");
     R(f > 0 ? x + 6 : x - 20, y + 5, 14, 3, "#2a7a35");
     }
@@ -1852,7 +1925,7 @@ __SPRITE_SEASONAL__
     showScreen(null);
     beep(440, 0.1, "square", 0.04);
     say("Día 1: tu primer día como practicante");
-    showCut("DÍA 1", "Tu primer día como PRACTICANTE", HALLOWEEN ? "Edición Halloween" : "", 4);
+    showCut("DÍA 1", "Tu primer día como PRACTICANTE", HALLOWEEN ? "Edición Halloween" : NAVIDAD ? "Edición Navidad" : "", 4);
     gameId = Math.random().toString(36).slice(2, 10) + "-" + Date.now().toString(36);
     track("start");
   }

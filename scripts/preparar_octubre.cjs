@@ -1,4 +1,6 @@
-/* Exporta las hojas PNG del update. Requiere @napi-rs/canvas solo al regenerar arte. */
+/* Exporta las hojas PNG de temporada. Requiere @napi-rs/canvas solo al regenerar arte.
+   node preparar_octubre.cjs           → hojas base de octubre + disfraces de Halloween
+   node preparar_octubre.cjs navidad   → solo los disfraces de Navidad (sprites/navidad/) */
 const fs=require('node:fs'),path=require('node:path');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
 require('../src/sprite-seasonal.js');
@@ -35,20 +37,26 @@ function headBox(ctx,w,h){
  const ys=best.map(i=>Math.floor(i/w)),top=Math.min(...ys),head=best.filter(i=>Math.floor(i/w)<top+14).map(i=>i%w);
  return{x:Math.round((Math.min(...head)+Math.max(...head))/2),y:top+1};
 }
-async function bake(id,a){
+async function bake(id,a,theme){
  const img=await loadImage(path.join(root,a.file)),out=createCanvas(256,216),ctx=out.getContext('2d');ctx.imageSmoothingEnabled=false;
  for(let f=0;f<a.columns*a.rows;f++){
   const cell=createCanvas(64,72),c=cell.getContext('2d');c.imageSmoothingEnabled=false;
   c.drawImage(img,(f%a.columns)*a.cellWidth,Math.floor(f/a.columns)*a.cellHeight,a.cellWidth,a.cellHeight,4,16,56,56);
-  SpriteSeasonal.accessory(c,id,headBox(c,64,72));ctx.drawImage(cell,(f%4)*64,Math.floor(f/4)*72);
+  SpriteSeasonal.accessory(c,id,headBox(c,64,72),theme);ctx.drawImage(cell,(f%4)*64,Math.floor(f/4)*72);
  }
- fs.writeFileSync(path.join(root,'sprites/halloween/'+id+'.png'),out.toBuffer('image/png'));
+ fs.writeFileSync(path.join(root,'sprites/'+theme+'/'+id+'.png'),out.toBuffer('image/png'));
 }
+const IDS=['player','playerDirections','playerWork','boss','manager','mate','cleaner','gossip','intern'];
 (async()=>{
+ const config=JSON.parse(fs.readFileSync(path.join(root,'src/sprites.config.json'),'utf8'));
+ if(process.argv[2]==='navidad'){
+  fs.mkdirSync(path.join(root,'sprites/navidad'),{recursive:true});
+  for(const id of IDS)await bake(id,config.assets[id],'navidad');
+  console.log('Exportadas 9 hojas de Navidad (PNG transparente 4 × 3).');return;
+ }
  fs.mkdirSync(path.join(root,'sprites/halloween'),{recursive:true});
  await prepare('design-proposals/octubre-2026/jugadora-caminar.png','sprites/jugadora_octubre.png');
  await prepare('design-proposals/octubre-2026/jugadora-acciones.png','sprites/jugadora_acciones_octubre.png');
- const config=JSON.parse(fs.readFileSync(path.join(root,'src/sprites.config.json'),'utf8'));
- for(const id of ['player','playerDirections','playerWork','boss','manager','mate','cleaner','gossip','intern'])await bake(id,config.assets[id]);
+ for(const id of IDS)await bake(id,config.assets[id],'halloween');
  console.log('Exportadas 2 hojas base y 9 hojas Halloween (PNG transparente 4 × 3).');
 })().catch(e=>{console.error(e);process.exitCode=1;});

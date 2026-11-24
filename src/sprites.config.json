@@ -111,6 +111,62 @@
           }
         },
         "frameRects": {}
+      },
+      "navidad": {
+        "label": "Jugadora · reposo y celebración",
+        "file": "sprites/navidad/player.png",
+        "source": "sprites/jugadora_acciones_octubre.png",
+        "columns": 4,
+        "rows": 3,
+        "cellWidth": 64,
+        "cellHeight": 72,
+        "width": 64,
+        "height": 72,
+        "anchorX": 32,
+        "anchorY": 71,
+        "offsetX": 0,
+        "offsetY": 0,
+        "stride": 20,
+        "frameOffsets": {},
+        "animations": {
+          "idle": {
+            "label": "Reposo de frente",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "fps": 2,
+            "loop": true,
+            "flip": false
+          },
+          "celebrate": {
+            "label": "Ticket resuelto · 0,32 s",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "fps": 12,
+            "loop": false,
+            "flip": false
+          },
+          "special": {
+            "label": "Celebración de ascenso",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "fps": 12,
+            "loop": true,
+            "flip": false
+          }
+        },
+        "frameRects": {}
       }
     },
     "playerDirections": {
@@ -247,6 +303,74 @@
           }
         },
         "frameRects": {}
+      },
+      "navidad": {
+        "label": "Jugadora · movimiento actual",
+        "file": "sprites/navidad/playerDirections.png",
+        "source": "sprites/jugadora_octubre.png",
+        "columns": 4,
+        "rows": 3,
+        "cellWidth": 64,
+        "cellHeight": 72,
+        "width": 64,
+        "height": 72,
+        "anchorX": 32,
+        "anchorY": 71,
+        "offsetX": 0,
+        "offsetY": 0,
+        "stride": 20,
+        "frameOffsets": {},
+        "animations": {
+          "down": {
+            "label": "Hacia abajo / frente",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "fps": 6.25,
+            "loop": true,
+            "flip": false
+          },
+          "up": {
+            "label": "Hacia arriba / espalda",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "fps": 6.25,
+            "loop": true,
+            "flip": false
+          },
+          "right": {
+            "label": "Hacia la derecha",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "fps": 6.25,
+            "loop": true,
+            "flip": false
+          },
+          "left": {
+            "label": "Hacia la izquierda",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "fps": 6.25,
+            "loop": true,
+            "flip": true
+          }
+        },
+        "frameRects": {}
       }
     },
     "playerWork": {
@@ -283,6 +407,38 @@
       "halloween": {
         "label": "Jugadora · tecleando",
         "file": "sprites/halloween/playerWork.png",
+        "source": "sprites/jugadora_acciones_octubre.png",
+        "columns": 4,
+        "rows": 3,
+        "cellWidth": 64,
+        "cellHeight": 72,
+        "width": 64,
+        "height": 72,
+        "anchorX": 32,
+        "anchorY": 71,
+        "offsetX": 0,
+        "offsetY": 0,
+        "stride": 20,
+        "frameOffsets": {},
+        "animations": {
+          "work": {
+            "label": "Teclear con afán",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "fps": 10,
+            "loop": true,
+            "flip": false
+          }
+        },
+        "frameRects": {}
+      },
+      "navidad": {
+        "label": "Jugadora · tecleando",
+        "file": "sprites/navidad/playerWork.png",
         "source": "sprites/jugadora_acciones_octubre.png",
         "columns": 4,
         "rows": 3,
@@ -380,6 +536,71 @@
       "halloween": {
         "label": "Jefe",
         "file": "sprites/halloween/boss.png",
+        "source": "sprites/chibi_jefe.png",
+        "columns": 4,
+        "rows": 3,
+        "cellWidth": 64,
+        "cellHeight": 72,
+        "width": 64,
+        "height": 72,
+        "anchorX": 32,
+        "anchorY": 71,
+        "offsetX": 0,
+        "offsetY": 0,
+        "stride": 16,
+        "frameOffsets": {},
+        "animations": {
+          "walk": {
+            "label": "Caminar",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "fps": 8,
+            "loop": true,
+            "flip": false
+          },
+          "run": {
+            "label": "Correr",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "fps": 12,
+            "loop": true,
+            "flip": false
+          },
+          "special": {
+            "label": "Acción especial",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "fps": 6,
+            "loop": true,
+            "flip": false
+          },
+          "idle": {
+            "label": "Quieta / quieto",
+            "frames": [
+              8
+            ],
+            "fps": 1,
+            "loop": true,
+            "flip": false
+          }
+        },
+        "frameRects": {}
+      },
+      "navidad": {
+        "label": "Jefe",
+        "file": "sprites/navidad/boss.png",
         "source": "sprites/chibi_jefe.png",
         "columns": 4,
         "rows": 3,
@@ -571,6 +792,71 @@
           }
         },
         "frameRects": {}
+      },
+      "navidad": {
+        "label": "Gerente",
+        "file": "sprites/navidad/manager.png",
+        "source": "sprites/chibi_gerente.png",
+        "columns": 4,
+        "rows": 3,
+        "cellWidth": 64,
+        "cellHeight": 72,
+        "width": 64,
+        "height": 72,
+        "anchorX": 32,
+        "anchorY": 71,
+        "offsetX": 0,
+        "offsetY": 0,
+        "stride": 16,
+        "frameOffsets": {},
+        "animations": {
+          "walk": {
+            "label": "Caminar",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "fps": 8,
+            "loop": true,
+            "flip": false
+          },
+          "run": {
+            "label": "Correr",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "fps": 12,
+            "loop": true,
+            "flip": false
+          },
+          "special": {
+            "label": "Acción especial",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "fps": 6,
+            "loop": true,
+            "flip": false
+          },
+          "idle": {
+            "label": "Quieta / quieto",
+            "frames": [
+              8
+            ],
+            "fps": 1,
+            "loop": true,
+            "flip": false
+          }
+        },
+        "frameRects": {}
       }
     },
     "mate": {
@@ -640,6 +926,71 @@
       "halloween": {
         "label": "Dani",
         "file": "sprites/halloween/mate.png",
+        "source": "sprites/chibi_dani.png",
+        "columns": 4,
+        "rows": 3,
+        "cellWidth": 64,
+        "cellHeight": 72,
+        "width": 64,
+        "height": 72,
+        "anchorX": 32,
+        "anchorY": 71,
+        "offsetX": 0,
+        "offsetY": 0,
+        "stride": 16,
+        "frameOffsets": {},
+        "animations": {
+          "walk": {
+            "label": "Caminar",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "fps": 8,
+            "loop": true,
+            "flip": false
+          },
+          "run": {
+            "label": "Correr",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "fps": 12,
+            "loop": true,
+            "flip": false
+          },
+          "special": {
+            "label": "Acción especial",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "fps": 6,
+            "loop": true,
+            "flip": false
+          },
+          "idle": {
+            "label": "Quieta / quieto",
+            "frames": [
+              8
+            ],
+            "fps": 1,
+            "loop": true,
+            "flip": false
+          }
+        },
+        "frameRects": {}
+      },
+      "navidad": {
+        "label": "Dani",
+        "file": "sprites/navidad/mate.png",
         "source": "sprites/chibi_dani.png",
         "columns": 4,
         "rows": 3,
@@ -831,6 +1182,71 @@
           }
         },
         "frameRects": {}
+      },
+      "navidad": {
+        "label": "Señora del aseo",
+        "file": "sprites/navidad/cleaner.png",
+        "source": "sprites/chibi_aseo.png",
+        "columns": 4,
+        "rows": 3,
+        "cellWidth": 64,
+        "cellHeight": 72,
+        "width": 64,
+        "height": 72,
+        "anchorX": 32,
+        "anchorY": 71,
+        "offsetX": 0,
+        "offsetY": 0,
+        "stride": 16,
+        "frameOffsets": {},
+        "animations": {
+          "walk": {
+            "label": "Caminar",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "fps": 8,
+            "loop": true,
+            "flip": false
+          },
+          "run": {
+            "label": "Barrer / trapear",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "fps": 12,
+            "loop": true,
+            "flip": false
+          },
+          "special": {
+            "label": "Desconectar cable",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "fps": 3.4,
+            "loop": false,
+            "flip": false
+          },
+          "idle": {
+            "label": "Quieta / quieto",
+            "frames": [
+              8
+            ],
+            "fps": 1,
+            "loop": true,
+            "flip": false
+          }
+        },
+        "frameRects": {}
       }
     },
     "gossip": {
@@ -961,6 +1377,71 @@
           }
         },
         "frameRects": {}
+      },
+      "navidad": {
+        "label": "Compañera chismosa",
+        "file": "sprites/navidad/gossip.png",
+        "source": "sprites/chibi_sapo.png",
+        "columns": 4,
+        "rows": 3,
+        "cellWidth": 64,
+        "cellHeight": 72,
+        "width": 64,
+        "height": 72,
+        "anchorX": 32,
+        "anchorY": 71,
+        "offsetX": 0,
+        "offsetY": 0,
+        "stride": 16,
+        "frameOffsets": {},
+        "animations": {
+          "walk": {
+            "label": "Caminar",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "fps": 8,
+            "loop": true,
+            "flip": false
+          },
+          "run": {
+            "label": "Correr",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "fps": 12,
+            "loop": true,
+            "flip": false
+          },
+          "special": {
+            "label": "Acción especial",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "fps": 6,
+            "loop": true,
+            "flip": false
+          },
+          "idle": {
+            "label": "Quieta / quieto",
+            "frames": [
+              8
+            ],
+            "fps": 1,
+            "loop": true,
+            "flip": false
+          }
+        },
+        "frameRects": {}
       }
     },
     "intern": {
@@ -1030,6 +1511,71 @@
       "halloween": {
         "label": "Pasante",
         "file": "sprites/halloween/intern.png",
+        "source": "sprites/chibi_pasante.png",
+        "columns": 4,
+        "rows": 3,
+        "cellWidth": 64,
+        "cellHeight": 72,
+        "width": 64,
+        "height": 72,
+        "anchorX": 32,
+        "anchorY": 71,
+        "offsetX": 0,
+        "offsetY": 0,
+        "stride": 16,
+        "frameOffsets": {},
+        "animations": {
+          "walk": {
+            "label": "Caminar",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "fps": 8,
+            "loop": true,
+            "flip": false
+          },
+          "run": {
+            "label": "Correr",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "fps": 12,
+            "loop": true,
+            "flip": false
+          },
+          "special": {
+            "label": "Acción especial",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "fps": 6,
+            "loop": true,
+            "flip": false
+          },
+          "idle": {
+            "label": "Quieta / quieto",
+            "frames": [
+              8
+            ],
+            "fps": 1,
+            "loop": true,
+            "flip": false
+          }
+        },
+        "frameRects": {}
+      },
+      "navidad": {
+        "label": "Pasante",
+        "file": "sprites/navidad/intern.png",
         "source": "sprites/chibi_pasante.png",
         "columns": 4,
         "rows": 3,
